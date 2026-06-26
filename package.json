@@ -1,0 +1,23 @@
+{
+    "name":  "agente-pagos-stellar",
+    "version":  "0.1.0",
+    "private":  true,
+    "type":  "module",
+    "scripts":  {
+                    "dev":  "node scripts/serve.mjs",
+                    "test":  "node tests/policy.test.mjs",
+                    "build":  "npm test \u0026\u0026 node scripts/build-static.mjs",
+                    "smoke":  "node scripts/smoke.mjs",
+                    "doctor":  "node scripts/doctor.mjs",
+                    "setup:testnet":  "node scripts/setup-testnet.mjs",
+                    "testnet:doctor":  "node scripts/testnet-doctor.mjs",
+                    "testnet:payment":  "node scripts/testnet-payment.mjs",
+                    "vercel:testnet-payment":  "node scripts/vercel-testnet-payment.mjs",
+                    "vercel:admin-token":  "node scripts/vercel-admin-token.mjs",
+                    "qa":  "npm test \u0026\u0026 npm run smoke \u0026\u0026 npm run doctor",
+                    "agent:402":  "node scripts/machine-agent-client.mjs"
+                },
+    "dependencies":  {
+                         "@stellar/stellar-sdk":  "^16.0.1"
+                     }
+}

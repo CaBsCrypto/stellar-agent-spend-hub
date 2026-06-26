@@ -1,0 +1,143 @@
+﻿import { createServer } from "node:http";
+import { extname, join, normalize } from "node:path";
+import { readFile } from "node:fs/promises";
+import { SpendHubService } from "../src/spendHubService.mjs";
+import { runAdminTestnetPayment } from "../src/adminTestnetPayment.mjs";
+
+const contentTypes = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+};
+
+if (isCliEntrypoint()) {
+  const root = process.cwd();
+  const port = Number(process.env.PORT || 4179);
+  const { server } = await createSpendHubServer({ root, port, env: process.env });
+  server.listen(port, () => {
+    console.log(`Stellar Agent Spend Hub running at http://localhost:${port}`);
+  });
+}
+
+export async function createSpendHubServer({ root = process.cwd(), port = 4179, env = process.env, statePath = join(root, "data", "runtime-state.json") } = {}) {
+  const service = await new SpendHubService({ statePath, env }).load();
+  const server = createServer(async (request, response) => {
+    try {
+      const url = new URL(request.url || "/", `http://localhost:${port}`);
+      if (url.pathname.startsWith("/api/")) {
+        await handleApi({ request, response, url, service, env });
+        return;
+      }
+      await handleStatic({ response, url, root });
+    } catch (error) {
+      const status = error.status || 500;
+      writeJson(response, status, { error: error.message || "Internal server error" });
+    }
+  });
+  return { server, service };
+}
+
+export async function handleApi({ request, response, url, service, env }) {
+  const method = request.method || "GET";
+
+  if (method === "POST" && url.pathname === "/api/admin/testnet-payment") {
+    writeJson(response, 200, await runAdminTestnetPayment({ request, env, service }));
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/health") {
+    writeJson(response, 200, { ok: true, readiness: await service.readiness(env) });
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/rail/diagnostics") {
+    writeJson(response, 200, await service.railDiagnostics());
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/link/diagnostics") {
+    writeJson(response, 200, await service.linkDiagnostics());
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/state") {
+    writeJson(response, 200, await service.getState());
+    return;
+  }
+
+  const machineMatch = url.pathname.match(/^\/api\/machine-resource\/([^/]+)$/);
+  if (method === "GET" && machineMatch) {
+    const [, providerId] = machineMatch;
+    const result = await service.requestMachineResource({
+      providerId,
+      resourceId: url.searchParams.get("resource") || "agent-resource",
+      amount: url.searchParams.get("amount") || null,
+      credential: request.headers["x-payment-credential"] || null,
+    });
+    writeJson(response, result.status || 200, result);
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/providers/search") {
+    writeJson(response, 200, {
+      providers: service.searchProviders({ query: url.searchParams.get("q") || "", category: url.searchParams.get("category") || "" }),
+    });
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/intents") {
+    const body = await readJson(request);
+    const idempotencyKey = request.headers["idempotency-key"] || body.idempotencyKey || null;
+    writeJson(response, 201, { intent: await service.createIntent({ ...body, idempotencyKey }) });
+    return;
+  }
+
+  const match = url.pathname.match(/^\/api\/intents\/([^/]+)\/(prepare|proof|approve|link-spend-request|link-approve|link-deny)$/);
+  if (method === "POST" && match) {
+    const [, intentId, action] = match;
+    const body = await readJson(request);
+    if (action === "prepare") writeJson(response, 200, { prepared: await service.prepareIntent(intentId) });
+    if (action === "proof") writeJson(response, 200, await service.generateProof({ intentId, ...body }));
+    if (action === "approve") writeJson(response, 200, { receipt: await service.approveIntent(intentId, body.approvedBy || "user-passkey") });
+    if (action === "link-spend-request") writeJson(response, 200, { spendRequest: await service.createLinkSpendRequest(intentId) });
+    if (action === "link-approve") writeJson(response, 200, { receipt: await service.approveLinkSpendRequest(intentId, body.approvedBy || "link-biometric-simulated") });
+    if (action === "link-deny") writeJson(response, 200, { spendRequest: await service.denyLinkSpendRequest(intentId, body.deniedBy || "user") });
+    return;
+  }
+
+  writeJson(response, 404, { error: "Not found" });
+}
+
+async function handleStatic({ response, url, root }) {
+  const requested = url.pathname === "/" ? "/index.html" : url.pathname;
+  const safePath = normalize(requested).replace(/^(\.\.[/\\])+/, "");
+  const filePath = join(root, safePath);
+  const body = await readFile(filePath);
+  response.writeHead(200, {
+    "Content-Type": contentTypes[extname(filePath)] || "application/octet-stream",
+  });
+  response.end(body);
+}
+
+async function readJson(request) {
+  const chunks = [];
+  for await (const chunk of request) chunks.push(chunk);
+  if (chunks.length === 0) return {};
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+
+function writeJson(response, status, payload) {
+  response.writeHead(status, { "Content-Type": "application/json; charset=utf-8" });
+  response.end(JSON.stringify(payload));
+}
+
+function isCliEntrypoint() {
+  if (!process.argv[1]) return false;
+  const argvPath = process.argv[1].replaceAll("\\", "/");
+  return import.meta.url === new URL(`file:///${argvPath.replace(/^\/+/, "")}`).href;
+}
+
+

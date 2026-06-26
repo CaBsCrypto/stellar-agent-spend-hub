@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+node_modules/
+npm-debug.log*
+dev-server.out.log
+dev-server.err.log
+.vercel
+public/
+data/runtime-state.json
