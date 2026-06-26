@@ -25,7 +25,12 @@
         "soroban:init": "node scripts/soroban-testnet-demo.mjs --action=init",
         "soroban:grant": "node scripts/soroban-testnet-demo.mjs --action=grant",
         "soroban:execute": "node scripts/soroban-testnet-demo.mjs --action=execute",
-        "soroban:read": "node scripts/soroban-testnet-demo.mjs --action=read"
+        "soroban:read": "node scripts/soroban-testnet-demo.mjs --action=read",
+        "soroban:asset": "node scripts/soroban-testnet-demo.mjs --action=asset",
+        "soroban:fund-contract": "node scripts/soroban-testnet-demo.mjs --action=fund-contract",
+        "soroban:fund-contract:execute": "node scripts/soroban-testnet-demo.mjs --action=fund-contract --execute",
+        "soroban:transfer": "node scripts/soroban-testnet-demo.mjs --action=transfer",
+        "soroban:transfer:execute": "node scripts/soroban-testnet-demo.mjs --action=transfer --execute"
     },
     "dependencies": {
         "@stellar/stellar-sdk": "^16.0.1"

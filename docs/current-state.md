@@ -12,9 +12,10 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Amount: `0.0000010 XLM`.
 - Network: `stellar:testnet`.
 - Finality: `submitted-testnet`.
-- JS QA: `npm run qa` passing with `51/51` tests.
-- Contract QA: `cargo test` passing with `9/9` Rust tests.
-- Soroban build: `stellar contract build` passing with Wasm hash `ee18eba064eb03153c91b1e9122efee542b7d59b372d2e8adf91f87da1b725db`.
+- JS QA: `npm run qa` passing with `55/55` tests.
+- Contract QA: `cargo test` passing with `11/11` Rust tests.
+- Soroban build: `stellar contract build` passing with Wasm hash `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
+- First SAC transfer tx: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
 
 ## Scores
 
@@ -24,15 +25,15 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Documentation/GitHub readiness: `82/100`.
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
-- Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `78/100`.
+- Real testnet payment executed: `82/100`.
+- Smart wallet readiness: `88/100`.
 
 ## What is real today
 
 - Local app and server API are functional.
 - Provider directory, intents, receipts, policy, privacy checks, and HTTP 402 flow work in the MVP.
 - Vercel production is deployed.
-- Stellar testnet submit has been proven once with a tiny supervised payment.
+- Stellar testnet submit has been proven once with a tiny supervised payment.`r`n- Soroban smart wallet has moved native XLM testnet via SAC after policy validation.
 - Production submit gate is closed by default with `STELLAR_SUBMIT_ENABLED=false`.
 
 ## Main risks
@@ -44,4 +45,4 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 
 ## Next move
 
-Next move: integrate a guarded Stellar Asset Contract transfer path behind the deployed permission contract, keeping dry-run and user confirmation before any real asset movement.
+Next move: connect the deployed SAC transfer path back into the app receipt flow for a user-confirmed MCP/API payment intent, keeping dry-run and confirmation gates by default.

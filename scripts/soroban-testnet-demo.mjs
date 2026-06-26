@@ -57,6 +57,12 @@ export function buildSorobanTestnetPlan({ env = process.env, now = () => new Dat
       storesSecrets: false,
     },
     {
+      step: "asset",
+      command: buildSorobanCommand({ action: "asset", env }).redacted,
+      storesSecrets: false,
+      expectedOutput: "native asset contract id C...",
+    },
+    {
       step: "deploy",
       command: buildSorobanCommand({ action: "deploy", env }).redacted,
       storesSecrets: false,
@@ -70,12 +76,22 @@ export function buildSorobanTestnetPlan({ env = process.env, now = () => new Dat
     {
       step: "grant",
       command: buildSorobanCommand({ action: "grant", env: { ...env, SOROBAN_SESSION_EXPIRES_AT: String(expiresAt) } }).redacted,
-      requires: ["SOROBAN_OWNER_PUBLIC_KEY", "SOROBAN_SESSION_PUBLIC_KEY", "SOROBAN_TEST_DESTINATION"],
+      requires: ["SOROBAN_OWNER_PUBLIC_KEY", "SOROBAN_SESSION_PUBLIC_KEY", "SOROBAN_TEST_DESTINATION", "SOROBAN_NATIVE_ASSET_CONTRACT_ID"],
+    },
+    {
+      step: "fund-contract",
+      command: buildSorobanCommand({ action: "fund-contract", env }).redacted,
+      requires: ["SOROBAN_SMART_WALLET_CONTRACT_ID", "SOROBAN_OWNER_PUBLIC_KEY", "SOROBAN_NATIVE_ASSET_CONTRACT_ID"],
     },
     {
       step: "execute",
       command: buildSorobanCommand({ action: "execute", env }).redacted,
       requires: ["SOROBAN_SESSION_PUBLIC_KEY", "SOROBAN_TEST_DESTINATION"],
+    },
+    {
+      step: "transfer",
+      command: buildSorobanCommand({ action: "transfer", env }).redacted,
+      requires: ["SOROBAN_SMART_WALLET_CONTRACT_ID", "SOROBAN_SESSION_PUBLIC_KEY", "SOROBAN_TEST_DESTINATION", "SOROBAN_NATIVE_ASSET_CONTRACT_ID"],
     },
     {
       step: "read",
@@ -94,12 +110,15 @@ export function buildSorobanCommand({ action, env = process.env } = {}) {
   const destination = env.SOROBAN_TEST_DESTINATION || sessionPublicKey;
   const providerId = env.SOROBAN_PROVIDER_ID || "api-mcp";
   const amount = env.SOROBAN_TEST_AMOUNT || "1";
-  const nonce = env.SOROBAN_TEST_NONCE || "1";
+  const nonce = action === "transfer" ? env.SOROBAN_TRANSFER_NONCE || env.SOROBAN_TEST_NONCE || "2" : env.SOROBAN_TEST_NONCE || "1";
   const expiresAt = env.SOROBAN_SESSION_EXPIRES_AT || String(Math.floor(Date.now() / 1000) + 604800);
   const contractId = env.SOROBAN_SMART_WALLET_CONTRACT_ID || "CCONTRACT_ID_REQUIRED";
+  const assetContractId = env.SOROBAN_NATIVE_ASSET_CONTRACT_ID || "CASSET_CONTRACT_ID_REQUIRED";
 
   let args;
-  if (action === "deploy") {
+  if (action === "asset") {
+    args = ["contract", "id", "asset", "--asset", env.SOROBAN_ASSET || "native", ...common];
+  } else if (action === "deploy") {
     args = ["contract", "deploy", "--wasm", env.SOROBAN_WASM_PATH || DEFAULT_WASM, "--source-account", ownerIdentity, ...common];
   } else if (action === "init") {
     args = invokeArgs({ contractId, source: ownerIdentity, common, fn: "init", fnArgs: ["--owner", ownerPublicKey] });
@@ -118,11 +137,21 @@ export function buildSorobanCommand({ action, env = process.env } = {}) {
         vec([destination]),
         "--allowed_providers",
         vec([providerId]),
+        "--allowed_assets",
+        vec([assetContractId]),
         "--per_payment_limit",
         amount,
         "--expires_at",
         expiresAt,
       ],
+    });
+  } else if (action === "fund-contract") {
+    args = invokeArgs({
+      contractId: assetContractId,
+      source: ownerIdentity,
+      common,
+      fn: "transfer",
+      fnArgs: ["--from", ownerPublicKey, "--to", contractId, "--amount", amount],
     });
   } else if (action === "execute") {
     args = invokeArgs({
@@ -135,6 +164,27 @@ export function buildSorobanCommand({ action, env = process.env } = {}) {
         sessionPublicKey,
         "--destination",
         destination,
+        "--amount",
+        amount,
+        "--provider_id",
+        providerId,
+        "--nonce",
+        nonce,
+      ],
+    });
+  } else if (action === "transfer") {
+    args = invokeArgs({
+      contractId,
+      source: sessionIdentity,
+      common,
+      fn: "execute_allowed_transfer",
+      fnArgs: [
+        "--session_signer",
+        sessionPublicKey,
+        "--destination",
+        destination,
+        "--asset_contract",
+        assetContractId,
         "--amount",
         amount,
         "--provider_id",

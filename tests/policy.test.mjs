@@ -1012,22 +1012,26 @@ test("SorobanSmartWalletAdapter bloquea session key expirada o revocada", async 
   assert.ok(expiredAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is expired"));
   assert.ok(revokedAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is revoked"));
 });
-test("SorobanSmartWalletAdapter readiness usa contract id y public keys desde env", () => {
+test("SorobanSmartWalletAdapter readiness usa contract id, asset contract y public keys desde env", () => {
   const adapter = new SorobanSmartWalletAdapter({
     env: {
       SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTFROMENV",
       SOROBAN_OWNER_PUBLIC_KEY: "GOWNERFROMENV",
       SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONFROMENV",
+      SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETFROMENV",
     },
   });
 
   const readiness = adapter.readiness();
 
-  assert.equal(readiness.status, "contract-configured");
+  assert.equal(readiness.status, "asset-contract-configured");
   assert.equal(readiness.contractId, "CCONTRACTFROMENV");
+  assert.equal(readiness.assetContractId, "CASSETFROMENV");
   assert.equal(readiness.ownerPublicKey, "GOWNERFROMENV");
   assert.equal(readiness.sessionPublicKey, "GSESSIONFROMENV");
+  assert.ok(readiness.allowedAssets.includes("CASSETFROMENV"));
 });
+
 test("soroban testnet demo plan no imprime secretos", () => {
   const plan = buildSorobanTestnetPlan({
     env: {
@@ -1035,6 +1039,7 @@ test("soroban testnet demo plan no imprime secretos", () => {
       SOROBAN_OWNER_PUBLIC_KEY: "GOWNERDEMO",
       SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
       SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+      SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETDEMO",
       STELLAR_SECRET_KEY: "SSECRETNOTREAL1234567890",
     },
     now: () => new Date("2026-06-25T00:00:00Z"),
@@ -1044,6 +1049,7 @@ test("soroban testnet demo plan no imprime secretos", () => {
   assert.equal(serialized.includes("SSECRETNOTREAL1234567890"), false);
   assert.ok(serialized.includes("stellar contract deploy"));
   assert.ok(serialized.includes("grant_session"));
+  assert.ok(serialized.includes("execute_allowed_transfer"));
 });
 
 test("soroban testnet command usa alias local para firmar y public keys para contrato", () => {
@@ -1055,6 +1061,7 @@ test("soroban testnet command usa alias local para firmar y public keys para con
       SOROBAN_OWNER_PUBLIC_KEY: "GOWNERDEMO",
       SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
       SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+      SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETDEMO",
       SOROBAN_PROVIDER_ID: "api-mcp",
       SOROBAN_TEST_AMOUNT: "7",
       SOROBAN_SESSION_EXPIRES_AT: "1782345600",
@@ -1068,6 +1075,32 @@ test("soroban testnet command usa alias local para firmar y public keys para con
   assert.ok(command.args.includes("GSESSIONDEMO"));
   assert.ok(command.args.includes('["GDESTINATIONDEMO"]'));
   assert.ok(command.args.includes('["api-mcp"]'));
+  assert.ok(command.args.includes('["CASSETDEMO"]'));
+});
+
+test("soroban testnet transfer command usa SAC nativo sin secrets", () => {
+  const command = buildSorobanCommand({
+    action: "transfer",
+    env: {
+      SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO",
+      SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETDEMO",
+      SOROBAN_SESSION_IDENTITY: "spendhub-session",
+      SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
+      SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+      SOROBAN_PROVIDER_ID: "api-mcp",
+      SOROBAN_TEST_AMOUNT: "7",
+      SOROBAN_TEST_NONCE: "42",
+      STELLAR_SECRET_KEY: "SSECRETNOTREAL1234567890",
+    },
+  });
+
+  assert.equal(command.bin, "stellar");
+  assert.deepEqual(command.args.slice(0, 4), ["contract", "invoke", "--id", "CCONTRACTDEMO"]);
+  assert.ok(command.args.includes("execute_allowed_transfer"));
+  assert.ok(command.args.includes("--asset_contract"));
+  assert.ok(command.args.includes("CASSETDEMO"));
+  assert.ok(command.args.includes("spendhub-session"));
+  assert.equal(command.redacted.includes("SSECRETNOTREAL1234567890"), false);
 });
 
 test("soroban testnet demo dry-run no ejecuta ni filtra secrets", async () => {

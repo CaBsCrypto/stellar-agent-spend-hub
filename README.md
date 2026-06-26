@@ -73,7 +73,20 @@ Sprint 05 deployed and invoked the permission wallet on Stellar testnet.
 | Execute proof | https://stellar.expert/explorer/testnet/tx/c1d10a147ec9ad8c97f16675354eb8f8a7375c9aeba6a01d371402014d9aaf87 |
 | Behavior | owner grant -> session signer execute -> public policy read |
 
-This proof does not move SAC/USDC yet; it validates the programmable permission layer first.
+Sprint 06 extends this proof toward native XLM SAC transfers behind the same permission layer.
+
+## First SAC Transfer Behind Policy
+
+Sprint 06 moved native XLM testnet through the Stellar Asset Contract from the smart wallet contract after owner/session, provider, destination, asset, limit, expiry and nonce checks passed.
+
+| Field | Value |
+| --- | --- |
+| Smart wallet contract | `CDJEHJ763TTIVHD3MMFWIKO3R2K3A6MJKWZFZDU2L6LXXKEU43CDIGZU` |
+| Native SAC | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
+| Transfer proof | https://stellar.expert/explorer/testnet/tx/8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f |
+| Behavior | pre-funded contract -> policy check -> SAC transfer -> TransferExecutedEvent |
+
+This is still testnet-only and tiny; USDC/mainnet and bill pay remain out of scope.
 ## Architecture
 
 ```mermaid
@@ -222,5 +235,5 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - Documentation/GitHub readiness: `82/100`.
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
-- Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `78/100`.
+- Real testnet payment executed: `82/100`.
+- Smart wallet readiness: `88/100`.

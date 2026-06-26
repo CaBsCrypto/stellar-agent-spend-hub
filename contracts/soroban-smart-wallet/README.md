@@ -7,6 +7,7 @@ Sprint 04 turns the Sprint 03 adapter scaffold into a compilable Soroban Rust co
 - `owner` initializes the wallet and controls session grants/revokes.
 - `session_signer` can execute only within an active session.
 - `allowed_destinations` and `allowed_providers` constrain where the agent can spend.
+- `allowed_assets` constrains which SAC/token contracts the agent can move.
 - `per_payment_limit` caps every execution.
 - `expires_at` blocks stale sessions.
 - `revoked` blocks a previously granted signer.
@@ -20,6 +21,7 @@ init(owner)
 grant_session(owner_auth, session_signer, allowed_destinations, allowed_providers, per_payment_limit, expires_at)
 revoke_session(owner_auth, session_signer)
 execute_allowed_payment(session_signer, destination, amount, provider_id, nonce)
+execute_allowed_transfer(session_signer, destination, asset_contract, amount, provider_id, nonce)
 read_session(session_signer)
 ```
 
@@ -41,10 +43,10 @@ stellar contract build --manifest-path contracts/soroban-smart-wallet/Cargo.toml
 
 Current local result:
 
-- Rust tests: `9/9` passing.
+- Rust tests: `11/11` passing.
 - Wasm file: `target\wasm32v1-none\release\soroban_smart_wallet.wasm`.
-- Wasm hash: `ee18eba064eb03153c91b1e9122efee542b7d59b372d2e8adf91f87da1b725db`.
-- Exported functions: `execute_allowed_payment`, `grant_session`, `init`, `read_session`, `revoke_session`.
+- Wasm hash: `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
+- Exported functions: `execute_allowed_payment`, `execute_allowed_transfer`, `grant_session`, `init`, `read_session`, `revoke_session`.
 
 ## Testnet deploy runbook
 
