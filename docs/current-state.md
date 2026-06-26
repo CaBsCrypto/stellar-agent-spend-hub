@@ -12,7 +12,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Amount: `0.0000010 XLM`.
 - Network: `stellar:testnet`.
 - Finality: `submitted-testnet`.
-- JS QA: `npm run qa` passing with `55/55` tests.
+- JS QA: `npm run qa` passing with `56/56` tests.
 - Contract QA: `cargo test` passing with `11/11` Rust tests.
 - Soroban build: `stellar contract build` passing with Wasm hash `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
 - First SAC transfer tx: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
@@ -26,14 +26,16 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `82/100`.
-- Smart wallet readiness: `88/100`.
+- Smart wallet readiness: `90/100`.
 
 ## What is real today
 
 - Local app and server API are functional.
 - Provider directory, intents, receipts, policy, privacy checks, and HTTP 402 flow work in the MVP.
 - Vercel production is deployed.
-- Stellar testnet submit has been proven once with a tiny supervised payment.`r`n- Soroban smart wallet has moved native XLM testnet via SAC after policy validation.
+- Stellar testnet submit has been proven once with a tiny supervised payment.
+- Soroban smart wallet has moved native XLM testnet via SAC after policy validation.
+- App prepare/approve can route MCP/API receipts through the Soroban adapter with `SPEND_HUB_PAYMENT_RAIL=soroban`.
 - Production submit gate is closed by default with `STELLAR_SUBMIT_ENABLED=false`.
 
 ## Main risks
@@ -45,4 +47,4 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 
 ## Next move
 
-Next move: connect the deployed SAC transfer path back into the app receipt flow for a user-confirmed MCP/API payment intent, keeping dry-run and confirmation gates by default.
+Next move: add a guarded server-side Soroban submit endpoint only after defining admin gates, dry-run default behavior and tiny-testnet-only constraints.

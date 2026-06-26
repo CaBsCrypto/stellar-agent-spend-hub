@@ -185,6 +185,12 @@ npm run soroban:read -- --execute
 ```
 
 Use CLI identities such as `spendhub-owner` and `spendhub-session`; never pass seed phrases or secret keys in command arguments.
+
+To route local app receipts through the Soroban adapter without auto-submitting on-chain:
+
+```powershell
+$env:SPEND_HUB_PAYMENT_RAIL="soroban"
+```
 ## Vercel Deploy
 
 Project is linked to Vercel as `agente-pagos-stellar`.
@@ -236,4 +242,4 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `82/100`.
-- Smart wallet readiness: `88/100`.
+- Smart wallet readiness: `90/100`.

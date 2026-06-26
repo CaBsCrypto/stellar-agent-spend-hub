@@ -175,7 +175,7 @@ export class SpendHubService {
       return spendRequest;
     }
 
-    const prepared = await this.paymentAdapter.preparePayment(intent, evaluation);
+    const prepared = await this.activePaymentAdapter(intent).preparePayment(intent, evaluation);
     intent.status = evaluation.allowed ? "requires_confirmation" : "blocked";
     intent.lastPreparedAt = new Date().toISOString();
     intent.lastPreparedMemo = prepared.memo;
@@ -195,7 +195,7 @@ export class SpendHubService {
       return receipt;
     }
 
-    const receipt = await this.paymentAdapter.settlePayment(intent, evaluation, approvedBy);
+    const receipt = await this.activePaymentAdapter(intent).settlePayment(intent, evaluation, approvedBy);
     const scan = assertNoSensitiveData(receipt, "receipt");
     if (!scan.allowed) throw httpError(500, scan.reasons.join("; "));
     intent.status = "settled";
@@ -321,6 +321,12 @@ export class SpendHubService {
     return intent;
   }
 
+  activePaymentAdapter(intent = null) {
+    if (selectedPaymentRail(this.env) === "soroban" && !isLinkIntent(intent || {})) {
+      return this.sorobanSmartWalletAdapter;
+    }
+    return this.paymentAdapter;
+  }
   async readiness(env = this.env) {
     return connectorReadiness({ env, stellarAdapter: this.realPaymentAdapter, sorobanSmartWalletAdapter: this.sorobanSmartWalletAdapter });
   }
@@ -331,7 +337,8 @@ export class SpendHubService {
 
   async railDiagnostics() {
     return {
-      activeRail: this.paymentAdapter.name,
+      activeRail: this.activePaymentAdapter().name,
+      activeRailMode: selectedPaymentRail(this.env),
       simulated: this.paymentAdapter.constructor.name,
       testnet: await this.realPaymentAdapter.readiness(),
       linkAgentWallet: await this.linkAdapter.readiness(this.env),
@@ -350,6 +357,9 @@ export class SpendHubService {
   }
 }
 
+function selectedPaymentRail(env = {}) {
+  return env.SPEND_HUB_PAYMENT_RAIL === "soroban" ? "soroban" : "simulated-stellar";
+}
 function normalizeState(state) {
   const normalized = {
     intents: state.intents || [],

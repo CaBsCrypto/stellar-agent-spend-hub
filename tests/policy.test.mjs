@@ -306,6 +306,35 @@ test("SpendHubService prepare actualiza lifecycle a requires_confirmation", asyn
   assert.ok(intent.lastPreparedAt);
 });
 
+test("SpendHubService usa rail Soroban SAC para prepare y approve cuando se configura", async () => {
+  const service = new SpendHubService({
+    env: {
+      SPEND_HUB_PAYMENT_RAIL: "soroban",
+      SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO",
+      SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETDEMO",
+      SOROBAN_OWNER_PUBLIC_KEY: "GOWNERDEMO",
+      SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
+    },
+    seedState: { intents: [...paymentIntents], receipts: [], proofs: {}, vaultRecords: {}, idempotencyKeys: {} },
+  });
+  const intent = service.findIntent("intent-browserbase-mcp");
+
+  const prepared = await service.prepareIntent(intent.id);
+  const receipt = await service.approveIntent(intent.id, "user-passkey");
+  const diagnostics = await service.railDiagnostics();
+
+  assert.equal(prepared.rail, "Soroban Smart Wallet");
+  assert.equal(prepared.asset, "XLM");
+  assert.equal(prepared.assetContractId, "CASSETDEMO");
+  assert.equal(prepared.simulatedSorobanInvocation.method, "execute_allowed_transfer");
+  assert.equal(receipt.rail, "Soroban Smart Wallet");
+  assert.equal(receipt.contractId, "CCONTRACTDEMO");
+  assert.equal(receipt.assetContractId, "CASSETDEMO");
+  assert.equal(receipt.smartWalletDecision.assetContractId, "CASSETDEMO");
+  assert.equal(diagnostics.activeRail, "Soroban Smart Wallet");
+  assert.equal(diagnostics.activeRailMode, "soroban");
+  assert.equal(assertNoSensitiveData(receipt, "sorobanServiceReceipt").allowed, true);
+});
 test("SpendHubService approve es idempotente y no duplica recibos", async () => {
   const service = new SpendHubService({ seedState: { intents: [...paymentIntents], receipts: [...receipts], proofs: {}, vaultRecords: {}, idempotencyKeys: {} } });
   const intent = service.state.intents.find((item) => item.id === "intent-browserbase-mcp");

@@ -120,7 +120,7 @@ export class SorobanSmartWalletAdapter {
     return {
       rail: this.name,
       network: this.network,
-      asset: intent.currency || this.asset,
+      asset: this.assetContractId() ? this.asset : intent.currency || this.asset,
       canSubmit: false,
       submitMode: this.assetContractId() ? "sac-transfer-ready-dry-run" : "contract-scaffold-only",
       memo: safeMemo(intent),
@@ -161,7 +161,7 @@ export class SorobanSmartWalletAdapter {
         transactionHash: allowed ? `soroban_policy_${intent.id}_${Date.now().toString(36)}` : null,
         rail: this.name,
         network: this.network,
-        asset: intent.currency || this.asset,
+        asset: this.assetContractId() ? this.asset : intent.currency || this.asset,
         finality: allowed ? "soroban-policy-simulated" : "blocked-before-soroban-submit",
       },
     });
