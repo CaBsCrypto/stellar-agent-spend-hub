@@ -1,4 +1,4 @@
-﻿import { readFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { SpendHubService } from "../src/spendHubService.mjs";
 import { assertNoSensitiveData } from "../src/sensitiveDataGuard.mjs";
@@ -19,6 +19,7 @@ export async function runDoctor({ root = process.cwd(), env = process.env, state
 
 export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
   const circleX402 = diagnostics.circleX402 || { status: "benchmark-only", detail: "Circle x402 benchmark not configured.", dependency: "@circle-fin/x402-batching" };
+  const sorobanSmartWallet = diagnostics.sorobanSmartWallet || { status: "scaffold-ready", detail: "Soroban smart wallet scaffold is ready; contract deployment is Sprint 03 work.", contractId: null, perPaymentLimit: null };
   const checks = [
     {
       id: "local_api",
@@ -43,6 +44,15 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
       ok: runtimeStateScan.allowed,
       status: runtimeStateScan.allowed ? "clean" : "blocked",
       detail: runtimeStateScan.allowed ? "No sensitive values found in runtime state." : runtimeStateScan.reasons.join("; "),
+    },
+    {
+      id: "soroban_smart_wallet",
+      ok: sorobanSmartWallet.status === "scaffold-ready" || sorobanSmartWallet.status === "contract-configured",
+      status: sorobanSmartWallet.status,
+      detail: sorobanSmartWallet.detail,
+      contractId: sorobanSmartWallet.contractId || null,
+      perPaymentLimit: sorobanSmartWallet.perPaymentLimit || null,
+      requiredForRealFunds: false,
     },
     {
       id: "stellar_testnet",

@@ -32,4 +32,4 @@ Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README r
 - Primer hash testnet: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
 - `@stellar/stellar-sdk` instalado.
 - `STELLAR_SUBMIT_ENABLED=false` es el estado normal en produccion.
-- Siguiente sprint: Soroban smart wallet minimal con owner, session key, limits, allowlist y revocation.
+- Sprint 03 iniciado: Soroban smart wallet adapter scaffold con owner, session key, limits, allowlist, expiry y revocation tests.

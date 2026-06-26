@@ -50,6 +50,7 @@ function render() {
   const linkStatus = state.data.readiness.connectors.linkAgentWallet;
   const circleStatus = state.data.readiness.connectors.circleX402;
   const machineChallengeCount = Object.keys(state.data.machineChallenges || {}).length;
+  const smartWalletStatus = state.data.readiness.connectors.sorobanSmartWallet;
 
   app.innerHTML = `
     <main class="shell">
@@ -74,6 +75,7 @@ function render() {
         ${metric("Directory providers", summary.providers, "Stripe Directory / MPP pattern")}
         ${metric("Recibos", summary.receipts, "persistidos localmente")}
         ${metric("Privacy depth", "Commitments", "ZK proof demo, sin PII")}
+        ${metric("Smart wallet", smartWalletStatus.status, smartWalletStatus.detail)}
         ${metric("Stellar readiness", stellarStatus.status, state.data.readiness.status)}
         ${metric("Link wallet", linkStatus.status, "Fiat/SPT approval simulation")}
         ${metric("402 challenges", machineChallengeCount, "MPP/x402 retry loop demo")}
@@ -82,6 +84,7 @@ function render() {
 
       <section class="rail-status" aria-label="Rail readiness">
         <article><span class="label">Active rail</span><strong>Stellar simulated</strong><small>Receipts and idempotency functional locally</small></article>
+        <article><span class="label">Soroban wallet</span><strong>${smartWalletStatus.status}</strong><small>${smartWalletStatus.detail}</small></article>
         <article><span class="label">Testnet rail</span><strong>${stellarStatus.status}</strong><small>${stellarStatus.detail}</small></article>
         <article><span class="label">Missing env</span><strong>${stellarStatus.missing?.length || 0}</strong><small>${(stellarStatus.missing || []).join(", ") || "None"}</small></article>
         <article><span class="label">Link Agent Wallet</span><strong>${linkStatus.status}</strong><small>${linkStatus.detail}</small></article>
@@ -93,6 +96,7 @@ function render() {
         ${modeCard("Privacy Mode", "Commitments/proofs visibles", "active")}
         ${modeCard("Agent Spend", "MCP/API, servicios y Link", "active")}
         ${modeCard("Machine Payments", "HTTP 402 challenge/retry", "active")}
+        ${modeCard("Soroban Wallet", "limits, allowlist, session key", "active")}
         ${modeCard("Portfolio Actions", "Swap y DeFi bajo policy", "active")}
       </section>
 

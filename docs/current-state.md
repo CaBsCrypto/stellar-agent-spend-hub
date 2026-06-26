@@ -12,7 +12,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Amount: `0.0000010 XLM`.
 - Network: `stellar:testnet`.
 - Finality: `submitted-testnet`.
-- QA: `npm run qa` passing with `46/46` tests.
+- QA: `npm run qa` passing with `50/50` tests.
 
 ## Scores
 
@@ -23,7 +23,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `25/100`.
+- Smart wallet readiness: `35/100`.
 
 ## What is real today
 
@@ -35,7 +35,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 
 ## Main risks
 
-- Current real settlement still uses a server-side testnet key demo, not a user-controlled Soroban smart wallet.
+- Real settlement still uses a server-side testnet key demo, but Sprint 03 now has a Soroban smart wallet adapter scaffold with owner/session signer, allowlist, limit, expiry and revoke tests.
 - LatAm bill pay requires privacy vault, ZK/proof maturity, legal context, and partner/API access before real user data is handled.
 - Provider integrations are simulated; Sprint 03 should preserve the MCP/API wedge while preparing real partner conversations.
 - GitHub public launch must avoid committing `.vercel`, `.env*`, runtime state, build output, logs, or secrets.

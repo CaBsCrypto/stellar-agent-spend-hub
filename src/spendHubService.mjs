@@ -17,6 +17,7 @@ import {
 } from "./mockData.mjs";
 import { StellarTestnetAdapter } from "./paymentRailAdapter.mjs";
 import { StellarTestnetRealAdapter } from "./stellarTestnetRealAdapter.mjs";
+import { SorobanSmartWalletAdapter } from "./sorobanSmartWalletAdapter.mjs";
 import { PrivacyVaultAdapter } from "./privacyVaultAdapter.mjs";
 import { ProviderDirectoryAdapter } from "./providerDirectoryAdapter.mjs";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
@@ -46,6 +47,7 @@ export class SpendHubService {
     this.defindexAdapter = new DeFindexAdapter();
     this.paymentAdapter = new StellarTestnetAdapter();
     this.realPaymentAdapter = new StellarTestnetRealAdapter({ env });
+    this.sorobanSmartWalletAdapter = new SorobanSmartWalletAdapter({ env });
     this.linkAdapter = new LinkAgentWalletAdapter({ env });
     this.machinePaymentAdapter = new MachinePaymentAdapter();
   }
@@ -320,7 +322,7 @@ export class SpendHubService {
   }
 
   async readiness(env = this.env) {
-    return connectorReadiness({ env, stellarAdapter: this.realPaymentAdapter });
+    return connectorReadiness({ env, stellarAdapter: this.realPaymentAdapter, sorobanSmartWalletAdapter: this.sorobanSmartWalletAdapter });
   }
 
   async linkDiagnostics() {
@@ -333,6 +335,7 @@ export class SpendHubService {
       simulated: this.paymentAdapter.constructor.name,
       testnet: await this.realPaymentAdapter.readiness(),
       linkAgentWallet: await this.linkAdapter.readiness(this.env),
+      sorobanSmartWallet: this.sorobanSmartWalletAdapter.readiness(),
     };
   }
 

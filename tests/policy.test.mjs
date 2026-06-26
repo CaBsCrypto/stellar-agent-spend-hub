@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import { evaluatePaymentIntent, IntentType, ReceiptStatus, RiskLevel } from "../src/domain.mjs";
 import { CircleX402Adapter } from "../src/circleX402Adapter.mjs";
@@ -13,6 +13,7 @@ import { PrivacyVaultAdapter } from "../src/privacyVaultAdapter.mjs";
 import { ProviderDirectoryAdapter } from "../src/providerDirectoryAdapter.mjs";
 import { StellarTestnetAdapter } from "../src/paymentRailAdapter.mjs";
 import { StellarTestnetRealAdapter, redactPublicKey } from "../src/stellarTestnetRealAdapter.mjs";
+import { SorobanSmartWalletAdapter } from "../src/sorobanSmartWalletAdapter.mjs";
 import { TempoAdapter } from "../src/tempoAdapter.mjs";
 import { ZkCommitmentAdapter } from "../src/zkCommitmentAdapter.mjs";
 import { assertNoSensitiveData } from "../src/sensitiveDataGuard.mjs";
@@ -909,3 +910,104 @@ test("admin testnet endpoint no filtra secret en errores de adapter", async () =
   }
 });
 
+
+test("SorobanSmartWalletAdapter permite pago dentro de allowlist, limite y sesion vigente", async () => {
+  const evaluation = await evaluationFor(apiIntent);
+  const adapter = new SorobanSmartWalletAdapter({
+    env: { SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO" },
+    now: () => new Date("2026-06-25T12:00:00Z"),
+    sessionPolicy: {
+      ownerPublicKey: "GOWNERDEMO",
+      sessionPublicKey: "GSESSIONDEMO",
+      allowedProviders: ["api-mcp"],
+      allowedDestinations: [apiIntent.destinationAddress],
+      perPaymentLimit: 20,
+      expiresAt: "2026-06-26T00:00:00Z",
+      revoked: false,
+    },
+  });
+
+  const prepared = await adapter.preparePayment(apiIntent, evaluation);
+  const receipt = await adapter.settlePayment(apiIntent, evaluation, "user-passkey");
+
+  assert.equal(prepared.sessionDecision.allowed, true);
+  assert.equal(receipt.status, ReceiptStatus.settled);
+  assert.equal(receipt.rail, "Soroban Smart Wallet");
+  assert.equal(receipt.contractId, "CCONTRACTDEMO");
+  assert.equal(receipt.smartWalletDecision.allowed, true);
+  assert.equal(assertNoSensitiveData(receipt, "sorobanReceipt").allowed, true);
+});
+
+test("SorobanSmartWalletAdapter bloquea destino fuera de allowlist", async () => {
+  const evaluation = await evaluationFor(apiIntent);
+  const adapter = new SorobanSmartWalletAdapter({
+    now: () => new Date("2026-06-25T12:00:00Z"),
+    sessionPolicy: {
+      ownerPublicKey: "GOWNERDEMO",
+      sessionPublicKey: "GSESSIONDEMO",
+      allowedProviders: ["other-provider"],
+      allowedDestinations: ["GOTHERDESTINATION"],
+      perPaymentLimit: 20,
+      expiresAt: "2026-06-26T00:00:00Z",
+      revoked: false,
+    },
+  });
+
+  const decision = adapter.evaluateSession(apiIntent, evaluation);
+
+  assert.equal(decision.allowed, false);
+  assert.ok(decision.reasons.includes("Destination/provider outside Soroban allowlist"));
+});
+
+test("SorobanSmartWalletAdapter bloquea monto superior al limite", async () => {
+  const intent = { ...apiIntent, amount: 30 };
+  const evaluation = await evaluationFor(intent, { policy: { ...basePolicy, perPaymentLimit: 40 } });
+  const adapter = new SorobanSmartWalletAdapter({
+    now: () => new Date("2026-06-25T12:00:00Z"),
+    sessionPolicy: {
+      ownerPublicKey: "GOWNERDEMO",
+      sessionPublicKey: "GSESSIONDEMO",
+      allowedProviders: ["api-mcp"],
+      allowedDestinations: [apiIntent.destinationAddress],
+      perPaymentLimit: 20,
+      expiresAt: "2026-06-26T00:00:00Z",
+      revoked: false,
+    },
+  });
+
+  const decision = adapter.evaluateSession(intent, evaluation);
+
+  assert.equal(decision.allowed, false);
+  assert.ok(decision.reasons.includes("Amount exceeds Soroban per-payment limit"));
+});
+
+test("SorobanSmartWalletAdapter bloquea session key expirada o revocada", async () => {
+  const evaluation = await evaluationFor(apiIntent);
+  const expiredAdapter = new SorobanSmartWalletAdapter({
+    now: () => new Date("2026-06-25T12:00:00Z"),
+    sessionPolicy: {
+      ownerPublicKey: "GOWNERDEMO",
+      sessionPublicKey: "GSESSIONDEMO",
+      allowedProviders: ["api-mcp"],
+      allowedDestinations: [apiIntent.destinationAddress],
+      perPaymentLimit: 20,
+      expiresAt: "2026-06-24T00:00:00Z",
+      revoked: false,
+    },
+  });
+  const revokedAdapter = new SorobanSmartWalletAdapter({
+    now: () => new Date("2026-06-25T12:00:00Z"),
+    sessionPolicy: {
+      ownerPublicKey: "GOWNERDEMO",
+      sessionPublicKey: "GSESSIONDEMO",
+      allowedProviders: ["api-mcp"],
+      allowedDestinations: [apiIntent.destinationAddress],
+      perPaymentLimit: 20,
+      expiresAt: "2026-06-26T00:00:00Z",
+      revoked: true,
+    },
+  });
+
+  assert.ok(expiredAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is expired"));
+  assert.ok(revokedAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is revoked"));
+});

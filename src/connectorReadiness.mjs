@@ -1,10 +1,11 @@
-export async function connectorReadiness({ env = {}, stellarAdapter = null } = {}) {
+export async function connectorReadiness({ env = {}, stellarAdapter = null, sorobanSmartWalletAdapter = null } = {}) {
   const stellarMissing = requiredMissing(env, ["STELLAR_SECRET_KEY", "STELLAR_PUBLIC_KEY", "STELLAR_HORIZON_URL"]);
   const mppMissing = requiredMissing(env, ["MPP_CLIENT_ID"]);
   const linkEnabled = env.LINK_AGENT_WALLET_ENABLED === "true";
   const circleEnabled = env.CIRCLE_X402_ENABLED === "true";
   const stellarReal = stellarAdapter ? await stellarAdapter.readiness() : null;
   const stellarReady = stellarReal?.status === "ready";
+  const sorobanSmartWallet = sorobanSmartWalletAdapter ? sorobanSmartWalletAdapter.readiness() : null;
 
   return {
     status: stellarReady ? "ready-for-testnet" : "simulated",
@@ -16,6 +17,16 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null } = {
       stellarSimulated: {
         status: "ready",
         detail: "Simulated Stellar receipts remain available until testnet is configured.",
+      },
+      sorobanSmartWallet: {
+        status: sorobanSmartWallet?.status || "scaffold-ready",
+        contractId: sorobanSmartWallet?.contractId || null,
+        ownerPublicKey: sorobanSmartWallet?.ownerPublicKey || null,
+        sessionPublicKey: sorobanSmartWallet?.sessionPublicKey || null,
+        perPaymentLimit: sorobanSmartWallet?.perPaymentLimit || null,
+        expiresAt: sorobanSmartWallet?.expiresAt || null,
+        revoked: Boolean(sorobanSmartWallet?.revoked),
+        detail: sorobanSmartWallet?.detail || "Soroban smart wallet scaffold for Sprint 03.",
       },
       stellarTestnet: {
         status: stellarReal?.status || (stellarMissing.length === 0 ? "env-configured" : "missing-env"),
