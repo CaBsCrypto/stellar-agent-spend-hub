@@ -2,7 +2,7 @@
 
 ## Summary
 
-Sprint 03 moves the project from a server-side testnet admin key demo toward a user-controlled Stellar/Soroban payment permission model. The first scaffold now exists in `src/sorobanSmartWalletAdapter.mjs`; the next target is a minimal Soroban Rust contract that matches the tested behavior.
+Sprint 03 moves the project from a server-side testnet admin key demo toward a user-controlled Stellar/Soroban payment permission model. The JS scaffold exists in `src/sorobanSmartWalletAdapter.mjs`; Sprint 04 added a compilable Soroban Rust contract that matches the tested behavior.
 
 ## Goal
 
@@ -41,10 +41,10 @@ Required records in receipts:
 
 ## Implementation phases
 
-1. **Contract scaffold**: adapter and contract-interface README created; next add Soroban Rust skeleton and local/testnet deploy runbook.
+1. **Contract scaffold**: adapter, Rust contract, local tests and build runbook created.
 2. **Policy mapping**: map existing `SpendingPolicy` to smart wallet limits, allowlist and expiration.
 3. **Adapter scaffold**: add an adapter that can prepare a smart-wallet payment request and produce safe receipts.
-4. **Testnet proof**: deploy or simulate contract invocation, then submit one tiny testnet payment when safe.
+4. **Testnet proof**: next deploy/invoke the contract on testnet; real SAC transfer remains blocked until the permission path is proven.
 5. **UX evidence**: show the four control primitives in the dashboard: owner, session key, limit, allowlist.
 
 ## Acceptance criteria

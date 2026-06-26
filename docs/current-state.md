@@ -12,7 +12,9 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Amount: `0.0000010 XLM`.
 - Network: `stellar:testnet`.
 - Finality: `submitted-testnet`.
-- QA: `npm run qa` passing with `50/50` tests.
+- JS QA: `npm run qa` passing with `51/51` tests.
+- Contract QA: `cargo test` passing with `9/9` Rust tests.
+- Soroban build: `stellar contract build` passing with Wasm hash `ee18eba064eb03153c91b1e9122efee542b7d59b372d2e8adf91f87da1b725db`.
 
 ## Scores
 
@@ -23,7 +25,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `35/100`.
+- Smart wallet readiness: `60/100`.
 
 ## What is real today
 
@@ -35,11 +37,11 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 
 ## Main risks
 
-- Real settlement still uses a server-side testnet key demo, but Sprint 03 now has a Soroban smart wallet adapter scaffold with owner/session signer, allowlist, limit, expiry and revoke tests.
+- Real settlement still uses a server-side testnet key demo, but Sprint 04 now has a compilable Soroban smart wallet contract with owner/session signer, allowlist, limit, expiry, revoke and nonce tests.
 - LatAm bill pay requires privacy vault, ZK/proof maturity, legal context, and partner/API access before real user data is handled.
 - Provider integrations are simulated; Sprint 03 should preserve the MCP/API wedge while preparing real partner conversations.
 - GitHub public launch must avoid committing `.vercel`, `.env*`, runtime state, build output, logs, or secrets.
 
 ## Next move
 
-Sprint 03 should build the minimum Soroban smart wallet architecture: owner, agent/session signer, spending limit, allowlist, expiration, revoke path, and safe receipt trail.
+Next move: deploy/invoke the Soroban smart wallet contract on Stellar testnet, then integrate SAC transfer only after the permission contract proves safe.

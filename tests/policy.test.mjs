@@ -1011,3 +1011,19 @@ test("SorobanSmartWalletAdapter bloquea session key expirada o revocada", async 
   assert.ok(expiredAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is expired"));
   assert.ok(revokedAdapter.evaluateSession(apiIntent, evaluation).reasons.includes("Agent session signer is revoked"));
 });
+test("SorobanSmartWalletAdapter readiness usa contract id y public keys desde env", () => {
+  const adapter = new SorobanSmartWalletAdapter({
+    env: {
+      SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTFROMENV",
+      SOROBAN_OWNER_PUBLIC_KEY: "GOWNERFROMENV",
+      SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONFROMENV",
+    },
+  });
+
+  const readiness = adapter.readiness();
+
+  assert.equal(readiness.status, "contract-configured");
+  assert.equal(readiness.contractId, "CCONTRACTFROMENV");
+  assert.equal(readiness.ownerPublicKey, "GOWNERFROMENV");
+  assert.equal(readiness.sessionPublicKey, "GSESSIONFROMENV");
+});

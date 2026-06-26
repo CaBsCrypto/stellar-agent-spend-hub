@@ -8,3 +8,6 @@ dev-server.err.log
 .vercel
 public/
 data/runtime-state.json
+target/
+target*/
+contracts/*/test_snapshots/

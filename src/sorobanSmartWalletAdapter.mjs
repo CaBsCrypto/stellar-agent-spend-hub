@@ -17,7 +17,11 @@ export class SorobanSmartWalletAdapter {
     this.network = "stellar:testnet";
     this.asset = "USDC";
     this.env = env;
-    this.sessionPolicy = { ...sessionPolicy };
+    this.sessionPolicy = {
+      ...sessionPolicy,
+      ownerPublicKey: env.SOROBAN_OWNER_PUBLIC_KEY || sessionPolicy.ownerPublicKey,
+      sessionPublicKey: env.SOROBAN_SESSION_PUBLIC_KEY || sessionPolicy.sessionPublicKey,
+    };
     this.now = now;
   }
 
@@ -35,7 +39,7 @@ export class SorobanSmartWalletAdapter {
       revoked: Boolean(this.sessionPolicy.revoked),
       detail: contractId
         ? "Soroban smart wallet contract id configured; keep v1 confirmation required."
-        : "Soroban smart wallet policy scaffold is ready; contract deployment is Sprint 03 work.",
+        : "Soroban smart wallet contract MVP scaffold is ready; deploy testnet only after local contract QA.",
     };
   }
 

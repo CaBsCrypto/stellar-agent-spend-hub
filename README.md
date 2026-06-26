@@ -6,7 +6,8 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/tests-50%2F50%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-51%2F51%20passing-brightgreen)
+![Contract](https://img.shields.io/badge/soroban%20tests-9%2F9%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
 ![Vercel](https://img.shields.io/badge/Vercel-live-black)
@@ -26,7 +27,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Privacy guard that blocks RUT, phone, email, account numbers, card data, API keys, and client secrets from public payloads.
 - Demo ZK commitments/proofs for privacy-first bill-pay readiness.
 - Stellar simulated rail for local flows plus a real Stellar testnet rail with guarded submit.
-- Soroban smart wallet scaffold with owner/session signer, allowlist, per-payment limit, expiry and revoke checks.
+- Soroban smart wallet contract MVP with owner/session signer, allowlist, per-payment limit, expiry, revoke and nonce replay checks.
 - Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
 
 ## First Verified Testnet Payment
@@ -113,6 +114,8 @@ npm test
 npm run smoke
 npm run doctor
 npm run agent:402 -- --provider browserbase-mcp --resource agent-client-smoke --amount 9
+npm run contract:test
+npm run contract:build
 ```
 
 ## Stellar Testnet
@@ -163,7 +166,7 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - [Partner strategy](./docs/partner-strategy.md)
 - [Sprint 02 testnet result](./docs/sprint-02-testnet-payment-result.md)
 - [Sprint 03 smart wallet plan](./docs/sprint-03-smart-wallet-plan.md)
-- [Soroban smart wallet contract interface](./contracts/soroban-smart-wallet/README.md)
+- [Soroban smart wallet contract](./contracts/soroban-smart-wallet/README.md)
 - [Roadmap](./docs/roadmap.md)
 - [Pitch](./docs/pitch.md)
 
@@ -184,4 +187,4 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `35/100`.
+- Smart wallet readiness: `60/100`.
