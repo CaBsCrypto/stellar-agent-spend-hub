@@ -33,3 +33,4 @@ Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README r
 - `@stellar/stellar-sdk` instalado.
 - `STELLAR_SUBMIT_ENABLED=false` es el estado normal en produccion.
 - Sprint 04 implementado localmente: contrato Soroban smart wallet compilable con owner, session key, limits, allowlist, expiry, revoke y nonce tests.
+- Sprint 05 ejecutado: contrato Soroban smart wallet desplegado e invocado en testnet con owner/session signer y evento de ejecucion permitido.

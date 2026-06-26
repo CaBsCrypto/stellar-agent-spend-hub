@@ -1,26 +1,33 @@
 {
-    "name":  "agente-pagos-stellar",
-    "version":  "0.1.0",
-    "private":  true,
-    "type":  "module",
-    "scripts":  {
-                    "dev":  "node scripts/serve.mjs",
-                    "test":  "node tests/policy.test.mjs",
-                    "build":  "npm test \u0026\u0026 node scripts/build-static.mjs",
-                    "smoke":  "node scripts/smoke.mjs",
-                    "doctor":  "node scripts/doctor.mjs",
-                    "setup:testnet":  "node scripts/setup-testnet.mjs",
-                    "testnet:doctor":  "node scripts/testnet-doctor.mjs",
-                    "testnet:payment":  "node scripts/testnet-payment.mjs",
-                    "vercel:testnet-payment":  "node scripts/vercel-testnet-payment.mjs",
-                    "vercel:admin-token":  "node scripts/vercel-admin-token.mjs",
-                    "qa":  "npm test \u0026\u0026 npm run smoke \u0026\u0026 npm run doctor",
-                    "agent:402":  "node scripts/machine-agent-client.mjs",
-                    "contract:test":  "cargo test --manifest-path contracts/soroban-smart-wallet/Cargo.toml",
-                    "contract:build":  "stellar contract build --manifest-path contracts/soroban-smart-wallet/Cargo.toml",
-                    "qa:full":  "npm run qa \u0026\u0026 npm run contract:test \u0026\u0026 npm run contract:build"
-                },
-    "dependencies":  {
-                         "@stellar/stellar-sdk":  "^16.0.1"
-                     }
+    "name": "agente-pagos-stellar",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node scripts/serve.mjs",
+        "test": "node tests/policy.test.mjs",
+        "build": "npm test && node scripts/build-static.mjs",
+        "smoke": "node scripts/smoke.mjs",
+        "doctor": "node scripts/doctor.mjs",
+        "setup:testnet": "node scripts/setup-testnet.mjs",
+        "testnet:doctor": "node scripts/testnet-doctor.mjs",
+        "testnet:payment": "node scripts/testnet-payment.mjs",
+        "vercel:testnet-payment": "node scripts/vercel-testnet-payment.mjs",
+        "vercel:admin-token": "node scripts/vercel-admin-token.mjs",
+        "qa": "npm test && npm run smoke && npm run doctor",
+        "agent:402": "node scripts/machine-agent-client.mjs",
+        "contract:test": "cargo test --manifest-path contracts/soroban-smart-wallet/Cargo.toml",
+        "contract:build": "stellar contract build --manifest-path contracts/soroban-smart-wallet/Cargo.toml",
+        "qa:full": "npm run qa && npm run contract:test && npm run contract:build",
+        "soroban:plan": "node scripts/soroban-testnet-demo.mjs",
+        "soroban:deploy": "node scripts/soroban-testnet-demo.mjs --action=deploy",
+        "soroban:deploy:execute": "node scripts/soroban-testnet-demo.mjs --action=deploy --execute",
+        "soroban:init": "node scripts/soroban-testnet-demo.mjs --action=init",
+        "soroban:grant": "node scripts/soroban-testnet-demo.mjs --action=grant",
+        "soroban:execute": "node scripts/soroban-testnet-demo.mjs --action=execute",
+        "soroban:read": "node scripts/soroban-testnet-demo.mjs --action=read"
+    },
+    "dependencies": {
+        "@stellar/stellar-sdk": "^16.0.1"
+    }
 }

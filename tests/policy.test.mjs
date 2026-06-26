@@ -9,6 +9,7 @@ import { LinkAgentWalletAdapter } from "../src/linkAgentWalletAdapter.mjs";
 import { MachinePaymentAdapter } from "../src/machinePaymentAdapter.mjs";
 import { runMachinePayment } from "../scripts/machine-agent-client.mjs";
 import { buildDoctorReport } from "../scripts/doctor.mjs";
+import { buildSorobanCommand, buildSorobanTestnetPlan, runSorobanTestnetDemo } from "../scripts/soroban-testnet-demo.mjs";
 import { PrivacyVaultAdapter } from "../src/privacyVaultAdapter.mjs";
 import { ProviderDirectoryAdapter } from "../src/providerDirectoryAdapter.mjs";
 import { StellarTestnetAdapter } from "../src/paymentRailAdapter.mjs";
@@ -1026,4 +1027,62 @@ test("SorobanSmartWalletAdapter readiness usa contract id y public keys desde en
   assert.equal(readiness.contractId, "CCONTRACTFROMENV");
   assert.equal(readiness.ownerPublicKey, "GOWNERFROMENV");
   assert.equal(readiness.sessionPublicKey, "GSESSIONFROMENV");
+});
+test("soroban testnet demo plan no imprime secretos", () => {
+  const plan = buildSorobanTestnetPlan({
+    env: {
+      SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO",
+      SOROBAN_OWNER_PUBLIC_KEY: "GOWNERDEMO",
+      SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
+      SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+      STELLAR_SECRET_KEY: "SSECRETNOTREAL1234567890",
+    },
+    now: () => new Date("2026-06-25T00:00:00Z"),
+  });
+
+  const serialized = JSON.stringify(plan);
+  assert.equal(serialized.includes("SSECRETNOTREAL1234567890"), false);
+  assert.ok(serialized.includes("stellar contract deploy"));
+  assert.ok(serialized.includes("grant_session"));
+});
+
+test("soroban testnet command usa alias local para firmar y public keys para contrato", () => {
+  const command = buildSorobanCommand({
+    action: "grant",
+    env: {
+      SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO",
+      SOROBAN_OWNER_IDENTITY: "spendhub-owner",
+      SOROBAN_OWNER_PUBLIC_KEY: "GOWNERDEMO",
+      SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
+      SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+      SOROBAN_PROVIDER_ID: "api-mcp",
+      SOROBAN_TEST_AMOUNT: "7",
+      SOROBAN_SESSION_EXPIRES_AT: "1782345600",
+    },
+  });
+
+  assert.equal(command.bin, "stellar");
+  assert.deepEqual(command.args.slice(0, 4), ["contract", "invoke", "--id", "CCONTRACTDEMO"]);
+  assert.ok(command.args.includes("spendhub-owner"));
+  assert.ok(command.args.includes("GOWNERDEMO"));
+  assert.ok(command.args.includes("GSESSIONDEMO"));
+  assert.ok(command.args.includes('["GDESTINATIONDEMO"]'));
+  assert.ok(command.args.includes('["api-mcp"]'));
+});
+
+test("soroban testnet demo dry-run no ejecuta ni filtra secrets", async () => {
+  let called = false;
+  const report = await runSorobanTestnetDemo({
+    action: "deploy",
+    execute: false,
+    env: { STELLAR_SECRET_KEY: "SSECRETNOTREAL1234567890", SOROBAN_OWNER_IDENTITY: "spendhub-owner" },
+    runner: async () => {
+      called = true;
+      return { stdout: "", stderr: "" };
+    },
+  });
+
+  assert.equal(called, false);
+  assert.equal(report.mode, "dry-run");
+  assert.equal(JSON.stringify(report).includes("SSECRETNOTREAL1234567890"), false);
 });

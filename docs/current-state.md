@@ -25,7 +25,7 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `60/100`.
+- Smart wallet readiness: `78/100`.
 
 ## What is real today
 
@@ -44,4 +44,4 @@ Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, 
 
 ## Next move
 
-Next move: deploy/invoke the Soroban smart wallet contract on Stellar testnet, then integrate SAC transfer only after the permission contract proves safe.
+Next move: integrate a guarded Stellar Asset Contract transfer path behind the deployed permission contract, keeping dry-run and user confirmation before any real asset movement.

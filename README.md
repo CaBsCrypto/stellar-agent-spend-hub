@@ -27,7 +27,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Privacy guard that blocks RUT, phone, email, account numbers, card data, API keys, and client secrets from public payloads.
 - Demo ZK commitments/proofs for privacy-first bill-pay readiness.
 - Stellar simulated rail for local flows plus a real Stellar testnet rail with guarded submit.
-- Soroban smart wallet contract MVP with owner/session signer, allowlist, per-payment limit, expiry, revoke and nonce replay checks.
+- Soroban smart wallet contract deployed on testnet with owner/session signer, allowlist, per-payment limit, expiry, revoke and nonce replay checks.
 - Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
 
 ## First Verified Testnet Payment
@@ -61,6 +61,19 @@ flowchart LR
   G --> H[Receipt without PII]
 ```
 
+
+## First Soroban Smart Wallet Testnet Contract
+
+Sprint 05 deployed and invoked the permission wallet on Stellar testnet.
+
+| Field | Value |
+| --- | --- |
+| Contract | `CAVI7DRQOWYNH2DD6DF53LXGCFEORVVEVWKZCCR3TCAHZLNRSQNONCYQ` |
+| Lab | https://lab.stellar.org/r/testnet/contract/CAVI7DRQOWYNH2DD6DF53LXGCFEORVVEVWKZCCR3TCAHZLNRSQNONCYQ |
+| Execute proof | https://stellar.expert/explorer/testnet/tx/c1d10a147ec9ad8c97f16675354eb8f8a7375c9aeba6a01d371402014d9aaf87 |
+| Behavior | owner grant -> session signer execute -> public policy read |
+
+This proof does not move SAC/USDC yet; it validates the programmable permission layer first.
 ## Architecture
 
 ```mermaid
@@ -138,6 +151,27 @@ $env:STELLAR_SUBMIT_ENABLED="false"
 
 The default amount is `0.000001 XLM`. CLIs and receipts must never print `STELLAR_SECRET_KEY` or `TESTNET_PAYMENT_ADMIN_TOKEN`.
 
+
+## Soroban Testnet
+
+Contract deploy/invoke is scripted as dry-run by default:
+
+```powershell
+npm run soroban:plan
+npm run soroban:deploy
+```
+
+Only after `npm run qa:full` passes and Stellar CLI identities are funded on testnet, execute real testnet actions:
+
+```powershell
+npm run soroban:deploy:execute
+npm run soroban:init -- --execute
+npm run soroban:grant -- --execute
+npm run soroban:execute -- --execute
+npm run soroban:read -- --execute
+```
+
+Use CLI identities such as `spendhub-owner` and `spendhub-session`; never pass seed phrases or secret keys in command arguments.
 ## Vercel Deploy
 
 Project is linked to Vercel as `agente-pagos-stellar`.
@@ -166,6 +200,8 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - [Partner strategy](./docs/partner-strategy.md)
 - [Sprint 02 testnet result](./docs/sprint-02-testnet-payment-result.md)
 - [Sprint 03 smart wallet plan](./docs/sprint-03-smart-wallet-plan.md)
+- [Sprint 05 Soroban testnet runbook](./docs/sprint-05-soroban-testnet-runbook.md)
+- [Sprint 05 Soroban testnet result](./docs/sprint-05-soroban-testnet-result.md)
 - [Soroban smart wallet contract](./contracts/soroban-smart-wallet/README.md)
 - [Roadmap](./docs/roadmap.md)
 - [Pitch](./docs/pitch.md)
@@ -187,4 +223,4 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - Vercel deploy readiness: `92/100`.
 - Stellar testnet path: `90/100`.
 - Real testnet payment executed: `65/100`.
-- Smart wallet readiness: `60/100`.
+- Smart wallet readiness: `78/100`.
