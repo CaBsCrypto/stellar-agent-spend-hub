@@ -19,7 +19,8 @@ export async function runDoctor({ root = process.cwd(), env = process.env, state
 
 export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
   const circleX402 = diagnostics.circleX402 || { status: "benchmark-only", detail: "Circle x402 benchmark not configured.", dependency: "@circle-fin/x402-batching" };
-  const sorobanSmartWallet = diagnostics.sorobanSmartWallet || { status: "scaffold-ready", detail: "Soroban smart wallet scaffold is ready; contract deployment is Sprint 03 work.", contractId: null, perPaymentLimit: null };
+  const sorobanSmartWallet = diagnostics.sorobanSmartWallet || { status: "scaffold-ready", detail: "Soroban smart wallet scaffold is ready.", contractId: null, perPaymentLimit: null };
+  const paymentRuntime = diagnostics.paymentRuntime || { mode: "simulated", submitEnabled: false, submitCapable: false, detail: "Local simulated rail selected." };
   const checks = [
     {
       id: "local_api",
@@ -47,12 +48,21 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
     },
     {
       id: "soroban_smart_wallet",
-      ok: sorobanSmartWallet.status === "scaffold-ready" || sorobanSmartWallet.status === "contract-configured",
+      ok: ["scaffold-ready", "contract-configured", "asset-contract-configured"].includes(sorobanSmartWallet.status),
       status: sorobanSmartWallet.status,
       detail: sorobanSmartWallet.detail,
       contractId: sorobanSmartWallet.contractId || null,
       perPaymentLimit: sorobanSmartWallet.perPaymentLimit || null,
       requiredForRealFunds: false,
+    },
+    {
+      id: "soroban_payment_runtime",
+      ok: !paymentRuntime.submitEnabled || paymentRuntime.submitCapable,
+      status: paymentRuntime.mode,
+      detail: paymentRuntime.detail,
+      submitEnabled: paymentRuntime.submitEnabled,
+      submitCapable: paymentRuntime.submitCapable,
+      adminEndpoint: paymentRuntime.adminEndpoint,
     },
     {
       id: "stellar_testnet",
@@ -82,11 +92,12 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
   ];
 
   const blockingFailures = checks.filter((check) => !check.ok && !check.requiredForRealFunds);
-  const realRailReady = diagnostics.testnet.status === "ready";
+  const sorobanSubmitReady = Boolean(paymentRuntime.submitCapable);
+  const realRailReady = diagnostics.testnet.status === "ready" || sorobanSubmitReady;
 
   return {
     ok: blockingFailures.length === 0,
-    mode: realRailReady ? "ready-for-testnet-dry-run" : "local-functional-simulated",
+    mode: sorobanSubmitReady ? "ready-for-soroban-testnet-submit" : realRailReady ? "ready-for-testnet-dry-run" : "local-functional-simulated",
     summary: {
       intents: state.intents.length,
       receipts: state.receipts.length,
@@ -96,7 +107,7 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
     },
     checks,
     nextSteps: realRailReady
-      ? ["Run a guarded testnet dry-run submit path before enabling real value movement."]
+      ? [sorobanSubmitReady ? "Run only a supervised tiny Soroban testnet submit, then close the gate." : "Run a guarded testnet dry-run submit path before enabling real value movement."]
       : [
           "Set STELLAR_SECRET_KEY, STELLAR_PUBLIC_KEY and STELLAR_HORIZON_URL as environment variables.",
           "Run npm run setup:testnet after setting env vars; SDK readiness is checked there.",

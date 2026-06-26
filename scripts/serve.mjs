@@ -1,8 +1,9 @@
-﻿import { createServer } from "node:http";
+import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { readFile } from "node:fs/promises";
 import { SpendHubService } from "../src/spendHubService.mjs";
 import { runAdminTestnetPayment } from "../src/adminTestnetPayment.mjs";
+import { runAdminSorobanTransfer } from "../src/adminSorobanTransfer.mjs";
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -48,6 +49,11 @@ export async function handleApi({ request, response, url, service, env }) {
     return;
   }
 
+  if (method === "POST" && url.pathname === "/api/admin/soroban-transfer") {
+    const body = await readJson(request);
+    writeJson(response, 200, await runAdminSorobanTransfer({ request, body, env, service }));
+    return;
+  }
   if (method === "GET" && url.pathname === "/api/health") {
     writeJson(response, 200, { ok: true, readiness: await service.readiness(env) });
     return;
@@ -139,5 +145,3 @@ function isCliEntrypoint() {
   const argvPath = process.argv[1].replaceAll("\\", "/");
   return import.meta.url === new URL(`file:///${argvPath.replace(/^\/+/, "")}`).href;
 }
-
-

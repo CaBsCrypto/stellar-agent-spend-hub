@@ -1,3 +1,5 @@
+import { paymentRuntimeReadiness } from "./paymentRuntime.mjs";
+
 export async function connectorReadiness({ env = {}, stellarAdapter = null, sorobanSmartWalletAdapter = null } = {}) {
   const stellarMissing = requiredMissing(env, ["STELLAR_SECRET_KEY", "STELLAR_PUBLIC_KEY", "STELLAR_HORIZON_URL"]);
   const mppMissing = requiredMissing(env, ["MPP_CLIENT_ID"]);
@@ -6,9 +8,10 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null, soro
   const stellarReal = stellarAdapter ? await stellarAdapter.readiness() : null;
   const stellarReady = stellarReal?.status === "ready";
   const sorobanSmartWallet = sorobanSmartWalletAdapter ? sorobanSmartWalletAdapter.readiness() : null;
+  const paymentRuntime = paymentRuntimeReadiness(env);
 
   return {
-    status: stellarReady ? "ready-for-testnet" : "simulated",
+    status: paymentRuntime.submitCapable ? "ready-for-soroban-testnet-submit" : stellarReady ? "ready-for-testnet" : "simulated",
     connectors: {
       localApi: {
         status: "ready",
@@ -28,6 +31,7 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null, soro
         revoked: Boolean(sorobanSmartWallet?.revoked),
         detail: sorobanSmartWallet?.detail || "Soroban smart wallet scaffold for Sprint 03.",
       },
+      paymentRuntime,
       stellarTestnet: {
         status: stellarReal?.status || (stellarMissing.length === 0 ? "env-configured" : "missing-env"),
         missing: stellarReal?.missing || stellarMissing,

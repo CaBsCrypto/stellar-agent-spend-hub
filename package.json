@@ -30,7 +30,9 @@
         "soroban:fund-contract": "node scripts/soroban-testnet-demo.mjs --action=fund-contract",
         "soroban:fund-contract:execute": "node scripts/soroban-testnet-demo.mjs --action=fund-contract --execute",
         "soroban:transfer": "node scripts/soroban-testnet-demo.mjs --action=transfer",
-        "soroban:transfer:execute": "node scripts/soroban-testnet-demo.mjs --action=transfer --execute"
+        "soroban:transfer:execute": "node scripts/soroban-testnet-demo.mjs --action=transfer --execute",
+        "soroban:admin-transfer": "node scripts/soroban-admin-transfer.mjs",
+        "soroban:admin-submit": "node scripts/soroban-admin-transfer.mjs --submit"
     },
     "dependencies": {
         "@stellar/stellar-sdk": "^16.0.1"

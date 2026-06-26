@@ -332,7 +332,11 @@ test("SpendHubService usa rail Soroban SAC para prepare y approve cuando se conf
   assert.equal(receipt.assetContractId, "CASSETDEMO");
   assert.equal(receipt.smartWalletDecision.assetContractId, "CASSETDEMO");
   assert.equal(diagnostics.activeRail, "Soroban Smart Wallet");
-  assert.equal(diagnostics.activeRailMode, "soroban");
+  assert.equal(diagnostics.activeRailMode, "soroban-dry-run");
+  assert.equal(receipt.status, ReceiptStatus.pending);
+  assert.equal(receipt.executionStatus, "preview");
+  assert.equal(receipt.transactionHash, null);
+  assert.equal(intent.status, "approved_preview");
   assert.equal(assertNoSensitiveData(receipt, "sorobanServiceReceipt").allowed, true);
 });
 test("SpendHubService approve es idempotente y no duplica recibos", async () => {
@@ -829,6 +833,8 @@ test("StellarTestnetRealAdapter usa monto tiny por defecto para testnet", async 
 });
 
 import { authorizeAdmin, buildAdminTestnetIntent, runAdminTestnetPayment } from "../src/adminTestnetPayment.mjs";
+import { authorizeSorobanAdmin, extractTransactionHash, runAdminSorobanTransfer } from "../src/adminSorobanTransfer.mjs";
+import { PaymentExecutionMode, paymentRuntimeReadiness } from "../src/paymentRuntime.mjs";
 
 test("admin testnet endpoint rechaza request sin bearer token", () => {
   assert.throws(
@@ -961,7 +967,9 @@ test("SorobanSmartWalletAdapter permite pago dentro de allowlist, limite y sesio
   const receipt = await adapter.settlePayment(apiIntent, evaluation, "user-passkey");
 
   assert.equal(prepared.sessionDecision.allowed, true);
-  assert.equal(receipt.status, ReceiptStatus.settled);
+  assert.equal(receipt.status, ReceiptStatus.pending);
+  assert.equal(receipt.executionStatus, "preview");
+  assert.equal(receipt.transactionHash, null);
   assert.equal(receipt.rail, "Soroban Smart Wallet");
   assert.equal(receipt.contractId, "CCONTRACTDEMO");
   assert.equal(receipt.smartWalletDecision.allowed, true);
@@ -1148,3 +1156,185 @@ test("soroban testnet demo dry-run no ejecuta ni filtra secrets", async () => {
   assert.equal(report.mode, "dry-run");
   assert.equal(JSON.stringify(report).includes("SSECRETNOTREAL1234567890"), false);
 });
+
+test("payment runtime normaliza modos y mantiene submit cerrado por defecto", () => {
+  assert.equal(paymentRuntimeReadiness({ SPEND_HUB_PAYMENT_RAIL: "soroban" }).mode, PaymentExecutionMode.sorobanDryRun);
+  const readiness = paymentRuntimeReadiness({
+    SPEND_HUB_PAYMENT_RAIL: "soroban-testnet-submit",
+    SOROBAN_SUBMIT_ENABLED: "false",
+    SOROBAN_EXECUTION_DRIVER: "stellar-cli",
+  });
+  assert.equal(readiness.submitCapable, false);
+  assert.equal(readiness.adminEndpoint, "/api/admin/soroban-transfer");
+  const configured = paymentRuntimeReadiness(sorobanAdminEnv());
+  assert.equal(configured.submitCapable, true);
+  assert.deepEqual(configured.missing, []);
+});
+
+test("admin Soroban rechaza bearer ausente o incorrecto", () => {
+  assert.throws(() => authorizeSorobanAdmin({ auth: "", env: { SOROBAN_SUBMIT_ADMIN_TOKEN: "admin-token" } }), /Missing bearer token/);
+  assert.throws(
+    () => authorizeSorobanAdmin({ auth: "Bearer wrong", env: { SOROBAN_SUBMIT_ADMIN_TOKEN: "admin-token" } }),
+    /Invalid bearer token/,
+  );
+});
+
+test("admin Soroban dry-run genera preview sin hash ni ejecutar CLI", async () => {
+  let called = false;
+  const service = sorobanAdminService();
+  const report = await runAdminSorobanTransfer({
+    request: sorobanAdminRequest("idem-dry-run-001"),
+    body: { mode: "dry-run", amount: 1, nonce: 101 },
+    env: sorobanAdminEnv({ SOROBAN_SUBMIT_ENABLED: "false", SPEND_HUB_PAYMENT_RAIL: "soroban-dry-run" }),
+    service,
+    runner: async () => {
+      called = true;
+      return { stdout: "", stderr: "" };
+    },
+    now: () => new Date("2026-06-26T12:00:00Z"),
+  });
+
+  assert.equal(called, false);
+  assert.equal(report.status, "preview");
+  assert.equal(report.transactionHash, null);
+  assert.equal(report.receipt.status, ReceiptStatus.pending);
+  assert.equal(report.receipt.executionStatus, "preview");
+  assert.equal(report.receipt.contractId, "CCONTRACTDEMO");
+  assert.equal(report.receipt.assetContractId, "CASSETDEMO");
+  assert.equal(assertNoSensitiveData(report, "adminSorobanDryRun").allowed, true);
+});
+
+test("admin Soroban submit exige gate, driver y modo explicitos", async () => {
+  await assert.rejects(
+    () => runAdminSorobanTransfer({
+      request: sorobanAdminRequest("idem-submit-disabled-001"),
+      body: { mode: "submit", amount: 1, nonce: 102 },
+      env: sorobanAdminEnv({ SOROBAN_SUBMIT_ENABLED: "false" }),
+      service: sorobanAdminService(),
+    }),
+    /SOROBAN_SUBMIT_ENABLED must be true/,
+  );
+});
+
+test("admin Soroban bloquea mainnet, asset override y monto sobre tiny limit", async () => {
+  await assert.rejects(
+    () => runAdminSorobanTransfer({
+      request: sorobanAdminRequest("idem-mainnet-001"),
+      body: { mode: "dry-run", amount: 1, nonce: 103 },
+      env: sorobanAdminEnv({ SOROBAN_NETWORK: "mainnet" }),
+      service: sorobanAdminService(),
+    }),
+    /Only Stellar testnet is allowed/,
+  );
+  await assert.rejects(
+    () => runAdminSorobanTransfer({
+      request: sorobanAdminRequest("idem-asset-override-001"),
+      body: { mode: "dry-run", amount: 1, nonce: 104, assetContractId: "COTHERASSET" },
+      env: sorobanAdminEnv(),
+      service: sorobanAdminService(),
+    }),
+    /Asset contract override is not allowed/,
+  );
+  await assert.rejects(
+    () => runAdminSorobanTransfer({
+      request: sorobanAdminRequest("idem-over-limit-001"),
+      body: { mode: "dry-run", amount: 2, nonce: 105 },
+      env: sorobanAdminEnv({ SOROBAN_TINY_MAX_AMOUNT: "1" }),
+      service: sorobanAdminService(),
+    }),
+    /Amount must be a positive integer no greater than 1/,
+  );
+});
+
+test("admin Soroban submit produce receipt real e idempotencia evita doble ejecucion", async () => {
+  const hash = "a".repeat(64);
+  let calls = 0;
+  const service = sorobanAdminService();
+  const options = {
+    request: sorobanAdminRequest("idem-submit-success-001"),
+    body: { mode: "submit", amount: 1, nonce: 106 },
+    env: sorobanAdminEnv(),
+    service,
+    runner: async (_bin, args) => {
+      calls += 1;
+      assert.ok(args.includes("execute_allowed_transfer"));
+      return { stdout: "", stderr: `Transaction hash: ${hash}` };
+    },
+    now: () => new Date("2026-06-26T12:00:00Z"),
+  };
+
+  const first = await runAdminSorobanTransfer(options);
+  const second = await runAdminSorobanTransfer(options);
+
+  assert.equal(calls, 1);
+  assert.equal(first.status, "settled");
+  assert.equal(first.transactionHash, hash);
+  assert.equal(first.receipt.status, ReceiptStatus.settled);
+  assert.equal(first.receipt.executionStatus, "settled");
+  assert.equal(second.idempotentReplay, true);
+  assert.equal(second.transactionHash, hash);
+});
+
+test("admin Soroban no crea receipt settled cuando falta hash", async () => {
+  const service = sorobanAdminService();
+  await assert.rejects(
+    () => runAdminSorobanTransfer({
+      request: { headers: { authorization: "Bearer admin-secret-value", "idempotency-key": "idem-submit-no-hash-001" } },
+      body: { mode: "submit", amount: 1, nonce: 107 },
+      env: sorobanAdminEnv({ SOROBAN_SUBMIT_ADMIN_TOKEN: "admin-secret-value" }),
+      service,
+      runner: async () => ({ stdout: "submitted without public transaction id", stderr: "admin-secret-value" }),
+    }),
+    /without a transaction hash/,
+  );
+  const failed = service.getSorobanExecution("idem-submit-no-hash-001");
+  assert.equal(failed.status, "failed");
+  assert.equal(failed.transactionHash, null);
+  assert.equal(failed.receipt, null);
+  assert.equal(JSON.stringify(failed).includes("admin-secret-value"), false);
+});
+
+test("extractTransactionHash acepta salida etiquetada y rechaza ambiguedad", () => {
+  assert.equal(extractTransactionHash(`tx_hash: ${"b".repeat(64)}`), "b".repeat(64));
+  assert.equal(extractTransactionHash(`${"b".repeat(64)} ${"c".repeat(64)}`), null);
+});
+
+function sorobanAdminEnv(overrides = {}) {
+  return {
+    SOROBAN_SUBMIT_ADMIN_TOKEN: "admin-token",
+    SOROBAN_SUBMIT_ENABLED: "true",
+    SOROBAN_EXECUTION_DRIVER: "stellar-cli",
+    SPEND_HUB_PAYMENT_RAIL: "soroban-testnet-submit",
+    SOROBAN_NETWORK: "testnet",
+    SOROBAN_SMART_WALLET_CONTRACT_ID: "CCONTRACTDEMO",
+    SOROBAN_NATIVE_ASSET_CONTRACT_ID: "CASSETDEMO",
+    SOROBAN_SESSION_PUBLIC_KEY: "GSESSIONDEMO",
+    SOROBAN_SESSION_IDENTITY: "spendhub-session",
+    SOROBAN_TEST_DESTINATION: "GDESTINATIONDEMO",
+    SOROBAN_PROVIDER_ID: "browserbase-mcp",
+    SOROBAN_ALLOWED_PROVIDERS: "browserbase-mcp,exa-api",
+    SOROBAN_TEST_AMOUNT: "1",
+    SOROBAN_TINY_MAX_AMOUNT: "1",
+    SOROBAN_TRANSFER_NONCE: "100",
+    ...overrides,
+  };
+}
+
+function sorobanAdminRequest(idempotencyKey) {
+  return { headers: { authorization: "Bearer admin-token", "idempotency-key": idempotencyKey } };
+}
+
+function sorobanAdminService() {
+  return new SpendHubService({
+    seedState: {
+      intents: [],
+      receipts: [],
+      proofs: {},
+      vaultRecords: {},
+      spendRequests: {},
+      machineChallenges: {},
+      idempotencyKeys: {},
+      sorobanExecutions: {},
+    },
+  });
+}

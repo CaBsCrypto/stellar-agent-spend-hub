@@ -1,4 +1,4 @@
-﻿# Arquitectura
+# Arquitectura
 
 ## Modelo general
 
@@ -72,3 +72,9 @@ Usa `@stellar/stellar-sdk`, valida env vars y keypair, prepara pago tiny y solo 
 ## Decision importante
 
 El rail activo de producto sigue siendo Stellar-first. Otros protocolos se usan para aprender patrones de mercado y compatibilidad, no para abandonar la narrativa Stellar.
+
+## Payment execution runtime
+
+The runtime now uses four explicit modes: `simulated`, `stellar-testnet-direct`, `soroban-dry-run`, and `soroban-testnet-submit`. Normal app approval stays in preview mode for Soroban. Only the admin boundary may submit, and only after bearer auth, testnet/native-SAC validation, tiny amount enforcement, idempotency and explicit execution gates.
+
+A receipt is `settled` only when a real transaction hash is available. Dry-runs are `pending` with `executionStatus=preview`; failed submits keep `transactionHash=null`.

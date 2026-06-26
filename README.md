@@ -87,6 +87,16 @@ Sprint 06 moved native XLM testnet through the Stellar Asset Contract from the s
 | Behavior | pre-funded contract -> policy check -> SAC transfer -> TransferExecutedEvent |
 
 This is still testnet-only and tiny; USDC/mainnet and bill pay remain out of scope.
+## Guarded Runtime Settlement
+
+Sprint 08 connected the backend payment lifecycle to the Soroban transfer path with admin auth, explicit submit gates, tiny limits, idempotency and safe receipts.
+
+| Field | Value |
+| --- | --- |
+| Runtime proof | https://stellar.expert/explorer/testnet/tx/cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e |
+| Horizon result | `successful: true`, ledger `3300195` |
+| Receipt | `settled`, `soroban-testnet-submit`, nonce `3` |
+| Safety | ephemeral admin token; submit gate closed after execution |
 ## Architecture
 
 ```mermaid
@@ -189,8 +199,24 @@ Use CLI identities such as `spendhub-owner` and `spendhub-session`; never pass s
 To route local app receipts through the Soroban adapter without auto-submitting on-chain:
 
 ```powershell
-$env:SPEND_HUB_PAYMENT_RAIL="soroban"
+$env:SPEND_HUB_PAYMENT_RAIL="soroban-dry-run"
 ```
+## Guarded Soroban Runtime
+
+Sprint 08 separates payment previews from real settlement:
+
+- `soroban-dry-run` creates a pending preview receipt with no transaction hash.
+- `soroban-testnet-submit` is accepted only by the admin endpoint when bearer auth, testnet lock, native SAC allowlist, tiny limit, Stellar CLI driver and submit gate all pass.
+- Every operation requires an idempotency key and Soroban nonce.
+- Missing or ambiguous transaction hashes never produce a settled receipt.
+
+```powershell
+npm run soroban:admin-transfer
+npm run soroban:admin-submit
+```
+
+The Vercel function remains suitable for guarded dry-runs. Real CLI submission must run on a trusted machine with the Stellar CLI identity until an audited SDK signing boundary is implemented.
+
 ## Vercel Deploy
 
 Project is linked to Vercel as `agente-pagos-stellar`.
@@ -222,6 +248,7 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - [Sprint 05 Soroban testnet runbook](./docs/sprint-05-soroban-testnet-runbook.md)
 - [Sprint 05 Soroban testnet result](./docs/sprint-05-soroban-testnet-result.md)
 - [Soroban smart wallet contract](./contracts/soroban-smart-wallet/README.md)
+- [Sprint 08 guarded Soroban runtime](./docs/sprint-08-soroban-runtime.md)
 - [Roadmap](./docs/roadmap.md)
 - [Pitch](./docs/pitch.md)
 

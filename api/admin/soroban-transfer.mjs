@@ -1,0 +1,41 @@
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { SpendHubService } from "../../src/spendHubService.mjs";
+import { runAdminSorobanTransfer } from "../../src/adminSorobanTransfer.mjs";
+
+let servicePromise;
+
+export default async function handler(request, response) {
+  try {
+    if (request.method !== "POST") {
+      response.writeHead(405, { "Content-Type": "application/json; charset=utf-8" });
+      response.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
+    }
+
+    const service = await getService();
+    const body = parseBody(request.body);
+    const report = await runAdminSorobanTransfer({ request, body, env: process.env, service });
+    response.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+    response.end(JSON.stringify(report));
+  } catch (error) {
+    response.writeHead(error.status || 500, { "Content-Type": "application/json; charset=utf-8" });
+    response.end(JSON.stringify({ error: error.message || "Internal server error" }));
+  }
+}
+
+async function getService() {
+  if (!servicePromise) {
+    servicePromise = new SpendHubService({
+      statePath: join(tmpdir(), "agente-pagos-stellar-runtime-state.json"),
+      env: process.env,
+    }).load();
+  }
+  return servicePromise;
+}
+
+function parseBody(body) {
+  if (body && typeof body === "object") return body;
+  if (typeof body === "string" && body.trim()) return JSON.parse(body);
+  return {};
+}

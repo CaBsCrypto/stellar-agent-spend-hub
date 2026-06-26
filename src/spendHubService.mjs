@@ -18,6 +18,7 @@ import {
 import { StellarTestnetAdapter } from "./paymentRailAdapter.mjs";
 import { StellarTestnetRealAdapter } from "./stellarTestnetRealAdapter.mjs";
 import { SorobanSmartWalletAdapter } from "./sorobanSmartWalletAdapter.mjs";
+import { PaymentExecutionMode, resolvePaymentExecutionMode } from "./paymentRuntime.mjs";
 import { PrivacyVaultAdapter } from "./privacyVaultAdapter.mjs";
 import { ProviderDirectoryAdapter } from "./providerDirectoryAdapter.mjs";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
@@ -31,6 +32,7 @@ const defaultState = () => ({
   spendRequests: {},
   machineChallenges: {},
   idempotencyKeys: {},
+  sorobanExecutions: {},
 });
 
 export class SpendHubService {
@@ -185,7 +187,9 @@ export class SpendHubService {
 
   async approveIntent(intentId, approvedBy = "user-passkey") {
     const intent = this.findIntent(intentId);
-    const existingReceipt = this.state.receipts.find((receipt) => receipt.intentId === intentId && receipt.status === "settled");
+    const existingReceipt = this.state.receipts.find(
+      (receipt) => receipt.intentId === intentId && receipt.status !== "blocked",
+    );
     if (existingReceipt) return { ...existingReceipt, idempotentReplay: true };
     const evaluation = await this.evaluateIntent(intent);
     if (!evaluation.allowed) throw httpError(409, evaluation.reasons.join("; "));
@@ -198,7 +202,7 @@ export class SpendHubService {
     const receipt = await this.activePaymentAdapter(intent).settlePayment(intent, evaluation, approvedBy);
     const scan = assertNoSensitiveData(receipt, "receipt");
     if (!scan.allowed) throw httpError(500, scan.reasons.join("; "));
-    intent.status = "settled";
+    intent.status = receipt.status === "settled" ? "settled" : "approved_preview";
     intent.settledReceiptId = receipt.id;
     this.state.receipts = [receipt, ...this.state.receipts];
     await this.save();
@@ -231,7 +235,7 @@ export class SpendHubService {
     const receipt = await this.linkAdapter.settlePayment(intent, decision, approvedSpendRequest, approvedBy);
     const scan = assertNoSensitiveData(receipt, "receipt");
     if (!scan.allowed) throw httpError(500, scan.reasons.join("; "));
-    intent.status = "settled";
+    intent.status = receipt.status === "settled" ? "settled" : "approved_preview";
     intent.settledReceiptId = receipt.id;
     this.state.receipts = [receipt, ...this.state.receipts];
     await this.save();
@@ -322,8 +326,15 @@ export class SpendHubService {
   }
 
   activePaymentAdapter(intent = null) {
-    if (selectedPaymentRail(this.env) === "soroban" && !isLinkIntent(intent || {})) {
+    const mode = resolvePaymentExecutionMode(this.env);
+    if (
+      (mode === PaymentExecutionMode.sorobanDryRun || mode === PaymentExecutionMode.sorobanTestnetSubmit) &&
+      !isLinkIntent(intent || {})
+    ) {
       return this.sorobanSmartWalletAdapter;
+    }
+    if (mode === PaymentExecutionMode.stellarTestnetDirect && !isLinkIntent(intent || {})) {
+      return this.realPaymentAdapter;
     }
     return this.paymentAdapter;
   }
@@ -338,12 +349,23 @@ export class SpendHubService {
   async railDiagnostics() {
     return {
       activeRail: this.activePaymentAdapter().name,
-      activeRailMode: selectedPaymentRail(this.env),
+      activeRailMode: resolvePaymentExecutionMode(this.env),
       simulated: this.paymentAdapter.constructor.name,
       testnet: await this.realPaymentAdapter.readiness(),
       linkAgentWallet: await this.linkAdapter.readiness(this.env),
       sorobanSmartWallet: this.sorobanSmartWalletAdapter.readiness(),
+      paymentRuntime: (await this.readiness()).connectors.paymentRuntime,
     };
+  }
+
+  getSorobanExecution(idempotencyKey) {
+    return this.state.sorobanExecutions[idempotencyKey] || null;
+  }
+
+  async recordSorobanExecution(idempotencyKey, report) {
+    this.state.sorobanExecutions[idempotencyKey] = report;
+    await this.save();
+    return report;
   }
 
   summary(evaluations) {
@@ -357,9 +379,6 @@ export class SpendHubService {
   }
 }
 
-function selectedPaymentRail(env = {}) {
-  return env.SPEND_HUB_PAYMENT_RAIL === "soroban" ? "soroban" : "simulated-stellar";
-}
 function normalizeState(state) {
   const normalized = {
     intents: state.intents || [],
@@ -369,6 +388,7 @@ function normalizeState(state) {
     spendRequests: state.spendRequests || {},
     machineChallenges: state.machineChallenges || {},
     idempotencyKeys: state.idempotencyKeys || {},
+    sorobanExecutions: state.sorobanExecutions || {},
   };
   normalized.intents = normalized.intents.map((intent) => ({ ...intent, status: intent.status || "created" }));
   return normalized;

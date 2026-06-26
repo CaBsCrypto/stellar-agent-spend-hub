@@ -122,6 +122,7 @@ export class SorobanSmartWalletAdapter {
       network: this.network,
       asset: this.assetContractId() ? this.asset : intent.currency || this.asset,
       canSubmit: false,
+      executionMode: "soroban-dry-run",
       submitMode: this.assetContractId() ? "sac-transfer-ready-dry-run" : "contract-scaffold-only",
       memo: safeMemo(intent),
       destination: intent.destinationAddress,
@@ -158,11 +159,12 @@ export class SorobanSmartWalletAdapter {
       evaluation: mergedEvaluation,
       approvedBy,
       railResult: {
-        transactionHash: allowed ? `soroban_policy_${intent.id}_${Date.now().toString(36)}` : null,
+        transactionHash: null,
         rail: this.name,
         network: this.network,
         asset: this.assetContractId() ? this.asset : intent.currency || this.asset,
-        finality: allowed ? "soroban-policy-simulated" : "blocked-before-soroban-submit",
+        finality: allowed ? "not-submitted-soroban-dry-run" : "blocked-before-soroban-submit",
+        executionStatus: allowed ? "preview" : "blocked",
       },
     });
     const enriched = {

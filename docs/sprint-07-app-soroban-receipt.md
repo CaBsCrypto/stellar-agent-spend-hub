@@ -32,4 +32,4 @@ $env:SOROBAN_SESSION_PUBLIC_KEY="G..."
 
 ## Next
 
-Sprint 08 should add a guarded server-side Soroban submit endpoint only if it can be admin-gated, dry-run by default, and restricted to tiny testnet transfers.
+Sprint 08 completed the guarded server-side Soroban boundary with bearer auth, dry-run default, tiny native-SAC limits, idempotency and explicit testnet submit gates. See `sprint-08-soroban-runtime.md`.

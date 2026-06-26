@@ -51,6 +51,7 @@ function render() {
   const circleStatus = state.data.readiness.connectors.circleX402;
   const machineChallengeCount = Object.keys(state.data.machineChallenges || {}).length;
   const smartWalletStatus = state.data.readiness.connectors.sorobanSmartWallet;
+  const paymentRuntime = state.data.readiness.connectors.paymentRuntime || { mode: "simulated", detail: "Local simulated rail selected." };
 
   app.innerHTML = `
     <main class="shell">
@@ -83,7 +84,7 @@ function render() {
       </section>
 
       <section class="rail-status" aria-label="Rail readiness">
-        <article><span class="label">Active rail</span><strong>Stellar simulated</strong><small>Receipts and idempotency functional locally</small></article>
+        <article><span class="label">Active rail</span><strong>${paymentRuntime.mode}</strong><small>${paymentRuntime.detail}</small></article>
         <article><span class="label">Soroban wallet</span><strong>${smartWalletStatus.status}</strong><small>${smartWalletStatus.detail}</small></article>
         <article><span class="label">Testnet rail</span><strong>${stellarStatus.status}</strong><small>${stellarStatus.detail}</small></article>
         <article><span class="label">Missing env</span><strong>${stellarStatus.missing?.length || 0}</strong><small>${(stellarStatus.missing || []).join(", ") || "None"}</small></article>

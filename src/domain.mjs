@@ -133,6 +133,12 @@ export function evaluatePaymentIntent(intent, policy, receipts = [], options = n
 
 export function createReceipt({ intent, evaluation, railResult, approvedBy }) {
   const acceptedAt = evaluation.requiresConfirmation ? new Date().toISOString() : null;
+  const executionStatus = railResult?.executionStatus || (railResult?.transactionHash ? "settled" : "simulated");
+  const status = !evaluation.allowed
+    ? ReceiptStatus.blocked
+    : executionStatus === "preview" || executionStatus === "submitted"
+      ? ReceiptStatus.pending
+      : ReceiptStatus.settled;
   const receipt = {
     id: `receipt-${cryptoSafeId()}`,
     intentId: intent.id,
@@ -142,13 +148,14 @@ export function createReceipt({ intent, evaluation, railResult, approvedBy }) {
     category: intent.category,
     amount: intent.amount,
     currency: intent.currency,
-    status: evaluation.allowed ? ReceiptStatus.settled : ReceiptStatus.blocked,
+    status,
     timestamp: new Date().toISOString(),
     transactionHash: railResult?.transactionHash || null,
     rail: railResult?.rail || null,
     network: railResult?.network || null,
     asset: railResult?.asset || intent.currency,
     finality: railResult?.finality || null,
+    executionStatus,
     reason: intent.agentReason,
     evidence: evaluation.allowed ? evaluation.evidence : evaluation.reasons,
     approvedBy,

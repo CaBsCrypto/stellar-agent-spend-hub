@@ -2,49 +2,48 @@
 
 ## Snapshot
 
-Stellar Agent Spend Hub is now a functional MVP with a deployed demo, local QA, HTTP 402 machine-payment flow, privacy guardrails, and one verified Stellar testnet settlement executed from Vercel.
+Stellar Agent Spend Hub is a functional privacy-first MVP with HTTP 402 flows, a deployed Soroban smart wallet, native XLM SAC settlement proof, and a guarded Sprint 08 runtime that separates preview receipts from real testnet settlement.
 
 ## Public evidence
 
 - Live demo: `https://agente-pagos-stellar.vercel.app`.
-- First testnet hash: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
-- Horizon: `https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
-- Amount: `0.0000010 XLM`.
-- Network: `stellar:testnet`.
-- Finality: `submitted-testnet`.
-- JS QA: `npm run qa` passing with `56/56` tests.
-- Contract QA: `cargo test` passing with `11/11` Rust tests.
-- Soroban build: `stellar contract build` passing with Wasm hash `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
-- First SAC transfer tx: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
+- First direct Stellar testnet hash: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
+- Soroban smart wallet: `CDJEHJ763TTIVHD3MMFWIKO3R2K3A6MJKWZFZDU2L6LXXKEU43CDIGZU`.
+- Native XLM SAC: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
+- First policy-controlled SAC transfer: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
+- First guarded runtime settlement: `cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e` (ledger `3300195`).
+- Contract Wasm hash: `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
+- JS tests: `64/64` passing after Sprint 08.
+- Rust tests: `11/11`.
 
 ## Scores
 
-- MVP local/demo: `85/100`.
-- Security/privacy v1: `76/100`.
+- MVP local/demo: `88/100`.
+- Security/privacy v1: `80/100`.
 - Machine payments HTTP 402: `78/100`.
-- Documentation/GitHub readiness: `82/100`.
+- Documentation/GitHub readiness: `86/100`.
 - Vercel deploy readiness: `92/100`.
-- Stellar testnet path: `90/100`.
-- Real testnet payment executed: `82/100`.
-- Smart wallet readiness: `90/100`.
+- Stellar testnet path: `93/100`.
+- Real testnet payment executed: `92/100`.
+- Smart wallet readiness: `92/100`.
 
 ## What is real today
 
-- Local app and server API are functional.
-- Provider directory, intents, receipts, policy, privacy checks, and HTTP 402 flow work in the MVP.
-- Vercel production is deployed.
-- Stellar testnet submit has been proven once with a tiny supervised payment.
-- Soroban smart wallet has moved native XLM testnet via SAC after policy validation.
-- App prepare/approve can route MCP/API receipts through the Soroban adapter with `SPEND_HUB_PAYMENT_RAIL=soroban`.
-- Production submit gate is closed by default with `STELLAR_SUBMIT_ENABLED=false`.
+- Provider directory, intents, policy, privacy checks, receipts and HTTP 402 work locally.
+- Direct Stellar tiny settlement and Soroban native SAC settlement have public testnet hashes.
+- App approvals can route through `soroban-dry-run` and now produce `preview` receipts with no fake transaction hash.
+- `POST /api/admin/soroban-transfer` is bearer-protected, testnet-only, native-XLM-only, tiny-limited and idempotent within the configured runtime state.
+- Real Soroban submit additionally requires `SOROBAN_SUBMIT_ENABLED=true`, `SOROBAN_EXECUTION_DRIVER=stellar-cli` and `SPEND_HUB_PAYMENT_RAIL=soroban-testnet-submit`.
+- The guarded runtime produced a Horizon-verified settlement receipt using nonce `3`; its transaction hash is public evidence above.
+- Submit gates remain closed by default.
 
 ## Main risks
 
-- Real settlement still uses a server-side testnet key demo, but Sprint 04 now has a compilable Soroban smart wallet contract with owner/session signer, allowlist, limit, expiry, revoke and nonce tests.
-- LatAm bill pay requires privacy vault, ZK/proof maturity, legal context, and partner/API access before real user data is handled.
-- Provider integrations are simulated; Sprint 03 should preserve the MCP/API wedge while preparing real partner conversations.
-- GitHub public launch must avoid committing `.vercel`, `.env*`, runtime state, build output, logs, or secrets.
+- Vercel can expose the guarded dry-run endpoint, but its standard serverless runtime does not include local Stellar CLI identities. Real CLI submit belongs on a trusted local/CI runner until an SDK signer or managed signing service is designed.
+- File/tmp idempotency is suitable for the demo, not durable production concurrency; production needs a transactional store.
+- LatAm bill pay still requires a privacy vault, production-grade proofs, legal context and provider partnerships.
+- Provider integrations remain simulated.
 
 ## Next move
 
-Next move: add a guarded server-side Soroban submit endpoint only after defining admin gates, dry-run default behavior and tiny-testnet-only constraints.
+Design durable idempotency and a non-custodial signer boundary before any mainnet or user-facing autopilot work. The next product demo should connect an HTTP 402 challenge to this guarded settlement runtime end to end.
