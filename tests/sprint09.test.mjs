@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { Challenge, Receipt } from "mppx";
 import { USDC_SAC_TESTNET } from "@stellar/mpp";
+import { Keypair } from "@stellar/stellar-sdk";
 import { buildStellarRiskReport, validateTransactionHash } from "../src/stellarRiskService.mjs";
 import { createAtomicRedisAdapter } from "../src/mppStore.mjs";
 import { MppReceiptRepository } from "../src/mppReceiptRepository.mjs";
 import { MppChargeService, MPP_NETWORK, MPP_PRICE_USDC } from "../src/mppChargeService.mjs";
-import { validateChallenge } from "../scripts/mpp-agent-risk.mjs";
+import { resolveBuyerKeypair, validateChallenge } from "../scripts/mpp-agent-risk.mjs";
 import { buildEscrowV2Command } from "../scripts/escrow-v2-testnet.mjs";
 
 const recipient = "GDH7VT4AVZ33E4EI3WVGKABOJNJOGB2J463AAY677IFSCTPB35KYZKLU";
@@ -165,6 +166,21 @@ test("buyer rechaza recipient, asset, red o precio diferentes", () => {
   assert.throws(() => validateChallenge({ ...base, request: { ...base.request, recipient: "GOTHER" } }, { recipient }), /recipient/);
   assert.throws(() => validateChallenge({ ...base, request: { ...base.request, currency: "COTHER" } }, { recipient }), /asset/);
   assert.throws(() => validateChallenge({ ...base, request: { ...base.request, amount: "200000" } }, { recipient }), /price/);
+});
+
+test("buyer resuelve identidad Stellar CLI sin imprimir la secret", async () => {
+  const generated = Keypair.random();
+  let command = null;
+  const resolved = await resolveBuyerKeypair({
+    env: { MPP_BUYER_IDENTITY: "spendhub-owner" },
+    runner: async (bin, args) => {
+      command = { bin, args };
+      return { stdout: `${generated.secret()}\n`, stderr: "" };
+    },
+  });
+  assert.equal(resolved.publicKey(), generated.publicKey());
+  assert.deepEqual(command, { bin: "stellar", args: ["keys", "secret", "spendhub-owner"] });
+  assert.equal(JSON.stringify(command).includes(generated.secret()), false);
 });
 
 test("Escrow V2 CLI fija USDC testnet y no usa provider como autorizacion", () => {

@@ -17,7 +17,7 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 - Policy Escrow V2 testnet contract: `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH`.
 - Escrow V2 grant transaction: `e4d7c0eb6d68526d4a850b831a7e8cc3e525d5e2fb33c19625b9842f9358ab9c`.
 - Official MPP local challenge: `stellar/charge`, `0.01 USDC`, `stellar:testnet`.
-- JS tests: `72/72` passing after Sprint 09.
+- JS tests: `73/73` passing after Sprint 09.
 - Rust tests: `25/25` across legacy contract and Policy Escrow V2.
 
 ## Scores

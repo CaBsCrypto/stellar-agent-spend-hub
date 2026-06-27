@@ -35,13 +35,13 @@ Pending external setup:
 | Upload transaction | [`05fdaf92...7f45`](https://stellar.expert/explorer/testnet/tx/05fdaf92080be5a10bfc525893e3a8c0460cdbbf2c48caf1e451c5b1effd7f45) |
 | Deploy transaction | [`444971ea...035`](https://stellar.expert/explorer/testnet/tx/444971eaff2692e124e9936748156025463f5e4a7ce17f5de470ab1a8cdba035) |
 | Grant transaction | [`e4d7c0eb...ab9c`](https://stellar.expert/explorer/testnet/tx/e4d7c0eb6d68526d4a850b831a7e8cc3e525d5e2fb33c19625b9842f9358ab9c) |
-| App tests | `64` legacy + `8` Sprint 09 |
+| App tests | `64` legacy + `9` Sprint 09 |
 
 The challenge smoke test used the existing public Sprint 08 transaction as the analysis target. No payment or secret was required for the 402 response.
 
 ## Runtime Boundaries
 
-- `MPP_BUYER_SECRET` is local-only and must never be placed in Vercel.
+- The buyer defaults to the local Stellar CLI identity `spendhub-owner`. `MPP_BUYER_SECRET` remains an optional local-only fallback and must never be placed in Vercel.
 - Vercel hosts the seller and stores only `MPP_SECRET_KEY`, recipient configuration, and Upstash credentials.
 - The seller uses exact price, network, asset, and recipient configuration.
 - The buyer pins origin, recipient, testnet USDC, and maximum price before signing.

@@ -1,5 +1,7 @@
 import { createInterface } from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 import { Keypair } from "@stellar/stellar-sdk";
 import { Mppx, stellar } from "@stellar/mpp/charge/client";
 import { Challenge, Receipt } from "mppx";
@@ -7,6 +9,8 @@ import { USDC_SAC_TESTNET, fromBaseUnits, toBaseUnits } from "@stellar/mpp";
 import { assertNoSensitiveData } from "../src/sensitiveDataGuard.mjs";
 import { MPP_NETWORK, MPP_PRICE_USDC } from "../src/mppChargeService.mjs";
 import { validateTransactionHash } from "../src/stellarRiskService.mjs";
+
+const execFileAsync = promisify(execFile);
 
 if (isCliEntrypoint()) {
   try {
@@ -24,6 +28,7 @@ export async function runMppRiskAgent({
   fetchImpl = globalThis.fetch,
   confirm = interactiveConfirm,
   clientFactory = createClient,
+  keypairResolver = resolveBuyerKeypair,
 } = {}) {
   const transactionHash = validateTransactionHash(readArg(argv, "--tx") || env.MPP_RISK_TX_HASH);
   const endpoint = new URL(env.MPP_RISK_ENDPOINT || "http://localhost:4179/api/mpp/stellar-risk");
@@ -50,9 +55,7 @@ export async function runMppRiskAgent({
       });
   if (!approved) throw new Error("Payment cancelled by user");
 
-  const secret = env.MPP_BUYER_SECRET;
-  if (!secret) throw new Error("MPP_BUYER_SECRET is required in the local process environment");
-  const keypair = Keypair.fromSecret(secret);
+  const keypair = await keypairResolver({ env });
   const client = clientFactory({ keypair, fetchImpl, challenge, env });
   const response = await client.fetch(endpoint);
   if (!response.ok) throw new Error(`MPP payment retry failed with ${response.status}`);
@@ -74,6 +77,18 @@ export async function runMppRiskAgent({
   const scan = assertNoSensitiveData(summary, "mppAgentRiskSummary");
   if (!scan.allowed) throw new Error("Sensitive output blocked from MPP buyer summary");
   return summary;
+}
+
+export async function resolveBuyerKeypair({ env = process.env, runner = execFileAsync } = {}) {
+  if (env.MPP_BUYER_SECRET) return Keypair.fromSecret(env.MPP_BUYER_SECRET);
+  const identity = env.MPP_BUYER_IDENTITY || "spendhub-owner";
+  const result = await runner("stellar", ["keys", "secret", identity], {
+    cwd: process.cwd(),
+    env,
+  });
+  const secret = String(result.stdout || "").trim();
+  if (!secret) throw new Error(`Stellar CLI identity ${identity} did not return a key`);
+  return Keypair.fromSecret(secret);
 }
 
 export function validateChallenge(challenge, { recipient, maxAmount = MPP_PRICE_USDC } = {}) {
