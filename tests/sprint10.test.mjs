@@ -173,7 +173,7 @@ test("receipt publico descarta campos sensibles y XDR", () => {
 test("readiness exige Upstash para estar listo en Vercel", () => {
   const blocked = contractAccountReadiness(env());
   assert.equal(blocked.status, "blocked");
-  assert.ok(blocked.missing.includes("UPSTASH_REDIS_REST_URL/TOKEN"));
+  assert.ok(blocked.missing.includes("UPSTASH_OR_KV_REST_API_CREDENTIALS"));
   const ready = contractAccountReadiness(env({
     UPSTASH_REDIS_REST_URL: "https://example.upstash.io",
     UPSTASH_REDIS_REST_TOKEN: "placeholder",

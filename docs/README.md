@@ -18,6 +18,12 @@ Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README r
 12. [Sprint 08 Soroban runtime](./sprint-08-soroban-runtime.md): endpoint admin, modos, idempotencia y runbook testnet.
 13. [Sprint 09 MPP + Escrow V2](./sprint-09-mpp-escrow-v2.md): MPP Charge USDC, Risk API, Upstash CAS y policy escrow endurecido.
 14. [Sprint 10 Contract Account](./sprint-10-contract-account.md): passkey owner, agent session, relayer Vercel y evidencia testnet.
+15. [Threat model](./threat-model.md): activos, boundaries, amenazas, controles y respuesta.
+16. [Provider Kit](./provider-kit.md): contrato publico y ejemplo MPP para Node/MCP.
+17. [SCF application](./scf-application.md): pitch, milestones, presupuesto y metricas.
+18. [Demo script](./demo-script.md): guion verificable de 90 segundos.
+19. [Partner shortlist](./partner-shortlist.md): candidatos MCP/API para discovery.
+20. [Sprint 11-13 status](./sprint-11-13-status.md): deploy, Upstash, endpoints y acceptance gates.
 
 ## Principios del proyecto
 

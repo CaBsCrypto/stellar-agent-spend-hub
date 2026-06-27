@@ -6,7 +6,7 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 
 ## Public evidence
 
-- Vercel deploy: pending CLI reauthentication; the previous public alias currently returns 404.
+- Live Vercel demo: `https://agente-pagos-stellar.vercel.app` (restored and verified).
 - First direct Stellar testnet hash: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
 - Soroban smart wallet: `CDJEHJ763TTIVHD3MMFWIKO3R2K3A6MJKWZFZDU2L6LXXKEU43CDIGZU`.
 - Native XLM SAC: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
@@ -16,8 +16,8 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 - Policy Escrow V2 Wasm hash: `e69592e783afdbed768ed14fd1ad0d4d1f85cc7fbd6cb12a99f7ffec9a698d3c`.
 - Policy Escrow V2 testnet contract: `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH`.
 - Escrow V2 grant transaction: `e4d7c0eb6d68526d4a850b831a7e8cc3e525d5e2fb33c19625b9842f9358ab9c`.
-- Official MPP local challenge: `stellar/charge`, `0.01 USDC`, `stellar:testnet`.
-- JS tests: `84/84` passing after Sprint 10 runtime work.
+- Official MPP production challenge: `402`, `stellar/charge`, `0.01 USDC`, `stellar:testnet`; gate closed again after verification.
+- JS tests: `93/93` passing through Sprint 13 Provider Kit and Vercel routing work.
 - Rust tests: `31/31` across legacy wallet, Policy Escrow V2 and Spend Account V1.
 - Spend Account V1 Wasm upload: `e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80`.
 - Merchant: `GAJK6AKXWGMRNRNZRLPZ5J7MUT4X7TZWHPEFEJJ5TL7V7XWPYKGG2CNV`.
@@ -28,9 +28,9 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 
 - MVP local/demo: `92/100`.
 - Security/privacy v1: `87/100`.
-- Machine payments MPP/HTTP 402: `90/100` locally.
-- Documentation/GitHub readiness: `86/100`.
-- Vercel deploy readiness: `92/100`.
+- Machine payments MPP/HTTP 402: `96/100`; production challenge verified, settlement pending Faucet.
+- Documentation/GitHub readiness: `95/100`.
+- Vercel deploy readiness: `98/100`; production and Upstash diagnostics verified.
 - Stellar testnet path: `93/100`.
 - Real testnet payment executed: `92/100`.
 - Policy escrow readiness: `94/100` locally.
@@ -51,12 +51,12 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 ## Main risks
 
 - Vercel can expose the guarded dry-run endpoint, but its standard serverless runtime does not include local Stellar CLI identities. Real CLI submit belongs on a trusted local/CI runner until an SDK signer or managed signing service is designed.
-- MPP includes an atomic Upstash CAS adapter, but Vercel Marketplace provisioning is pending reauthentication.
+- MPP uses the provisioned atomic Upstash CAS adapter; its submit path remains disabled until the supervised USDC acceptance window.
 - Existing non-MPP app intents still use file/tmp persistence and are not production-concurrent.
 - LatAm bill pay still requires a privacy vault, production-grade proofs, legal context and provider partnerships.
 - Circle Faucet funding and the first real USDC Charge still require a human reCAPTCHA.
 - Spend Account V1 implements `__check_auth`; final production-domain passkey registration and testnet instance deployment remain pending.
-- Vercel CLI is unauthenticated and Upstash Marketplace cannot be provisioned until login is restored.
+- Vercel CLI is authenticated and Upstash Marketplace is provisioned; production diagnostics report Horizon, RPC and Upstash reachable.
 - Owner and merchant USDC trustlines exist, but both balances are currently zero.
 
 ## Next move

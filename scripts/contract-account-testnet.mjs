@@ -69,6 +69,21 @@ export function buildContractAccountCommand({ action, env = process.env }) {
       "--rp_id_hash", fixedHex(env.CONTRACT_ACCOUNT_RP_ID_HASH, 32, "CONTRACT_ACCOUNT_RP_ID_HASH"),
       "--origin_hash", fixedHex(env.CONTRACT_ACCOUNT_ORIGIN_HASH, 32, "CONTRACT_ACCOUNT_ORIGIN_HASH"),
     ];
+  } else if (action === "fund") {
+    const ownerIdentity = env.CONTRACT_ACCOUNT_OWNER_IDENTITY || "spendhub-owner";
+    const owner = required(env.CONTRACT_ACCOUNT_OWNER_PUBLIC_KEY, "CONTRACT_ACCOUNT_OWNER_PUBLIC_KEY");
+    const asset = required(env.CONTRACT_ACCOUNT_ASSET_CONTRACT_ID, "CONTRACT_ACCOUNT_ASSET_CONTRACT_ID");
+    const expectedAsset = "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA";
+    if (asset !== expectedAsset) throw new Error("Contract Account funding only allows testnet USDC SAC");
+    const amount = env.CONTRACT_ACCOUNT_FUND_AMOUNT || "200000";
+    if (!/^\d+$/.test(amount) || BigInt(amount) <= 0n || BigInt(amount) > 200000n) {
+      throw new Error("CONTRACT_ACCOUNT_FUND_AMOUNT must be between 1 and 200000 base units");
+    }
+    args = invoke(asset, ownerIdentity, "transfer", [
+      "--from", owner,
+      "--to", contractId,
+      "--amount", amount,
+    ]);
   } else if (action === "owner") {
     args = invoke(contractId, relayerIdentity, "owner", []);
   } else if (action === "session") {

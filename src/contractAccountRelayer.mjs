@@ -17,6 +17,7 @@ import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { ContractAccountRepository } from "./contractAccountRepository.mjs";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
+import { readUpstashConfig } from "./upstashConfig.mjs";
 
 export const CONTRACT_ACCOUNT_NETWORK = "stellar:testnet";
 export const CONTRACT_ACCOUNT_PER_PAYMENT_LIMIT = 100_000n;
@@ -162,7 +163,7 @@ export function contractAccountReadiness(env = process.env) {
   const contractValid = StrKey.isValidContract(env.CONTRACT_ACCOUNT_ID || "");
   const merchantValid = StrKey.isValidEd25519PublicKey(env.CONTRACT_ACCOUNT_MERCHANT || "");
   const relayerValid = readRelayerPublicKey(env) != null;
-  const upstash = Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN);
+  const upstash = readUpstashConfig(env).configured;
   return {
     status: enabled && contractValid && merchantValid && relayerValid && upstash
       ? submitEnabled ? "ready-submit-testnet" : "ready-preview"
@@ -179,7 +180,7 @@ export function contractAccountReadiness(env = process.env) {
       !contractValid && "CONTRACT_ACCOUNT_ID",
       !merchantValid && "CONTRACT_ACCOUNT_MERCHANT",
       !relayerValid && "CONTRACT_ACCOUNT_RELAYER_SECRET",
-      !upstash && "UPSTASH_REDIS_REST_URL/TOKEN",
+      !upstash && "UPSTASH_OR_KV_REST_API_CREDENTIALS",
     ].filter(Boolean),
   };
 }
@@ -358,8 +359,9 @@ async function pollTransaction(server, transactionHash) {
 }
 
 function createContractAccountRateLimiter(env) {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) return null;
-  const redis = new Redis({ url: env.UPSTASH_REDIS_REST_URL, token: env.UPSTASH_REDIS_REST_TOKEN });
+  const upstash = readUpstashConfig(env);
+  if (!upstash.configured) return null;
+  const redis = new Redis({ url: upstash.url, token: upstash.token });
   return new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(5, "1 m"),

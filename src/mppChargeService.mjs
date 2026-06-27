@@ -7,6 +7,7 @@ import { Redis } from "@upstash/redis";
 import { buildStellarRiskReport, validateTransactionHash } from "./stellarRiskService.mjs";
 import { createMppAtomicStore, mppStoreReadiness } from "./mppStore.mjs";
 import { MppReceiptRepository } from "./mppReceiptRepository.mjs";
+import { readUpstashConfig } from "./upstashConfig.mjs";
 
 export const MPP_PRICE_USDC = "0.01";
 export const MPP_NETWORK = "stellar:testnet";
@@ -126,7 +127,7 @@ export function mppChargeReadiness(env = process.env) {
     missing: [
       !recipientValid && "MPP_STELLAR_RECIPIENT",
       !secretConfigured && "MPP_SECRET_KEY",
-      !store.productionReady && "UPSTASH_REDIS_REST_URL/TOKEN",
+      !store.productionReady && "UPSTASH_OR_KV_REST_API_CREDENTIALS",
     ].filter(Boolean),
   };
 }
@@ -174,10 +175,11 @@ function createOfficialRuntime({ config, store }) {
 }
 
 function createRateLimiter(env) {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) return null;
+  const upstash = readUpstashConfig(env);
+  if (!upstash.configured) return null;
   const redis = new Redis({
-    url: env.UPSTASH_REDIS_REST_URL,
-    token: env.UPSTASH_REDIS_REST_TOKEN,
+    url: upstash.url,
+    token: upstash.token,
   });
   return new Ratelimit({
     redis,

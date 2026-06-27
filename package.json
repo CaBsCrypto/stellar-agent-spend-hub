@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
@@ -55,7 +55,9 @@
     "account:owner": "node scripts/contract-account-testnet.mjs --action=owner --execute",
     "account:session": "node scripts/contract-account-testnet.mjs --action=session --execute",
     "account:agent-pay": "node scripts/contract-account-testnet.mjs --action=agent-pay",
-    "account:agent-pay:execute": "node scripts/contract-account-testnet.mjs --action=agent-pay --execute"
+    "account:agent-pay:execute": "node scripts/contract-account-testnet.mjs --action=agent-pay --execute",
+    "account:fund": "node scripts/contract-account-testnet.mjs --action=fund",
+    "account:fund:execute": "node scripts/contract-account-testnet.mjs --action=fund --execute"
   },
   "dependencies": {
     "@stellar/mpp": "^0.7.0",

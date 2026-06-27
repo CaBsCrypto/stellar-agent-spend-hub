@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import { Store } from "@stellar/mpp/charge/server";
+import { readUpstashConfig } from "./upstashConfig.mjs";
 
 const DEFAULT_PREFIX = "spendhub:mpp:";
 const MAX_CAS_ATTEMPTS = 12;
@@ -19,10 +20,11 @@ return 1
 `;
 
 export function createMppAtomicStore({ env = process.env, redis = null, keyPrefix = DEFAULT_PREFIX } = {}) {
-  if (!redis && hasUpstash(env)) {
+  const upstash = readUpstashConfig(env);
+  if (!redis && upstash.configured) {
     redis = new Redis({
-      url: env.UPSTASH_REDIS_REST_URL,
-      token: env.UPSTASH_REDIS_REST_TOKEN,
+      url: upstash.url,
+      token: upstash.token,
       automaticDeserialization: false,
     });
   }
@@ -69,7 +71,7 @@ export function createAtomicRedisAdapter(redis, { ttlSeconds = 2_592_000 } = {})
 }
 
 export function mppStoreReadiness(env = process.env) {
-  const configured = hasUpstash(env);
+  const configured = readUpstashConfig(env).configured;
   const memoryAllowed = env.NODE_ENV !== "production" || env.MPP_STORE_MODE === "memory";
   return {
     status: configured ? "upstash-atomic" : memoryAllowed ? "memory-local" : "blocked",
@@ -84,9 +86,6 @@ export function mppStoreReadiness(env = process.env) {
   };
 }
 
-function hasUpstash(env) {
-  return Boolean(env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN);
-}
 
 function encode(value) {
   return JSON.stringify(value);

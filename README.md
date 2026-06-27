@@ -4,9 +4,9 @@
 
 Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a payment intent, evaluate legal/privacy/policy rules, ask the user to confirm, settle through a Stellar-first rail, and leave an auditable receipt without exposing PII or secrets.
 
-Vercel deploy pending reauthentication | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
+[Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-84%2F84%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-93%2F93%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -30,6 +30,8 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Legacy Soroban policy contract deployed on testnet, plus Policy Escrow V2 compiled locally with strict destination/asset checks and cumulative session budgets.
 - Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
 - Contract Account V1 with WebAuthn owner, Ed25519 agent session, canonical relayer calls, fee cap and atomic replay protection.
+- Public Evidence API with read-only Live/Replay modes and dependency diagnostics.
+- Provider Kit V1 for official Stellar MPP Charge integrations in Node/MCP services.
 
 ## Sprint 09: MPP Charge + Policy Escrow V2
 
@@ -53,6 +55,19 @@ The merchant and relayer are deliberately separate. The relayer holds no USDC an
 
 [Sprint 10 status and acceptance gates](./docs/sprint-10-contract-account.md)
 
+## Sprint 11-13: SCF Trust Demo + Provider Kit
+
+The current grant-ready surface adds:
+
+- `GET /api/evidence` with verified or explicitly pending testnet evidence.
+- `GET /api/diagnostics/public` for sanitized Horizon, RPC and Upstash status.
+- Live Evidence and Replay Demo modes that never sign or submit transactions.
+- A validated `ProviderDefinition` and official MPP Provider Kit example.
+- Threat model, 90-second demo script, partner shortlist and SCF milestones.
+
+The coordinated MPP and Contract Account USDC receipts will appear automatically after the supervised testnet acceptance session. Until then, both remain `pending` with no transaction hash.
+
+[Sprint status](./docs/sprint-11-13-status.md) | [Provider Kit](./docs/provider-kit.md) | [Threat model](./docs/threat-model.md) | [SCF package](./docs/scf-application.md) | [Demo script](./docs/demo-script.md)
 ## First Verified Testnet Payment
 
 The project has already executed one tiny payment from Vercel to Stellar testnet.

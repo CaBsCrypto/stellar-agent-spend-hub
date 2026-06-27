@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import { readUpstashConfig } from "./upstashConfig.mjs";
 
 const REQUEST_TTL_SECONDS = 600;
 const RECEIPT_TTL_SECONDS = 2_592_000;
@@ -107,10 +108,11 @@ export function sanitizeContractAccountReceipt(receipt) {
 }
 
 function createRedis(env) {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) return null;
+  const upstash = readUpstashConfig(env);
+  if (!upstash.configured) return null;
   return new Redis({
-    url: env.UPSTASH_REDIS_REST_URL,
-    token: env.UPSTASH_REDIS_REST_TOKEN,
+    url: upstash.url,
+    token: upstash.token,
   });
 }
 

@@ -874,3 +874,155 @@ code {
   .account-heading,
   .account-actions { align-items: stretch; flex-direction: column; }
 }
+
+.trust-demo,
+.provider-kit-panel {
+  margin-top: 16px;
+}
+
+.mode-switch {
+  display: inline-grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid #bfc9c3;
+  background: #eef3f0;
+}
+
+.icon-text-button {
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: #42534d;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.icon-text-button.active {
+  background: #17352d;
+  color: #ffffff;
+}
+
+.evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.evidence-card {
+  min-width: 0;
+  display: grid;
+  gap: 9px;
+  padding: 16px;
+  border-left: 4px solid #b87822;
+  background: #f8f3e8;
+}
+
+.evidence-card.verified {
+  border-left-color: #1d6f53;
+  background: #eef7f2;
+}
+
+.evidence-card > div,
+.dependency-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.evidence-card a {
+  color: #125b48;
+  font-weight: 800;
+}
+
+.settlement-flow {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.settlement-flow article {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border-bottom: 2px solid #c6d4cd;
+}
+
+.settlement-flow span {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+  background: #17352d;
+  color: #ffffff;
+  font-size: 0.75rem;
+}
+
+.settlement-flow strong {
+  font-size: 0.78rem;
+}
+
+.dependency-row {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.dependency {
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid #d3d8d5;
+  background: #f6f7f6;
+  font-size: 0.72rem;
+}
+
+.dependency.reachable {
+  border-color: #9ac5b4;
+  background: #e8f4ef;
+}
+
+.dependency.unavailable {
+  border-color: #ddb0a5;
+  background: #f8ece8;
+}
+
+.provider-kit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.provider-kit-grid article {
+  min-width: 0;
+  padding: 14px 0;
+  border-top: 2px solid #d4c28f;
+}
+
+.provider-kit-grid span,
+.provider-kit-grid strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+@media (max-width: 900px) {
+  .evidence-grid,
+  .provider-kit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settlement-flow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trust-demo .panel-heading.split {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

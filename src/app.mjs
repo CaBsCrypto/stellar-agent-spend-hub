@@ -12,6 +12,10 @@ const state = {
   circleBenchmark: CircleX402Adapter.benchmark(),
   mppReceipts: [],
   contractAccount: null,
+  evidence: null,
+  diagnostics: null,
+  providerKit: null,
+  demoMode: "live",
   localPasskey: publicRegistration(loadLocalPasskey()),
   toast: "",
 };
@@ -36,6 +40,12 @@ async function refreshState() {
   state.mppReceipts = await api("/api/mpp/receipts")
     .then((result) => result.receipts || [])
     .catch(() => []);
+  state.contractAccount = await api("/api/contract-account/status").catch(() => null);
+  state.evidence = await api(`/api/evidence?mode=${state.demoMode}`).catch(() => null);
+  state.diagnostics = await api("/api/diagnostics/public").catch(() => null);
+  state.providerKit = await api("/api/provider-kit/definition")
+    .then((result) => result.provider)
+    .catch(() => null);
   if (!state.selectedIntentId || !state.data.intents.some((intent) => intent.id === state.selectedIntentId)) {
     state.selectedIntentId = state.data.intents[0]?.id || null;
   }
@@ -119,10 +129,13 @@ function render() {
         </div>
         <div class="account-actions">
           <button class="ghost-button" data-action="create-passkey">Create passkey</button>
+          ${state.localPasskey ? `<button class="ghost-button" data-action="copy-registration">Copy deploy data</button>` : ""}
           <button class="primary-button" data-action="grant-agent" ${accountReadiness.submitEnabled && state.localPasskey ? "" : "disabled"}>Grant agent</button>
           ${latestAccountReceipt ? `<a class="ghost-button" href="https://stellar.expert/explorer/testnet/tx/${latestAccountReceipt.transactionHash}" target="_blank" rel="noreferrer">Verify</a>` : ""}
         </div>
       </section>
+      ${trustDemoPanel()}
+
       <section class="mode-grid" aria-label="Modos del producto">
         ${modeCard("Training Mode", "Usuario confirma todo", "active")}
         ${modeCard("Privacy Mode", "Commitments/proofs visibles", "active")}
@@ -141,6 +154,8 @@ function render() {
           ? `<div class="review-summary approved"><span>Latest settlement</span><strong>${latestMppReceipt.amount} ${latestMppReceipt.asset}</strong><small>${latestMppReceipt.network} | ${latestMppReceipt.protocol}</small><a href="https://stellar.expert/explorer/testnet/tx/${latestMppReceipt.transactionHash}" target="_blank" rel="noreferrer">Verify transaction</a></div>`
           : `<div class="review-summary blocked"><span>No public MPP settlement yet</span><strong>${mppStatus.status}</strong><small>Seller remains testnet-only and buyer signing stays local.</small></div>`}
       </section>
+      ${providerKitPanel()}
+
       <section class="trust-flow" aria-label="Flujo privacy-first">
         ${evaluation.trustFlow.map((step) => trustStep(step)).join("")}
       </section>
@@ -210,6 +225,60 @@ function render() {
   bindEvents();
 }
 
+function trustDemoPanel() {
+  const evidence = state.evidence?.coordinatedDemo || {};
+  const dependencies = state.diagnostics?.dependencies || {};
+  return `<section class="trust-demo panel" aria-label="Trust demo evidence">
+    <div class="panel-heading split">
+      <div><p class="eyebrow">Stellar Trust Demo</p><h2>Two payment proofs, one policy layer</h2></div>
+      <div class="mode-switch" role="group" aria-label="Evidence mode">
+        <button class="icon-text-button ${state.demoMode === "live" ? "active" : ""}" data-action="evidence-mode" data-mode="live">Live Evidence</button>
+        <button class="icon-text-button ${state.demoMode === "replay" ? "active" : ""}" data-action="evidence-mode" data-mode="replay">Replay Demo</button>
+      </div>
+    </div>
+    <div class="evidence-grid">
+      ${evidenceCard("MPP G-account", evidence.mpp)}
+      ${evidenceCard("C-account session", evidence.contractAccount)}
+    </div>
+    <div class="settlement-flow" aria-label="Payment trust flow">
+      ${["Discover", "402 / Prepare", "Human Authorization", "Policy", "Settle", "Verify"].map((step, index) => `<article><span>${index + 1}</span><strong>${step}</strong></article>`).join("")}
+    </div>
+    <div class="dependency-row">
+      ${dependencyBadge("Horizon", dependencies.horizon)}
+      ${dependencyBadge("Soroban RPC", dependencies.rpc)}
+      ${dependencyBadge("Upstash", dependencies.upstash)}
+      <small>${state.evidence?.executionAllowed === false ? "Read-only evidence: no signing or settlement from this panel." : "Evidence unavailable."}</small>
+    </div>
+  </section>`;
+}
+
+function evidenceCard(title, evidence = {}) {
+  const status = evidence.status || "pending";
+  return `<article class="evidence-card ${status}">
+    <div><span class="label">${title}</span><strong>${status}</strong></div>
+    <strong>${evidence.amount || "0.01"} ${evidence.asset || "USDC"}</strong>
+    <small>${evidence.network || "stellar:testnet"}</small>
+    <code>${evidence.transactionHash || "Pending real testnet settlement"}</code>
+    ${evidence.explorerUrl ? `<a href="${evidence.explorerUrl}" target="_blank" rel="noreferrer">Verify on Stellar Explorer</a>` : ""}
+  </article>`;
+}
+
+function dependencyBadge(label, status = "checking") {
+  return `<span class="dependency ${status}"><strong>${label}</strong>${status}</span>`;
+}
+
+function providerKitPanel() {
+  const provider = state.providerKit;
+  if (!provider) return "";
+  return `<section class="panel provider-kit-panel">
+    <div class="panel-heading split"><div><p class="eyebrow">Provider Kit V1</p><h2>Monetize a Node or MCP API on Stellar</h2></div><strong>${provider.maxPrice} ${provider.asset}</strong></div>
+    <div class="provider-kit-grid">
+      <article><span>Definition</span><strong>${provider.providerId}</strong><code>${provider.endpoint}</code></article>
+      <article><span>Settlement</span><strong>${provider.network}</strong><code>${provider.assetContractId}</code></article>
+      <article><span>Privacy</span><strong>No PII receipts</strong><code>${provider.privacyRequirements.join(" | ")}</code></article>
+    </div>
+  </section>`;
+}
 function accountStep(title, status, detail) {
   return `<article class="account-step ${status}"><span>${title}</span><strong>${status}</strong><small>${detail}</small></article>`;
 }
@@ -319,6 +388,17 @@ function showToast(message) {
 }
 
 function bindEvents() {
+  document.querySelectorAll("[data-action='evidence-mode']").forEach((button) => {
+    button.addEventListener("click", () => runAction(async () => {
+      state.demoMode = button.dataset.mode === "replay" ? "replay" : "live";
+      state.evidence = await api(`/api/evidence?mode=${state.demoMode}`);
+      showToast(state.demoMode === "replay" ? "Replay cargado sin firmar ni mover fondos." : "Evidencia publica actualizada.");
+    }));
+  });
+  document.querySelector("[data-action='copy-registration']")?.addEventListener("click", () => runAction(async () => {
+    await navigator.clipboard.writeText(JSON.stringify(state.localPasskey));
+    showToast("Public deployment data copied; no credential ID or signature included.");
+  }));
   document.querySelector("[data-action='create-passkey']")?.addEventListener("click", () => runAction(async () => {
     state.localPasskey = await createDemoPasskey();
     showToast("Passkey creado en este dispositivo.");

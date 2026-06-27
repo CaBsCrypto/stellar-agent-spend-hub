@@ -8,10 +8,13 @@ import { MppChargeService } from "../src/mppChargeService.mjs";
 import { MppReceiptRepository } from "../src/mppReceiptRepository.mjs";
 import { ContractAccountRelayer, contractAccountReadiness } from "../src/contractAccountRelayer.mjs";
 import { runAdminContractAccountDeploy } from "../src/adminContractAccountDeploy.mjs";
+import { PublicEvidenceService } from "../src/publicEvidenceService.mjs";
+import { STELLAR_RISK_PROVIDER, validateProviderDefinition } from "../src/providerKit.mjs";
 
 let mppService;
 let mppReceiptRepository;
 let contractAccountRelayer;
+let publicEvidenceService;
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -91,6 +94,28 @@ export async function handleApi({ request, response, url, service, env }) {
   if (method === "GET" && url.pathname === "/api/mpp/receipts") {
     const receipts = await getMppReceiptRepository(env).listReceipts(20);
     writeJson(response, 200, { receipts });
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/evidence") {
+    writeJson(response, 200, await getPublicEvidenceService(env).manifest({
+      mode: url.searchParams.get("mode"),
+    }));
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/diagnostics/public") {
+    writeJson(response, 200, await getPublicEvidenceService(env).diagnostics());
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/provider-kit/definition") {
+    writeJson(response, 200, { provider: STELLAR_RISK_PROVIDER });
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/provider-kit/validate") {
+    writeJson(response, 200, { provider: validateProviderDefinition(await readJson(request)) });
     return;
   }
 
@@ -179,6 +204,11 @@ function getContractAccountRelayer(env) {
   if (!contractAccountRelayer) contractAccountRelayer = new ContractAccountRelayer({ env });
   return contractAccountRelayer;
 }
+function getPublicEvidenceService(env) {
+  if (!publicEvidenceService) publicEvidenceService = new PublicEvidenceService({ env });
+  return publicEvidenceService;
+}
+
 function clientIp(request) {
   return String(request.headers["x-forwarded-for"] || request.headers["x-real-ip"] || "local")
     .split(",")[0]
@@ -213,6 +243,12 @@ async function handleStatic({ response, url, root }) {
 }
 
 async function readJson(request) {
+  if (request.body && typeof request.body === "object" && !Buffer.isBuffer(request.body)) {
+    return request.body;
+  }
+  if (typeof request.body === "string" && request.body.trim()) {
+    return JSON.parse(request.body);
+  }
   const chunks = [];
   for await (const chunk of request) chunks.push(chunk);
   if (chunks.length === 0) return {};
