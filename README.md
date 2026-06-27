@@ -6,8 +6,8 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-51%2F51%20passing-brightgreen)
-![Contract](https://img.shields.io/badge/soroban%20tests-9%2F9%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-72%2F72%20passing-brightgreen)
+![Contract](https://img.shields.io/badge/soroban%20tests-25%2F25%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
 ![Vercel](https://img.shields.io/badge/Vercel-live-black)
@@ -23,12 +23,25 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Dashboard for Training Mode, Privacy Mode, Agent Spend, Machine Payments, and Portfolio Actions.
 - Provider directory inspired by Stripe Directory, MPP, x402, Circle, Tempo, and agentic commerce patterns.
 - Payment intents, policy checks, privacy checks, legal context checks, receipts, and idempotency.
-- HTTP 402 machine-payment loop: challenge, prepare, approve, retry with credential.
+- Official Stellar MPP Charge seller for a paid Stellar Risk API, plus a legacy HTTP 402 demo disabled in production.
 - Privacy guard that blocks RUT, phone, email, account numbers, card data, API keys, and client secrets from public payloads.
 - Demo ZK commitments/proofs for privacy-first bill-pay readiness.
 - Stellar simulated rail for local flows plus a real Stellar testnet rail with guarded submit.
-- Soroban smart wallet contract deployed on testnet with owner/session signer, allowlist, per-payment limit, expiry, revoke and nonce replay checks.
+- Legacy Soroban policy contract deployed on testnet, plus Policy Escrow V2 compiled locally with strict destination/asset checks and cumulative session budgets.
 - Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
+
+## Sprint 09: MPP Charge + Policy Escrow V2
+
+The repository now includes two deliberately separate proofs:
+
+- An official Stellar MPP Charge seller charging `0.01 USDC` testnet for a real Horizon-backed transaction report.
+- A Policy Escrow V2 contract enforcing per-payment and total session budgets before SAC transfers.
+
+The local HTTP smoke test returned a valid `stellar/charge` challenge with `100000` USDC base units. Policy Escrow V2 passes `14/14` Rust tests and builds to Wasm hash `e69592e783afdbed768ed14fd1ad0d4d1f85cc7fbd6cb12a99f7ffec9a698d3c`.
+
+Policy Escrow V2 is deployed at `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH` with an active USDC-only session grant. The first real USDC payment and escrow transfer remain pending Circle Faucet funding and Vercel/Upstash setup. No mainnet or browser-held signing key is enabled.
+
+[Sprint 09 status and runbook](./docs/sprint-09-mpp-escrow-v2.md)
 
 ## First Verified Testnet Payment
 

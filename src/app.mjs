@@ -9,6 +9,7 @@ const state = {
   lastPreparedPayment: null,
   tempoBenchmark: TempoAdapter.benchmark(),
   circleBenchmark: CircleX402Adapter.benchmark(),
+  mppReceipts: [],
   toast: "",
 };
 
@@ -29,6 +30,9 @@ async function api(path, options = {}) {
 
 async function refreshState() {
   state.data = await api("/api/state");
+  state.mppReceipts = await api("/api/mpp/receipts")
+    .then((result) => result.receipts || [])
+    .catch(() => []);
   if (!state.selectedIntentId || !state.data.intents.some((intent) => intent.id === state.selectedIntentId)) {
     state.selectedIntentId = state.data.intents[0]?.id || null;
   }
@@ -52,6 +56,8 @@ function render() {
   const machineChallengeCount = Object.keys(state.data.machineChallenges || {}).length;
   const smartWalletStatus = state.data.readiness.connectors.sorobanSmartWallet;
   const paymentRuntime = state.data.readiness.connectors.paymentRuntime || { mode: "simulated", detail: "Local simulated rail selected." };
+  const mppStatus = state.data.readiness.connectors.mpp || { status: "disabled", detail: "Official MPP Charge is disabled." };
+  const latestMppReceipt = state.mppReceipts[0] || null;
 
   app.innerHTML = `
     <main class="shell">
@@ -61,7 +67,7 @@ function render() {
           <h1>Pagos agenticos y acciones crypto sin filtrar datos privados</h1>
           <p class="hero-text">
             El agente descubre servicios, crea intentos persistidos, genera proofs demo, valida policy/LCP
-            y espera tu passkey antes de simular settlement en Stellar.
+            y exige confirmacion humana antes de cualquier settlement testnet.
           </p>
         </div>
         <div class="wallet-strip" aria-label="Estado de wallet">
@@ -79,7 +85,8 @@ function render() {
         ${metric("Smart wallet", smartWalletStatus.status, smartWalletStatus.detail)}
         ${metric("Stellar readiness", stellarStatus.status, state.data.readiness.status)}
         ${metric("Link wallet", linkStatus.status, "Fiat/SPT approval simulation")}
-        ${metric("402 challenges", machineChallengeCount, "MPP/x402 retry loop demo")}
+        ${metric("Legacy 402", machineChallengeCount, "deshabilitable en produccion")}
+        ${metric("MPP Charge", mppStatus.status, "USDC testnet oficial")}
         ${metric("Circle x402", circleStatus.status, "USDC agent benchmark")}
       </section>
 
@@ -90,17 +97,27 @@ function render() {
         <article><span class="label">Missing env</span><strong>${stellarStatus.missing?.length || 0}</strong><small>${(stellarStatus.missing || []).join(", ") || "None"}</small></article>
         <article><span class="label">Link Agent Wallet</span><strong>${linkStatus.status}</strong><small>${linkStatus.detail}</small></article>
         <article><span class="label">Circle x402</span><strong>${circleStatus.status}</strong><small>${circleStatus.detail}</small></article>
+        <article><span class="label">Official MPP</span><strong>${mppStatus.status}</strong><small>${mppStatus.detail}</small></article>
       </section>
 
       <section class="mode-grid" aria-label="Modos del producto">
         ${modeCard("Training Mode", "Usuario confirma todo", "active")}
         ${modeCard("Privacy Mode", "Commitments/proofs visibles", "active")}
         ${modeCard("Agent Spend", "MCP/API, servicios y Link", "active")}
-        ${modeCard("Machine Payments", "HTTP 402 challenge/retry", "active")}
+        ${modeCard("Machine Payments", "MPP Charge + USDC testnet", mppStatus.ready ? "active" : "guarded")}
         ${modeCard("Soroban Wallet", "limits, allowlist, session key", "active")}
         ${modeCard("Portfolio Actions", "Swap y DeFi bajo policy", "active")}
       </section>
 
+      <section class="panel mpp-proof-panel">
+        <div class="panel-heading split">
+          <div><p class="eyebrow">Official Stellar MPP Charge</p><h2>Stellar Risk API</h2></div>
+          <strong>${mppStatus.price || "0.01"} USDC</strong>
+        </div>
+        ${latestMppReceipt
+          ? `<div class="review-summary approved"><span>Latest settlement</span><strong>${latestMppReceipt.amount} ${latestMppReceipt.asset}</strong><small>${latestMppReceipt.network} | ${latestMppReceipt.protocol}</small><a href="https://stellar.expert/explorer/testnet/tx/${latestMppReceipt.transactionHash}" target="_blank" rel="noreferrer">Verify transaction</a></div>`
+          : `<div class="review-summary blocked"><span>No public MPP settlement yet</span><strong>${mppStatus.status}</strong><small>Seller remains testnet-only and buyer signing stays local.</small></div>`}
+      </section>
       <section class="trust-flow" aria-label="Flujo privacy-first">
         ${evaluation.trustFlow.map((step) => trustStep(step)).join("")}
       </section>

@@ -1,14 +1,15 @@
 import { paymentRuntimeReadiness } from "./paymentRuntime.mjs";
+import { mppChargeReadiness } from "./mppChargeService.mjs";
 
 export async function connectorReadiness({ env = {}, stellarAdapter = null, sorobanSmartWalletAdapter = null } = {}) {
   const stellarMissing = requiredMissing(env, ["STELLAR_SECRET_KEY", "STELLAR_PUBLIC_KEY", "STELLAR_HORIZON_URL"]);
-  const mppMissing = requiredMissing(env, ["MPP_CLIENT_ID"]);
   const linkEnabled = env.LINK_AGENT_WALLET_ENABLED === "true";
   const circleEnabled = env.CIRCLE_X402_ENABLED === "true";
   const stellarReal = stellarAdapter ? await stellarAdapter.readiness() : null;
   const stellarReady = stellarReal?.status === "ready";
   const sorobanSmartWallet = sorobanSmartWalletAdapter ? sorobanSmartWalletAdapter.readiness() : null;
   const paymentRuntime = paymentRuntimeReadiness(env);
+  const mpp = mppChargeReadiness(env);
 
   return {
     status: paymentRuntime.submitCapable ? "ready-for-soroban-testnet-submit" : stellarReady ? "ready-for-testnet" : "simulated",
@@ -40,9 +41,10 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null, soro
         detail: stellarReal?.reason || "Requires Stellar keys, Horizon URL, and @stellar/stellar-sdk before real testnet submission.",
       },
       mpp: {
-        status: mppMissing.length === 0 ? "configured" : "not-configured",
-        missing: mppMissing,
-        detail: "MPP remains a discovery/payment benchmark until credentials and a live service are configured.",
+        ...mpp,
+        detail: mpp.ready
+          ? "Official Stellar MPP Charge seller is ready for testnet USDC."
+          : "Official Stellar MPP Charge remains closed until recipient, secret and atomic Upstash store are configured.",
       },
       linkAgentWallet: {
         status: linkEnabled ? "simulated-configured" : "simulated",

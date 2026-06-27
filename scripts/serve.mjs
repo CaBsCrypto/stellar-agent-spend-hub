@@ -4,6 +4,11 @@ import { readFile } from "node:fs/promises";
 import { SpendHubService } from "../src/spendHubService.mjs";
 import { runAdminTestnetPayment } from "../src/adminTestnetPayment.mjs";
 import { runAdminSorobanTransfer } from "../src/adminSorobanTransfer.mjs";
+import { MppChargeService } from "../src/mppChargeService.mjs";
+import { MppReceiptRepository } from "../src/mppReceiptRepository.mjs";
+
+let mppService;
+let mppReceiptRepository;
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -73,9 +78,25 @@ export async function handleApi({ request, response, url, service, env }) {
     writeJson(response, 200, await service.getState());
     return;
   }
+  if (method === "GET" && url.pathname === "/api/mpp/stellar-risk") {
+    const webRequest = toWebRequest(request, url);
+    const result = await getMppService(env).handleRiskRequest(webRequest, url.searchParams.get("tx"));
+    await writeWebResponse(response, result);
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/mpp/receipts") {
+    const receipts = await getMppReceiptRepository(env).listReceipts(20);
+    writeJson(response, 200, { receipts });
+    return;
+  }
 
   const machineMatch = url.pathname.match(/^\/api\/machine-resource\/([^/]+)$/);
   if (method === "GET" && machineMatch) {
+    if (String(env.LEGACY_402_ENABLED || "").toLowerCase() === "false") {
+      writeJson(response, 410, { error: "Legacy demo protocol is disabled; use /api/mpp/stellar-risk" });
+      return;
+    }
     const [, providerId] = machineMatch;
     const result = await service.requestMachineResource({
       providerId,
@@ -117,6 +138,33 @@ export async function handleApi({ request, response, url, service, env }) {
   writeJson(response, 404, { error: "Not found" });
 }
 
+function getMppService(env) {
+  if (!mppService) mppService = new MppChargeService({ env });
+  return mppService;
+}
+
+function getMppReceiptRepository(env) {
+  if (!mppReceiptRepository) mppReceiptRepository = new MppReceiptRepository({ env });
+  return mppReceiptRepository;
+}
+
+function toWebRequest(request, url) {
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(request.headers || {})) {
+    if (Array.isArray(value)) {
+      for (const item of value) headers.append(name, item);
+    } else if (value != null) {
+      headers.set(name, String(value));
+    }
+  }
+  return new Request(url, { method: request.method || "GET", headers });
+}
+
+async function writeWebResponse(response, webResponse) {
+  for (const [name, value] of webResponse.headers.entries()) response.setHeader(name, value);
+  response.statusCode = webResponse.status;
+  response.end(Buffer.from(await webResponse.arrayBuffer()));
+}
 async function handleStatic({ response, url, root }) {
   const requested = url.pathname === "/" ? "/index.html" : url.pathname;
   const safePath = normalize(requested).replace(/^(\.\.[/\\])+/, "");

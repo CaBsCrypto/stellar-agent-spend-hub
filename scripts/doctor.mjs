@@ -21,6 +21,7 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
   const circleX402 = diagnostics.circleX402 || { status: "benchmark-only", detail: "Circle x402 benchmark not configured.", dependency: "@circle-fin/x402-batching" };
   const sorobanSmartWallet = diagnostics.sorobanSmartWallet || { status: "scaffold-ready", detail: "Soroban smart wallet scaffold is ready.", contractId: null, perPaymentLimit: null };
   const paymentRuntime = diagnostics.paymentRuntime || { mode: "simulated", submitEnabled: false, submitCapable: false, detail: "Local simulated rail selected." };
+  const mpp = diagnostics.mpp || { status: "disabled", enabled: false, ready: false, detail: "Official Stellar MPP Charge is disabled." };
   const checks = [
     {
       id: "local_api",
@@ -36,9 +37,12 @@ export function buildDoctorReport({ state, diagnostics, runtimeStateScan }) {
     },
     {
       id: "machine_payments",
-      ok: state.providers.some((provider) => provider.providerId === "browserbase-mcp"),
-      status: "available",
-      detail: "HTTP 402 machine-resource flow can use browserbase-mcp.",
+      ok: !mpp.enabled || mpp.ready,
+      status: mpp.status,
+      detail: mpp.detail,
+      network: mpp.network,
+      assetContractId: mpp.assetContractId,
+      store: mpp.store?.status,
     },
     {
       id: "privacy_runtime_state",

@@ -347,6 +347,7 @@ export class SpendHubService {
   }
 
   async railDiagnostics() {
+    const readiness = await this.readiness();
     return {
       activeRail: this.activePaymentAdapter().name,
       activeRailMode: resolvePaymentExecutionMode(this.env),
@@ -354,7 +355,8 @@ export class SpendHubService {
       testnet: await this.realPaymentAdapter.readiness(),
       linkAgentWallet: await this.linkAdapter.readiness(this.env),
       sorobanSmartWallet: this.sorobanSmartWalletAdapter.readiness(),
-      paymentRuntime: (await this.readiness()).connectors.paymentRuntime,
+      paymentRuntime: readiness.connectors.paymentRuntime,
+      mpp: readiness.connectors.mpp,
     };
   }
 

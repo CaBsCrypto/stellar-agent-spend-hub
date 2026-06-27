@@ -16,6 +16,7 @@ Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README r
 10. [Deploy Vercel](./deploy-vercel.md): deploy, env vars privadas y limites del runtime serverless.
 11. [Pitch](./pitch.md): narrativa para grants, partners y primeros usuarios.
 12. [Sprint 08 Soroban runtime](./sprint-08-soroban-runtime.md): endpoint admin, modos, idempotencia y runbook testnet.
+13. [Sprint 09 MPP + Escrow V2](./sprint-09-mpp-escrow-v2.md): MPP Charge USDC, Risk API, Upstash CAS y policy escrow endurecido.
 
 ## Principios del proyecto
 
@@ -38,3 +39,4 @@ Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README r
 - Sprint 06 local implementado: contrato soporta `execute_allowed_transfer` via SAC nativo bajo asset allowlist.
 - Sprint 07 implementado: la app puede preparar/aprobar intents MCP/API por el adapter Soroban.
 - Sprint 08 implementado: receipts preview sin hash falso y endpoint admin Soroban con auth, tiny limit, testnet lock e idempotencia.
+- Sprint 09 local implementado: challenge MPP Charge oficial verificado, Risk API, buyer CLI y Policy Escrow V2 con 14 tests.

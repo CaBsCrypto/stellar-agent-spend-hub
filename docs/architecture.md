@@ -34,7 +34,11 @@ flowchart LR
 - `ZkCommitmentAdapter`: commitments/proofs demo sin revelar identificadores.
 - `StellarTestnetAdapter`: rail simulado para demo local.
 - `StellarTestnetRealAdapter`: rail testnet real con SDK, dry-run por defecto y submit gate.
-- `MachinePaymentAdapter`: flujo HTTP 402 con challenge, credential y retry.
+- `MachinePaymentAdapter`: protocolo demo legacy, deshabilitado en produccion.
+- `MppChargeService`: seller oficial Stellar MPP Charge para USDC testnet.
+- `StellarRiskService`: prepara un reporte publico de Horizon antes de emitir el challenge.
+- `MppReceiptRepository`: cache y receipts sanitizados en Upstash.
+- `PolicyEscrowV2`: contrato separado con destination + asset estrictos y presupuesto acumulado.
 - `LinkAgentWalletAdapter`: simulacion de Link/SPT como benchmark fiat futuro.
 - `CircleX402Adapter` y `TempoAdapter`: benchmarks/future rails, no dependencias v1.
 
@@ -65,7 +69,7 @@ Usa `@stellar/stellar-sdk`, valida env vars y keypair, prepara pago tiny y solo 
 ### Future rails
 
 - Stellar smart wallet/Soroban con session keys, limits, policy signer y passkeys.
-- MPP/x402 compatible para recursos digitales.
+- MPP Charge oficial para recursos digitales; MPP Session queda para una fase posterior.
 - Link-like fiat wallets para mercados donde sea viable.
 - Tempo/Circle como referencias competitivas, no cambio de rumbo.
 
@@ -78,3 +82,21 @@ El rail activo de producto sigue siendo Stellar-first. Otros protocolos se usan 
 The runtime now uses four explicit modes: `simulated`, `stellar-testnet-direct`, `soroban-dry-run`, and `soroban-testnet-submit`. Normal app approval stays in preview mode for Soroban. Only the admin boundary may submit, and only after bearer auth, testnet/native-SAC validation, tiny amount enforcement, idempotency and explicit execution gates.
 
 A receipt is `settled` only when a real transaction hash is available. Dry-runs are `pending` with `executionStatus=preview`; failed submits keep `transactionHash=null`.
+
+## Sprint 09: dos pruebas separadas
+
+```mermaid
+flowchart LR
+  Buyer["Local buyer agent"] --> Confirm["Human terminal confirmation"]
+  Confirm --> MPP["Official MPP Charge"]
+  MPP --> Seller["Vercel Stellar Risk API"]
+  Seller --> Horizon["Horizon testnet"]
+  MPP --> USDC["USDC SAC transfer"]
+
+  Owner["Owner"] --> Escrow["Policy Escrow V2"]
+  Session["Session signer"] --> Escrow
+  Escrow --> Rules["Destination + asset + per-payment + total budget"]
+  Rules --> EscrowUSDC["Tiny USDC SAC transfer"]
+```
+
+MPP uses a local classic Stellar buyer key in Sprint 09. Policy Escrow V2 is an independent on-chain control proof. They converge only after Sprint 10 introduces a contract account with `__check_auth` and passkey/auth-entry signing.
