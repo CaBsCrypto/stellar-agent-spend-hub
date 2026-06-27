@@ -1,6 +1,7 @@
 import { money, ReceiptStatus } from "./domain.mjs";
 import { TempoAdapter } from "./tempoAdapter.mjs";
 import { CircleX402Adapter } from "./circleX402Adapter.mjs";
+import { createDemoPasskey, loadLocalPasskey, publicRegistration, signPasskeyPayload } from "./passkeyBrowser.mjs";
 
 const state = {
   data: null,
@@ -10,6 +11,8 @@ const state = {
   tempoBenchmark: TempoAdapter.benchmark(),
   circleBenchmark: CircleX402Adapter.benchmark(),
   mppReceipts: [],
+  contractAccount: null,
+  localPasskey: publicRegistration(loadLocalPasskey()),
   toast: "",
 };
 
@@ -58,6 +61,8 @@ function render() {
   const paymentRuntime = state.data.readiness.connectors.paymentRuntime || { mode: "simulated", detail: "Local simulated rail selected." };
   const mppStatus = state.data.readiness.connectors.mpp || { status: "disabled", detail: "Official MPP Charge is disabled." };
   const latestMppReceipt = state.mppReceipts[0] || null;
+  const accountReadiness = state.contractAccount?.readiness || state.data.readiness.connectors.contractAccount || { status: "disabled" };
+  const latestAccountReceipt = state.contractAccount?.receipts?.[0] || null;
 
   app.innerHTML = `
     <main class="shell">
@@ -100,6 +105,24 @@ function render() {
         <article><span class="label">Official MPP</span><strong>${mppStatus.status}</strong><small>${mppStatus.detail}</small></article>
       </section>
 
+      <section class="account-proof" aria-label="Contract account proof">
+        <div class="account-heading">
+          <div><p class="eyebrow">Soroban Contract Account V1</p><h2>Passkey owner + agent session</h2></div>
+          <strong>${accountReadiness.status}</strong>
+        </div>
+        <div class="account-flow">
+          ${accountStep("Create Passkey", state.localPasskey ? "ready" : "pending", state.localPasskey?.rpId || "WebAuthn")}
+          ${accountStep("Deploy Wallet", accountReadiness.contractId ? "ready" : "guarded", accountReadiness.contractId || "testnet")}
+          ${accountStep("Grant Agent", latestAccountReceipt?.action === "grant" ? "ready" : "guarded", "0.01 / 0.02 USDC")}
+          ${accountStep("Agent Pays", latestAccountReceipt?.action === "transfer" ? "ready" : "guarded", accountReadiness.merchant || "merchant")}
+          ${accountStep("Verify Receipt", latestAccountReceipt ? "ready" : "pending", latestAccountReceipt?.transactionHash || "pending")}
+        </div>
+        <div class="account-actions">
+          <button class="ghost-button" data-action="create-passkey">Create passkey</button>
+          <button class="primary-button" data-action="grant-agent" ${accountReadiness.submitEnabled && state.localPasskey ? "" : "disabled"}>Grant agent</button>
+          ${latestAccountReceipt ? `<a class="ghost-button" href="https://stellar.expert/explorer/testnet/tx/${latestAccountReceipt.transactionHash}" target="_blank" rel="noreferrer">Verify</a>` : ""}
+        </div>
+      </section>
       <section class="mode-grid" aria-label="Modos del producto">
         ${modeCard("Training Mode", "Usuario confirma todo", "active")}
         ${modeCard("Privacy Mode", "Commitments/proofs visibles", "active")}
@@ -185,6 +208,10 @@ function render() {
   `;
 
   bindEvents();
+}
+
+function accountStep(title, status, detail) {
+  return `<article class="account-step ${status}"><span>${title}</span><strong>${status}</strong><small>${detail}</small></article>`;
 }
 
 function metric(title, value, detail) {
@@ -292,6 +319,24 @@ function showToast(message) {
 }
 
 function bindEvents() {
+  document.querySelector("[data-action='create-passkey']")?.addEventListener("click", () => runAction(async () => {
+    state.localPasskey = await createDemoPasskey();
+    showToast("Passkey creado en este dispositivo.");
+  }));
+
+  document.querySelector("[data-action='grant-agent']")?.addEventListener("click", () => runAction(async () => {
+    const prepared = await api("/api/contract-account/prepare", {
+      method: "POST",
+      body: JSON.stringify({ action: "grant" }),
+    });
+    const assertion = await signPasskeyPayload(prepared.auth.signaturePayloadHex);
+    await api("/api/contract-account/submit", {
+      method: "POST",
+      body: JSON.stringify({ requestId: prepared.requestId, assertion }),
+    });
+    await refreshState();
+    showToast("Session del agente autorizada por passkey.");
+  }));
   document.querySelectorAll("[data-action='select-intent']").forEach((button) => {
     button.addEventListener("click", () => {
       state.selectedIntentId = button.dataset.id;

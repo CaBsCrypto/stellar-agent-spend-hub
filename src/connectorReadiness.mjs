@@ -1,5 +1,6 @@
 import { paymentRuntimeReadiness } from "./paymentRuntime.mjs";
 import { mppChargeReadiness } from "./mppChargeService.mjs";
+import { contractAccountReadiness } from "./contractAccountRelayer.mjs";
 
 export async function connectorReadiness({ env = {}, stellarAdapter = null, sorobanSmartWalletAdapter = null } = {}) {
   const stellarMissing = requiredMissing(env, ["STELLAR_SECRET_KEY", "STELLAR_PUBLIC_KEY", "STELLAR_HORIZON_URL"]);
@@ -10,6 +11,7 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null, soro
   const sorobanSmartWallet = sorobanSmartWalletAdapter ? sorobanSmartWalletAdapter.readiness() : null;
   const paymentRuntime = paymentRuntimeReadiness(env);
   const mpp = mppChargeReadiness(env);
+  const contractAccount = contractAccountReadiness(env);
 
   return {
     status: paymentRuntime.submitCapable ? "ready-for-soroban-testnet-submit" : stellarReady ? "ready-for-testnet" : "simulated",
@@ -46,6 +48,7 @@ export async function connectorReadiness({ env = {}, stellarAdapter = null, soro
           ? "Official Stellar MPP Charge seller is ready for testnet USDC."
           : "Official Stellar MPP Charge remains closed until recipient, secret and atomic Upstash store are configured.",
       },
+      contractAccount,
       linkAgentWallet: {
         status: linkEnabled ? "simulated-configured" : "simulated",
         missing: [],

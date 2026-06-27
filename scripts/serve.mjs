@@ -6,9 +6,12 @@ import { runAdminTestnetPayment } from "../src/adminTestnetPayment.mjs";
 import { runAdminSorobanTransfer } from "../src/adminSorobanTransfer.mjs";
 import { MppChargeService } from "../src/mppChargeService.mjs";
 import { MppReceiptRepository } from "../src/mppReceiptRepository.mjs";
+import { ContractAccountRelayer, contractAccountReadiness } from "../src/contractAccountRelayer.mjs";
+import { runAdminContractAccountDeploy } from "../src/adminContractAccountDeploy.mjs";
 
 let mppService;
 let mppReceiptRepository;
+let contractAccountRelayer;
 
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -91,6 +94,30 @@ export async function handleApi({ request, response, url, service, env }) {
     return;
   }
 
+  if (method === "POST" && url.pathname === "/api/admin/contract-account/deploy") {
+    const body = await readJson(request);
+    writeJson(response, 200, await runAdminContractAccountDeploy({ request, body, env }));
+    return;
+  }
+  if (method === "GET" && url.pathname === "/api/contract-account/status") {
+    const readiness = contractAccountReadiness(env);
+    writeJson(response, 200, readiness.enabled
+      ? await getContractAccountRelayer(env).status()
+      : { readiness, receipts: [] });
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/contract-account/prepare") {
+    const body = await readJson(request);
+    writeJson(response, 200, await getContractAccountRelayer(env).prepare(body, { ip: clientIp(request) }));
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/contract-account/submit") {
+    const body = await readJson(request);
+    writeJson(response, 200, await getContractAccountRelayer(env).submit(body, { ip: clientIp(request) }));
+    return;
+  }
   const machineMatch = url.pathname.match(/^\/api\/machine-resource\/([^/]+)$/);
   if (method === "GET" && machineMatch) {
     if (String(env.LEGACY_402_ENABLED || "").toLowerCase() === "false") {
@@ -148,6 +175,15 @@ function getMppReceiptRepository(env) {
   return mppReceiptRepository;
 }
 
+function getContractAccountRelayer(env) {
+  if (!contractAccountRelayer) contractAccountRelayer = new ContractAccountRelayer({ env });
+  return contractAccountRelayer;
+}
+function clientIp(request) {
+  return String(request.headers["x-forwarded-for"] || request.headers["x-real-ip"] || "local")
+    .split(",")[0]
+    .trim();
+}
 function toWebRequest(request, url) {
   const headers = new Headers();
   for (const [name, value] of Object.entries(request.headers || {})) {

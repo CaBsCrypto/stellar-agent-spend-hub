@@ -2,7 +2,7 @@
 
 ## Snapshot
 
-Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hardened Policy Escrow V2 locally, in addition to the verified Sprint 08 XLM/SAC settlement path. The first real USDC Charge and Escrow V2 deployment remain pending external faucet and Vercel setup.
+Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hardened Policy Escrow V2 locally, in addition to the verified Sprint 08 XLM/SAC settlement path. Spend Account V1 now adds real WebAuthn and session-key authorization, while final USDC settlements remain pending faucet, production passkey and Vercel setup.
 
 ## Public evidence
 
@@ -17,8 +17,12 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 - Policy Escrow V2 testnet contract: `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH`.
 - Escrow V2 grant transaction: `e4d7c0eb6d68526d4a850b831a7e8cc3e525d5e2fb33c19625b9842f9358ab9c`.
 - Official MPP local challenge: `stellar/charge`, `0.01 USDC`, `stellar:testnet`.
-- JS tests: `73/73` passing after Sprint 09.
-- Rust tests: `25/25` across legacy contract and Policy Escrow V2.
+- JS tests: `84/84` passing after Sprint 10 runtime work.
+- Rust tests: `31/31` across legacy wallet, Policy Escrow V2 and Spend Account V1.
+- Spend Account V1 Wasm upload: `e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80`.
+- Merchant: `GAJK6AKXWGMRNRNZRLPZ5J7MUT4X7TZWHPEFEJJ5TL7V7XWPYKGG2CNV`.
+- Relayer: `GD2HWVSSD5I64HD5LCPCXW6NKSJLQRSL5V4OGBOIDRDCXM4VZRJBBKC6`.
+
 
 ## Scores
 
@@ -30,7 +34,7 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 - Stellar testnet path: `93/100`.
 - Real testnet payment executed: `92/100`.
 - Policy escrow readiness: `94/100` locally.
-- True passkey contract-account readiness: `30/100`.
+- True passkey contract-account readiness: `78/100` locally; instance deployment awaits the production passkey.
 
 ## What is real today
 
@@ -51,8 +55,10 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 - Existing non-MPP app intents still use file/tmp persistence and are not production-concurrent.
 - LatAm bill pay still requires a privacy vault, production-grade proofs, legal context and provider partnerships.
 - Circle Faucet funding and the first real USDC Charge still require a human reCAPTCHA.
-- The current escrow is not yet a `__check_auth` passkey contract account.
+- Spend Account V1 implements `__check_auth`; final production-domain passkey registration and testnet instance deployment remain pending.
+- Vercel CLI is unauthenticated and Upstash Marketplace cannot be provisioned until login is restored.
+- Owner and merchant USDC trustlines exist, but both balances are currently zero.
 
 ## Next move
 
-Complete Circle Faucet funding and Vercel/Upstash provisioning, then execute and document one real MPP Charge and one Policy Escrow V2 USDC transfer. Sprint 10 begins only after both hashes are public.
+Complete Circle Faucet funding and Vercel/Upstash provisioning, then execute and document one real MPP Charge and one Policy Escrow V2 USDC transfer. Then deploy Spend Account V1 from the production-domain passkey, grant the session and execute its policy-controlled USDC payment.

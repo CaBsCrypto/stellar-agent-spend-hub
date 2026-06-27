@@ -6,8 +6,8 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-73%2F73%20passing-brightgreen)
-![Contract](https://img.shields.io/badge/soroban%20tests-25%2F25%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-84%2F84%20passing-brightgreen)
+![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
 ![Vercel](https://img.shields.io/badge/Vercel-live-black)
@@ -29,6 +29,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Stellar simulated rail for local flows plus a real Stellar testnet rail with guarded submit.
 - Legacy Soroban policy contract deployed on testnet, plus Policy Escrow V2 compiled locally with strict destination/asset checks and cumulative session budgets.
 - Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
+- Contract Account V1 with WebAuthn owner, Ed25519 agent session, canonical relayer calls, fee cap and atomic replay protection.
 
 ## Sprint 09: MPP Charge + Policy Escrow V2
 
@@ -42,6 +43,15 @@ The local HTTP smoke test returned a valid `stellar/charge` challenge with `1000
 Policy Escrow V2 is deployed at `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH` with an active USDC-only session grant. The first real USDC payment and escrow transfer remain pending Circle Faucet funding and Vercel/Upstash setup. No mainnet or browser-held signing key is enabled.
 
 [Sprint 09 status and runbook](./docs/sprint-09-mpp-escrow-v2.md)
+## Sprint 10: Passkey Contract Account
+
+`SpendAccountV1` implements `__check_auth` with two authorization paths: a WebAuthn/secp256r1 owner for grants and recovery, and an Ed25519 agent session restricted to the merchant, testnet USDC, `0.01 USDC` per payment, `0.02 USDC` total and 24-hour expiry.
+
+The Wasm is installed on testnet with hash `6230e90601a82fd1afd8ae3dd59da55a4bc66d5e1fd4603996b1466f88c3c800`. [Verify the upload transaction](https://stellar.expert/explorer/testnet/tx/e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80).
+
+The merchant and relayer are deliberately separate. The relayer holds no USDC and can only pay network fees. Contract instance deployment waits for the production-domain passkey so the final owner credential is not a fixture.
+
+[Sprint 10 status and acceptance gates](./docs/sprint-10-contract-account.md)
 
 ## First Verified Testnet Payment
 
@@ -165,6 +175,9 @@ npm run doctor
 npm run agent:402 -- --provider browserbase-mcp --resource agent-client-smoke --amount 9
 npm run contract:test
 npm run contract:build
+npm run account:test
+npm run account:build
+npm run account:plan
 ```
 
 ## Stellar Testnet
