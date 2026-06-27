@@ -4,7 +4,7 @@
 
 Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a payment intent, evaluate legal/privacy/policy rules, ask the user to confirm, settle through a Stellar-first rail, and leave an auditable receipt without exposing PII or secrets.
 
-[Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
+Vercel deploy pending reauthentication | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
 ![Tests](https://img.shields.io/badge/js%20tests-84%2F84%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
@@ -256,7 +256,7 @@ vercel deploy --prebuilt --prod --yes
 Current production alias:
 
 ```text
-https://agente-pagos-stellar.vercel.app
+Deployment pending: run `vercel login` and deploy after configuring private environment variables.
 ```
 
 Secrets are stored only as Vercel environment variables. Do not commit `.env`, `.env.*`, `.vercel`, `data/runtime-state.json`, `public/`, logs, or secret outputs.

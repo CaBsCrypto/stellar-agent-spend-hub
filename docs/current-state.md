@@ -6,7 +6,7 @@ Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hard
 
 ## Public evidence
 
-- Live demo: `https://agente-pagos-stellar.vercel.app`.
+- Vercel deploy: pending CLI reauthentication; the previous public alias currently returns 404.
 - First direct Stellar testnet hash: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
 - Soroban smart wallet: `CDJEHJ763TTIVHD3MMFWIKO3R2K3A6MJKWZFZDU2L6LXXKEU43CDIGZU`.
 - Native XLM SAC: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
