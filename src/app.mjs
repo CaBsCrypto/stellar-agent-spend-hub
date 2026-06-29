@@ -227,10 +227,11 @@ function render() {
 
 function trustDemoPanel() {
   const evidence = state.evidence?.coordinatedDemo || {};
+  const foundations = state.evidence?.verifiedFoundations || [];
   const dependencies = state.diagnostics?.dependencies || {};
   return `<section class="trust-demo panel" aria-label="Trust demo evidence">
     <div class="panel-heading split">
-      <div><p class="eyebrow">Stellar Trust Demo</p><h2>Two payment proofs, one policy layer</h2></div>
+      <div><p class="eyebrow">Stellar Trust Demo</p><h2>Two USDC payment paths, explicit verification</h2></div>
       <div class="mode-switch" role="group" aria-label="Evidence mode">
         <button class="icon-text-button ${state.demoMode === "live" ? "active" : ""}" data-action="evidence-mode" data-mode="live">Live Evidence</button>
         <button class="icon-text-button ${state.demoMode === "replay" ? "active" : ""}" data-action="evidence-mode" data-mode="replay">Replay Demo</button>
@@ -240,29 +241,40 @@ function trustDemoPanel() {
       ${evidenceCard("MPP G-account", evidence.mpp)}
       ${evidenceCard("C-account session", evidence.contractAccount)}
     </div>
+    <div class="foundation-heading"><span class="label">Verified XLM foundations</span><small>Public testnet evidence already settled</small></div>
+    <div class="foundation-grid">
+      ${foundations.map(foundationCard).join("")}
+    </div>
     <div class="settlement-flow" aria-label="Payment trust flow">
-      ${["Discover", "402 / Prepare", "Human Authorization", "Policy", "Settle", "Verify"].map((step, index) => `<article><span>${index + 1}</span><strong>${step}</strong></article>`).join("")}
+      ${["Discover", "Authorize", "Policy", "Settle", "Verify"].map((step, index) => `<article><span>${index + 1}</span><strong>${step}</strong></article>`).join("")}
     </div>
     <div class="dependency-row">
       ${dependencyBadge("Horizon", dependencies.horizon)}
       ${dependencyBadge("Soroban RPC", dependencies.rpc)}
       ${dependencyBadge("Upstash", dependencies.upstash)}
-      <small>${state.evidence?.executionAllowed === false ? "Read-only evidence: no signing or settlement from this panel." : "Evidence unavailable."}</small>
+      <small>${state.evidence?.executionAllowed === false ? "Read-only evidence: this panel never signs or moves funds." : "Evidence unavailable."}</small>
     </div>
   </section>`;
 }
 
 function evidenceCard(title, evidence = {}) {
-  const status = evidence.status || "pending";
+  const status = evidence.verificationStatus || evidence.status || "pending";
   return `<article class="evidence-card ${status}">
     <div><span class="label">${title}</span><strong>${status}</strong></div>
     <strong>${evidence.amount || "0.01"} ${evidence.asset || "USDC"}</strong>
     <small>${evidence.network || "stellar:testnet"}</small>
-    <code>${evidence.transactionHash || "Pending real testnet settlement"}</code>
+    <code>${evidence.transactionHash || "Pending supervised USDC settlement"}</code>
     ${evidence.explorerUrl ? `<a href="${evidence.explorerUrl}" target="_blank" rel="noreferrer">Verify on Stellar Explorer</a>` : ""}
   </article>`;
 }
 
+function foundationCard(evidence) {
+  return `<article class="foundation-card">
+    <div><span>${evidence.label}</span><strong>${evidence.verificationStatus}</strong></div>
+    <code>${evidence.transactionHash}</code>
+    <a href="${evidence.explorerUrl}" target="_blank" rel="noreferrer">Verify</a>
+  </article>`;
+}
 function dependencyBadge(label, status = "checking") {
   return `<span class="dependency ${status}"><strong>${label}</strong>${status}</span>`;
 }

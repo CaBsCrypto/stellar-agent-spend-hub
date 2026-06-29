@@ -4,7 +4,7 @@
 
 Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a payment intent, evaluate legal/privacy/policy rules, ask the user to confirm, settle through a Stellar-first rail, and leave an auditable receipt without exposing PII or secrets.
 
-[Live demo](https://agente-pagos-stellar.vercel.app) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
+[Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
 ![Tests](https://img.shields.io/badge/js%20tests-93%2F93%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
@@ -20,31 +20,23 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 
 ## What Works Now
 
-- Dashboard for Training Mode, Privacy Mode, Agent Spend, Machine Payments, and Portfolio Actions.
-- Provider directory inspired by Stripe Directory, MPP, x402, Circle, Tempo, and agentic commerce patterns.
-- Payment intents, policy checks, privacy checks, legal context checks, receipts, and idempotency.
-- Official Stellar MPP Charge seller for a paid Stellar Risk API, plus a legacy HTTP 402 demo disabled in production.
-- Privacy guard that blocks RUT, phone, email, account numbers, card data, API keys, and client secrets from public payloads.
-- Demo ZK commitments/proofs for privacy-first bill-pay readiness.
-- Stellar simulated rail for local flows plus a real Stellar testnet rail with guarded submit.
-- Legacy Soroban policy contract deployed on testnet, plus Policy Escrow V2 compiled locally with strict destination/asset checks and cumulative session budgets.
-- Vercel server-side endpoint for one supervised tiny testnet payment, closed by default.
-- Contract Account V1 with WebAuthn owner, Ed25519 agent session, canonical relayer calls, fee cap and atomic replay protection.
-- Public Evidence API with read-only Live/Replay modes and dependency diagnostics.
-- Provider Kit V1 for official Stellar MPP Charge integrations in Node/MCP services.
+- Live dashboard with read-only Live Evidence and Replay Demo modes.
+- Official Stellar MPP Charge seller for a paid Stellar Risk API.
+- Provider Kit V1 for Node/MCP services that want to charge in Stellar testnet USDC.
+- Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
+- Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
+- Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
+- Three verified XLM testnet foundations: direct payment, policy-controlled SAC transfer, and guarded runtime settlement.
+- Privacy guard blocking RUTs, phone numbers, emails, account data, card data, secrets, signatures, full XDR, and credential IDs from public receipts.
+- Vercel production, Upstash atomic storage, Horizon, and Soroban RPC diagnostics.
+- Human confirmation remains mandatory and every submit gate is closed by default.
 
-## Sprint 09: MPP Charge + Policy Escrow V2
+## Machine Payment Proof
 
-The repository now includes two deliberately separate proofs:
+The official Stellar MPP seller quotes exactly `0.01 USDC` testnet for a Horizon-backed Stellar Risk API. Production has returned a valid `stellar/charge` challenge and Upstash provides atomic replay protection. The buyer remains local so its key never enters the browser, repository, or Vercel.
 
-- An official Stellar MPP Charge seller charging `0.01 USDC` testnet for a real Horizon-backed transaction report.
-- A Policy Escrow V2 contract enforcing per-payment and total session budgets before SAC transfers.
+The final MPP settlement is intentionally marked `pending` until Circle Faucet funding is available. Pending evidence has no transaction hash, explorer URL, or verification timestamp.
 
-The local HTTP smoke test returned a valid `stellar/charge` challenge with `100000` USDC base units. Policy Escrow V2 passes `14/14` Rust tests and builds to Wasm hash `e69592e783afdbed768ed14fd1ad0d4d1f85cc7fbd6cb12a99f7ffec9a698d3c`.
-
-Policy Escrow V2 is deployed at `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH` with an active USDC-only session grant. The first real USDC payment and escrow transfer remain pending Circle Faucet funding and Vercel/Upstash setup. No mainnet or browser-held signing key is enabled.
-
-[Sprint 09 status and runbook](./docs/sprint-09-mpp-escrow-v2.md)
 ## Sprint 10: Passkey Contract Account
 
 `SpendAccountV1` implements `__check_auth` with two authorization paths: a WebAuthn/secp256r1 owner for grants and recovery, and an Ed25519 agent session restricted to the merchant, testnet USDC, `0.01 USDC` per payment, `0.02 USDC` total and 24-hour expiry.
@@ -55,19 +47,23 @@ The merchant and relayer are deliberately separate. The relayer holds no USDC an
 
 [Sprint 10 status and acceptance gates](./docs/sprint-10-contract-account.md)
 
-## Sprint 11-13: SCF Trust Demo + Provider Kit
+## Sprint 14-16: SCF Package and Acceptance Gate
 
-The current grant-ready surface adds:
+The public package now includes:
 
-- `GET /api/evidence` with verified or explicitly pending testnet evidence.
-- `GET /api/diagnostics/public` for sanitized Horizon, RPC and Upstash status.
-- Live Evidence and Replay Demo modes that never sign or submit transactions.
-- A validated `ProviderDefinition` and official MPP Provider Kit example.
-- Threat model, 90-second demo script, partner shortlist and SCF milestones.
+- a decision-complete SCF Build application for a `$75,000` request across four milestones;
+- an English 90-second demo script, storyboard, and pitch-deck narrative;
+- a Spanish executive summary and talking points;
+- a versioned Evidence API used by the dashboard as the public source of truth;
+- a supervised acceptance runbook for the two coordinated USDC settlements.
 
-The coordinated MPP and Contract Account USDC receipts will appear automatically after the supervised testnet acceptance session. Until then, both remain `pending` with no transaction hash.
+The application is packaged but **must not be submitted** until both coordinated payments are verified:
 
-[Sprint status](./docs/sprint-11-13-status.md) | [Provider Kit](./docs/provider-kit.md) | [Threat model](./docs/threat-model.md) | [SCF package](./docs/scf-application.md) | [Demo script](./docs/demo-script.md)
+1. MPP G-account pays `0.01 USDC` to the merchant.
+2. Passkey-managed Contract Account session pays `0.01 USDC` under policy.
+
+[SCF application](./docs/scf-application.md) | [Spanish summary](./docs/scf-executive-summary-es.md) | [Acceptance runbook](./docs/scf-acceptance-runbook.md) | [Demo storyboard](./docs/demo-storyboard.md)
+
 ## First Verified Testnet Payment
 
 The project has already executed one tiny payment from Vercel to Stellar testnet.
@@ -138,19 +134,21 @@ Sprint 08 connected the backend payment lifecycle to the Soroban transfer path w
 ## Architecture
 
 ```mermaid
-flowchart TB
-  UI[Dashboard UI] --> API[Server API]
-  API --> Directory[Provider Directory]
-  API --> Legal[Legal Context Adapter]
-  API --> Privacy[Privacy Guard and ZK Commitment Demo]
-  API --> Policy[Spending Policy Engine]
-  API --> Machine[HTTP 402 Machine Payment Adapter]
-  Policy --> Confirm[Human Confirmation v1]
-  Confirm --> Stellar[Stellar Testnet Real Adapter]
-  Stellar --> Horizon[Horizon Testnet]
-  API --> Receipt[Auditable Receipt]
-  Vercel[Vercel Private Env] --> API
+flowchart LR
+  Agent["Buyer agent"] --> Discover["Provider Definition"]
+  Discover --> Authorize["Human confirmation or passkey"]
+  Authorize --> Policy["Merchant, asset, amount, budget, expiry"]
+  Policy --> MPP["Official Stellar MPP Charge"]
+  Policy --> Account["Soroban Contract Account"]
+  MPP --> Merchant["USDC merchant"]
+  Account --> Merchant
+  Merchant --> Evidence["Privacy-safe Evidence API"]
+  Upstash["Atomic replay and idempotency"] --> MPP
+  Upstash --> Account
+  Relayer["Fee-only relayer"] --> Account
 ```
+
+The two payment paths are intentionally separate in this phase. They share provider discovery, policy language, sanitized receipts, and public verification, but they do not share signing authority.
 
 ## Why Stellar
 
@@ -260,38 +258,31 @@ The Vercel function remains suitable for guarded dry-runs. Real CLI submission m
 
 ## Vercel Deploy
 
-Project is linked to Vercel as `agente-pagos-stellar`.
+Project: `agente-pagos-stellar`
+Production: <https://agente-pagos-stellar.vercel.app>
 
 ```powershell
-npm run qa
+npm run qa:full
 vercel build --prod
 vercel deploy --prebuilt --prod --yes
 ```
 
-Current production alias:
-
-```text
-Deployment pending: run `vercel login` and deploy after configuring private environment variables.
-```
-
-Secrets are stored only as Vercel environment variables. Do not commit `.env`, `.env.*`, `.vercel`, `data/runtime-state.json`, `public/`, logs, or secret outputs.
+Secrets are stored only as sensitive Vercel environment variables. Submit gates remain `false` outside a supervised acceptance window. Never commit `.env`, `.env.*`, `.vercel`, runtime state, build output, logs, assertions, or secret outputs.
 
 ## Documentation
 
-- [Docs index](./docs/README.md)
+- [SCF application](./docs/scf-application.md)
+- [Resumen ejecutivo SCF](./docs/scf-executive-summary-es.md)
+- [SCF pitch deck narrative](./docs/scf-pitch-deck.md)
+- [90-second demo script](./docs/demo-script.md)
+- [Demo storyboard](./docs/demo-storyboard.md)
+- [USDC acceptance runbook](./docs/scf-acceptance-runbook.md)
+- [Public evidence contract](./docs/public-evidence.md)
+- [Threat model](./docs/threat-model.md)
+- [Provider Kit](./docs/provider-kit.md)
 - [Current state](./docs/current-state.md)
-- [Product](./docs/product.md)
 - [Architecture](./docs/architecture.md)
-- [Privacy and security](./docs/privacy-security.md)
-- [Partner strategy](./docs/partner-strategy.md)
-- [Sprint 02 testnet result](./docs/sprint-02-testnet-payment-result.md)
-- [Sprint 03 smart wallet plan](./docs/sprint-03-smart-wallet-plan.md)
-- [Sprint 05 Soroban testnet runbook](./docs/sprint-05-soroban-testnet-runbook.md)
-- [Sprint 05 Soroban testnet result](./docs/sprint-05-soroban-testnet-result.md)
-- [Soroban smart wallet contract](./contracts/soroban-smart-wallet/README.md)
-- [Sprint 08 guarded Soroban runtime](./docs/sprint-08-soroban-runtime.md)
-- [Roadmap](./docs/roadmap.md)
-- [Pitch](./docs/pitch.md)
+- [Historical documentation index](./docs/README.md)
 
 ## V1 Rules
 
@@ -301,13 +292,18 @@ Secrets are stored only as Vercel environment variables. Do not commit `.env`, `
 - Bill pay LatAm remains roadmap until the privacy layer and partnerships are stronger.
 - DeFi actions stay simulated/blocked until contracts and strategy risks are reviewed.
 
-## Current Scores
+## Submission Readiness
 
-- MVP local/demo: `85/100`.
-- Security/privacy v1: `76/100`.
-- Machine payments HTTP 402: `78/100`.
-- Documentation/GitHub readiness: `82/100`.
-- Vercel deploy readiness: `92/100`.
-- Stellar testnet path: `90/100`.
-- Real testnet payment executed: `82/100`.
-- Smart wallet readiness: `90/100`.
+| Area | State |
+| --- | --- |
+| JavaScript tests | `94/94` passing |
+| Rust tests | `31/31` passing |
+| XLM testnet foundations | 3 verified public settlements |
+| Official MPP challenge | Verified in production |
+| MPP USDC settlement | Pending supervised Faucet session |
+| Spend Account V1 | Wasm installed; instance waits for production passkey |
+| Contract Account USDC settlement | Pending supervised passkey session |
+| Vercel / Upstash / Horizon / RPC | Operational |
+| SCF package | Prepared; submission blocked until both USDC hashes exist |
+
+No mainnet, production autopilot, production ZK, or LatAm bill pay is enabled.

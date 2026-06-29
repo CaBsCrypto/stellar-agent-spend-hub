@@ -1,102 +1,58 @@
-# Arquitectura
+# Architecture
 
-## Modelo general
+## Trust flow
 
-El sistema opera como un Spend Hub: un agente descubre proveedores, crea intents, evalua policy/legal/privacy, pide confirmacion del usuario y liquida por un rail. En v1 el rail funcional de demo es Stellar simulado; el rail real Stellar testnet ya existe como frontera controlada.
+Stellar Agent Spend Hub is a control and verification layer for agentic spending:
 
-```mermaid
-flowchart LR
-  User["Usuario"] --> Agent["Agent Spend Hub"]
-  Agent --> Directory["Provider Directory"]
-  Agent --> Legal["Legal Context Adapter"]
-  Agent --> Privacy["Privacy Vault + ZK Commitment"]
-  Agent --> Policy["Spending Policy"]
-  Policy --> Confirm["User Confirm / Passkey v1"]
-  Confirm --> Rail["Payment Rail Adapter"]
-  Rail --> Stellar["Stellar Testnet / Future Smart Wallet"]
-  Rail --> Receipt["Auditable Receipt"]
-```
-
-## Flujo interno
-
-1. Discover: buscar proveedor, endpoint, categoria, metodo de pago y contexto legal.
-2. Privacy Proof: verificar que no haya PII publica y, si aplica, generar commitment/proof demo.
-3. Policy Check: limites, allowlists, asset permitido, riesgo, slippage y confirmacion requerida.
-4. User Confirm: en v1 siempre requiere aprobacion humana.
-5. Stellar Settle: preparar o ejecutar rail y emitir recibo auditable.
-
-## Componentes actuales
-
-- `SpendHubService`: orquestador de intents, proofs, receipts, directory y approvals.
-- `ProviderDirectoryAdapter`: discovery tipo Stripe Directory/MPP.
-- `LegalContextAdapter`: evalua LCP, terms hash, trust level y acceptance required.
-- `PrivacyVaultAdapter`: simula almacenamiento de secretos como sealed refs.
-- `ZkCommitmentAdapter`: commitments/proofs demo sin revelar identificadores.
-- `StellarTestnetAdapter`: rail simulado para demo local.
-- `StellarTestnetRealAdapter`: rail testnet real con SDK, dry-run por defecto y submit gate.
-- `MachinePaymentAdapter`: protocolo demo legacy, deshabilitado en produccion.
-- `MppChargeService`: seller oficial Stellar MPP Charge para USDC testnet.
-- `StellarRiskService`: prepara un reporte publico de Horizon antes de emitir el challenge.
-- `MppReceiptRepository`: cache y receipts sanitizados en Upstash.
-- `PolicyEscrowV2`: contrato separado con destination + asset estrictos y presupuesto acumulado.
-- `LinkAgentWalletAdapter`: simulacion de Link/SPT como benchmark fiat futuro.
-- `CircleX402Adapter` y `TempoAdapter`: benchmarks/future rails, no dependencias v1.
-
-## Entidades clave
-
-- `Provider`: servicio que puede vender recurso digital, accion crypto o bill pay.
-- `PaymentIntent`: propuesta de pago con monto, proveedor, rail, privacy requirement y razon del agente.
-- `SpendingPolicy`: limites y reglas del usuario.
-- `PaymentReceipt`: evidencia auditable sin PII.
-- `Proof`: commitment/proof demo asociado a un secreto privado.
-
-## Rails
-
-### Stellar simulado
-
-Usado por el demo local. Permite mostrar UX, receipts, policy y 402 sin depender de fondos reales.
-
-### Stellar testnet real
-
-Usa `@stellar/stellar-sdk`, valida env vars y keypair, prepara pago tiny y solo ejecuta si:
-
-- `STELLAR_SUBMIT_ENABLED=true`
-- se llama `npm run testnet:payment -- --execute`
-- policy permite el intent
-- env vars estan completas
-- keypair es valido
-
-### Future rails
-
-- Stellar smart wallet/Soroban con session keys, limits, policy signer y passkeys.
-- MPP Charge oficial para recursos digitales; MPP Session queda para una fase posterior.
-- Link-like fiat wallets para mercados donde sea viable.
-- Tempo/Circle como referencias competitivas, no cambio de rumbo.
-
-## Decision importante
-
-El rail activo de producto sigue siendo Stellar-first. Otros protocolos se usan para aprender patrones de mercado y compatibilidad, no para abandonar la narrativa Stellar.
-
-## Payment execution runtime
-
-The runtime now uses four explicit modes: `simulated`, `stellar-testnet-direct`, `soroban-dry-run`, and `soroban-testnet-submit`. Normal app approval stays in preview mode for Soroban. Only the admin boundary may submit, and only after bearer auth, testnet/native-SAC validation, tiny amount enforcement, idempotency and explicit execution gates.
-
-A receipt is `settled` only when a real transaction hash is available. Dry-runs are `pending` with `executionStatus=preview`; failed submits keep `transactionHash=null`.
-
-## Sprint 09: dos pruebas separadas
+`Discover -> Authorize -> Policy -> Settle -> Verify`
 
 ```mermaid
 flowchart LR
-  Buyer["Local buyer agent"] --> Confirm["Human terminal confirmation"]
-  Confirm --> MPP["Official MPP Charge"]
-  MPP --> Seller["Vercel Stellar Risk API"]
-  Seller --> Horizon["Horizon testnet"]
-  MPP --> USDC["USDC SAC transfer"]
-
-  Owner["Owner"] --> Escrow["Policy Escrow V2"]
-  Session["Session signer"] --> Escrow
-  Escrow --> Rules["Destination + asset + per-payment + total budget"]
-  Rules --> EscrowUSDC["Tiny USDC SAC transfer"]
+  Agent["Buyer agent"] --> Directory["Provider Definition"]
+  Directory --> Authorization["Human confirmation or passkey"]
+  Authorization --> Policy["Merchant, asset, amount, budget, expiry"]
+  Policy --> MPP["Official Stellar MPP Charge"]
+  Policy --> Account["Soroban Contract Account"]
+  MPP --> Merchant["USDC merchant"]
+  Account --> Merchant
+  Merchant --> Evidence["Public Evidence API"]
+  Upstash["Atomic replay and request state"] --> MPP
+  Upstash --> Account
+  Relayer["Fee-only Vercel relayer"] --> Account
 ```
 
-MPP uses a local classic Stellar buyer key in Sprint 09. Policy Escrow V2 is an independent on-chain control proof. They converge only after Sprint 10 introduces a contract account with `__check_auth` and passkey/auth-entry signing.
+## Two coordinated payment paths
+
+### Official MPP Charge
+
+A local buyer requests the Stellar Risk API, receives a standards-based `402` challenge, validates recipient, network, asset, and the `0.01 USDC` maximum, then asks for explicit confirmation. Upstash atomically consumes the paid request before the resource and receipt are returned.
+
+### Soroban Contract Account
+
+A WebAuthn passkey owns the account and can grant or revoke an Ed25519 agent session. The session can authorize only the configured USDC SAC transfer to the merchant under its per-payment limit, cumulative budget, and expiry. A separate relayer pays network fees and never receives user funds.
+
+The paths intentionally remain separate. The current MPP buyer uses a classic G-account keypair, while the Contract Account uses Soroban authorization entries. They share provider definitions, policy semantics, sanitized receipts, and public evidence.
+
+## Main components
+
+- `ProviderKit`: validates machine-readable provider definitions and the paid-resource lifecycle.
+- `MppChargeService`: official Stellar MPP seller for the Horizon-backed risk report.
+- `SpendAccountV1`: contract account implementing passkey owner and bounded session authorization.
+- `ContractAccountRelayer`: reconstructs canonical allowlisted calls and rejects arbitrary XDR.
+- `PublicEvidenceService`: publishes verified and explicitly pending evidence.
+- `SensitiveDataGuard`: blocks PII, secrets, signatures, XDR, and credential identifiers.
+- `Upstash`: atomic replay protection, request state, idempotency, and sanitized receipts.
+- `Horizon` and `Soroban RPC`: transaction lookup, simulation, submission, and verification.
+
+## Security boundaries
+
+- Buyer and session secrets remain local and never enter the browser or public repository.
+- Relayer secret stays in sensitive Vercel environment variables.
+- Browser handles WebAuthn but never receives relayer or buyer secrets.
+- The relayer accepts semantic actions, never arbitrary transaction envelopes.
+- Every public evidence panel is read-only and returns `executionAllowed=false`.
+- Submit gates are closed by default and reopened only during supervised testnet acceptance.
+
+## Deferred scope
+
+Mainnet, autonomous production spending, MPP Session, production ZK, and LatAm bill pay are deferred until external review, operational controls, and provider validation are complete.

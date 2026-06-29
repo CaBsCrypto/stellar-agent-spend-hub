@@ -937,9 +937,60 @@ code {
   font-weight: 800;
 }
 
+.foundation-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.foundation-heading small {
+  color: #69736d;
+}
+
+.foundation-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.foundation-card {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+  border-top: 3px solid #1d6f53;
+  background: #f2f6f4;
+}
+
+.foundation-card > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.foundation-card span,
+.foundation-card strong,
+.foundation-card a {
+  font-size: 0.72rem;
+}
+
+.foundation-card code {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.foundation-card a {
+  color: #125b48;
+  font-weight: 800;
+}
+
 .settlement-flow {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 14px;
 }
@@ -1013,6 +1064,7 @@ code {
 
 @media (max-width: 900px) {
   .evidence-grid,
+  .foundation-grid,
   .provider-kit-grid {
     grid-template-columns: 1fr;
   }

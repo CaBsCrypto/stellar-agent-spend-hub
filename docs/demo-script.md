@@ -1,44 +1,29 @@
 # 90-Second SCF Demo Script
 
-## 0-15 seconds: Problem
+## 0-12 seconds: The trust gap
 
-AI agents can discover APIs, but payment credentials and unlimited wallets create
-an unacceptable trust gap. Spend Hub gives an agent a bounded payment permission
-instead of custody.
+AI agents can discover and use APIs, but broad wallet credentials create an unacceptable trust gap. Stellar Agent Spend Hub gives an agent bounded payment authority instead of custody.
 
-## 15-35 seconds: MPP interoperability
+## 12-32 seconds: Discover and authorize
 
-1. Open `Live Evidence`.
-2. Request a Stellar Risk API report without credentials.
-3. Show the official MPP `402` challenge for exactly `0.01 USDC`.
-4. Run the local buyer with human confirmation.
-5. Show the delivered report and public settlement link.
+Open the Provider Kit definition and Stellar Risk API. Show the exact `0.01 USDC` price, Stellar testnet asset, and merchant. The local buyer receives the official Stellar MPP `402` challenge and asks for human confirmation before signing.
 
-## 35-65 seconds: Programmable control
+## 32-47 seconds: MPP settle and verify
 
-1. Show the passkey-owned Soroban Contract Account.
-2. Grant the agent a 24-hour session.
-3. Highlight fixed merchant, USDC asset, `0.01` per-payment limit and `0.02`
-   cumulative budget.
-4. Execute the agent payment and verify the second public transaction.
-5. Show a blocked destination or replay attempt.
+Open Live Evidence. Show the delivered report and the first coordinated USDC settlement. Follow its public explorer link, then explain that Upstash consumes the request atomically so replay cannot produce a second payment.
 
-## 65-80 seconds: Privacy and auditability
+## 47-68 seconds: Contract Account policy
 
-Open `GET /api/evidence`. Show that it contains contract IDs, public keys,
-amounts, policy decisions and hashes, but no private keys, signatures, XDR,
-credential IDs or personal identifiers.
+Show the passkey-owned Soroban Contract Account. Its agent session is limited to one merchant, testnet USDC, `0.01 USDC` per payment, `0.02 USDC` total, and 24 hours. Execute the second payment and open its explorer link. Show one blocked invalid destination or replay.
 
-## 80-90 seconds: Why Stellar
+## 68-82 seconds: Privacy-safe evidence
 
-Spend Hub combines open MPP payments, low-cost USDC settlement and Soroban
-contract accounts. The next milestone is onboarding MCP/API providers through
-the Provider Kit before expanding toward privacy-first LatAm bill pay.
+Switch to Replay Demo. It is read-only and never signs or moves funds. Open `GET /api/evidence`: it contains verification status, network, asset, amount, public policy, timestamp, and transaction hashes, but no private keys, signatures, full XDR, credential IDs, or personal identifiers.
 
-## Recording checklist
+## 82-90 seconds: Why Stellar
 
-- Use the stable production domain.
-- Start with all submit gates closed.
-- Never reveal terminal environment variables.
-- Keep explorer tabs preloaded.
-- Use Replay Demo after the two real settlements are recorded.
+Spend Hub combines official MPP interoperability, low-cost USDC settlement, and Soroban contract accounts. SCF funding will turn the proof into a reusable Provider Kit pilot, security-reviewed beta, and responsible mainnet readiness process.
+
+## Recording gate
+
+Do not record the final version until both coordinated USDC entries are `verified`. Use the stable production domain, preload explorer tabs, keep every submit gate closed outside the recorded acceptance actions, and never reveal terminal environment variables.

@@ -45,6 +45,6 @@
 
 1. Close deploy, submit and MPP gates.
 2. Revoke the active session from the owner passkey.
-3. Stop funding the legacy escrow.
+3. Stop funding the contract account and revoke the active session.
 4. Rotate relayer and server secrets in Vercel.
 5. Preserve only sanitized public hashes for investigation.

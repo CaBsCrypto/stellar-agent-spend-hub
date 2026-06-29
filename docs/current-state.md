@@ -2,63 +2,48 @@
 
 ## Snapshot
 
-Stellar Agent Spend Hub now has an official Stellar MPP Charge seller and a hardened Policy Escrow V2 locally, in addition to the verified Sprint 08 XLM/SAC settlement path. Spend Account V1 now adds real WebAuthn and session-key authorization, while final USDC settlements remain pending faucet, production passkey and Vercel setup.
+Stellar Agent Spend Hub is a live, testnet-only trust demo for agentic payments. It combines an official Stellar MPP paid API with a passkey-managed Soroban Contract Account, while keeping those signing paths intentionally separate. The SCF package is prepared; submission remains blocked until both coordinated USDC payments are publicly verified.
 
-## Public evidence
+## Public evidence source
 
-- Live Vercel demo: `https://agente-pagos-stellar.vercel.app` (restored and verified).
-- First direct Stellar testnet hash: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
-- Soroban smart wallet: `CDJEHJ763TTIVHD3MMFWIKO3R2K3A6MJKWZFZDU2L6LXXKEU43CDIGZU`.
-- Native XLM SAC: `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`.
-- First policy-controlled SAC transfer: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
-- First guarded runtime settlement: `cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e` (ledger `3300195`).
-- Legacy contract Wasm hash: `5737b826d56ee4bb21138d501cff2eb99b3275d8b733c7258adcc1a8aa5f5b66`.
-- Policy Escrow V2 Wasm hash: `e69592e783afdbed768ed14fd1ad0d4d1f85cc7fbd6cb12a99f7ffec9a698d3c`.
-- Policy Escrow V2 testnet contract: `CCNLNLFQ35CSO3QDTBXYKYGYIB4W7273AC7DTV653QOCOI46MPYZSQXH`.
-- Escrow V2 grant transaction: `e4d7c0eb6d68526d4a850b831a7e8cc3e525d5e2fb33c19625b9842f9358ab9c`.
-- Official MPP production challenge: `402`, `stellar/charge`, `0.01 USDC`, `stellar:testnet`; gate closed again after verification.
-- JS tests: `93/93` passing through Sprint 13 Provider Kit and Vercel routing work.
-- Rust tests: `31/31` across legacy wallet, Policy Escrow V2 and Spend Account V1.
-- Spend Account V1 Wasm upload: `e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80`.
-- Merchant: `GAJK6AKXWGMRNRNZRLPZ5J7MUT4X7TZWHPEFEJJ5TL7V7XWPYKGG2CNV`.
-- Relayer: `GD2HWVSSD5I64HD5LCPCXW6NKSJLQRSL5V4OGBOIDRDCXM4VZRJBBKC6`.
+`GET https://agente-pagos-stellar.vercel.app/api/evidence` is the canonical public manifest. The dashboard and submission materials link to it instead of inventing settlement state.
 
+### Verified XLM foundations
 
-## Scores
+- Direct payment: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
+- Policy-controlled SAC transfer: `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f`.
+- Guarded runtime settlement: `cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e`.
 
-- MVP local/demo: `92/100`.
-- Security/privacy v1: `87/100`.
-- Machine payments MPP/HTTP 402: `96/100`; production challenge verified, settlement pending Faucet.
-- Documentation/GitHub readiness: `95/100`.
-- Vercel deploy readiness: `98/100`; production and Upstash diagnostics verified.
-- Stellar testnet path: `93/100`.
-- Real testnet payment executed: `92/100`.
-- Policy escrow readiness: `94/100` locally.
-- True passkey contract-account readiness: `78/100` locally; instance deployment awaits the production passkey.
+### Coordinated USDC proofs
 
-## What is real today
+- MPP G-account payment: `pending`, `0.01 USDC`.
+- Passkey Contract Account session payment: `pending`, `0.01 USDC`.
 
-- Provider directory, intents, policy, privacy checks, receipts and HTTP 402 work locally.
-- Direct Stellar tiny settlement and Soroban native SAC settlement have public testnet hashes.
-- App approvals can route through `soroban-dry-run` and now produce `preview` receipts with no fake transaction hash.
-- `POST /api/admin/soroban-transfer` is bearer-protected, testnet-only, native-XLM-only, tiny-limited and idempotent within the configured runtime state.
-- Real Soroban submit additionally requires `SOROBAN_SUBMIT_ENABLED=true`, `SOROBAN_EXECUTION_DRIVER=stellar-cli` and `SPEND_HUB_PAYMENT_RAIL=soroban-testnet-submit`.
-- The guarded runtime produced a Horizon-verified settlement receipt using nonce `3`; its transaction hash is public evidence above.
-- Submit gates remain closed by default.
-- Official MPP Charge produces a standards-based testnet USDC challenge and validates Horizon input before charging.
-- Policy Escrow V2 is deployed and its active USDC-only session policy is readable on testnet; funding and transfer wait for faucet USDC.
+A pending item cannot contain a transaction hash, explorer URL, or verification timestamp.
+
+## Operational state
+
+- Production: `https://agente-pagos-stellar.vercel.app`.
+- Horizon, Soroban RPC, and Upstash diagnostics are reachable.
+- Official production MPP challenge verified at exactly `0.01 USDC`.
+- Spend Account V1 Wasm is installed on testnet; deployment awaits the production passkey.
+- Owner and merchant USDC trustlines exist; balances remain unfunded at the last verification.
+- JavaScript tests: `94/94` passing.
+- Rust tests: `31/31`.
+- MPP, Contract Account deploy, and Contract Account submit gates are closed.
+
+## Archived experiment
+
+Policy Escrow V2 remains available only as historical technical documentation. It receives no new funds and is not part of the primary SCF demo narrative.
 
 ## Main risks
 
-- Vercel can expose the guarded dry-run endpoint, but its standard serverless runtime does not include local Stellar CLI identities. Real CLI submit belongs on a trusted local/CI runner until an SDK signer or managed signing service is designed.
-- MPP uses the provisioned atomic Upstash CAS adapter; its submit path remains disabled until the supervised USDC acceptance window.
-- Existing non-MPP app intents still use file/tmp persistence and are not production-concurrent.
-- LatAm bill pay still requires a privacy vault, production-grade proofs, legal context and provider partnerships.
-- Circle Faucet funding and the first real USDC Charge still require a human reCAPTCHA.
-- Spend Account V1 implements `__check_auth`; final production-domain passkey registration and testnet instance deployment remain pending.
-- Vercel CLI is authenticated and Upstash Marketplace is provisioned; production diagnostics report Horizon, RPC and Upstash reachable.
-- Owner and merchant USDC trustlines exist, but both balances are currently zero.
+- Circle Faucet requires a human anti-bot step.
+- Production passkey registration requires the user and stable RP domain.
+- Contracts and relayer have not received an external security audit.
+- Non-MPP demo intents still use local or temporary persistence.
+- Mainnet, autopilot, production ZK, and LatAm bill pay remain out of scope.
 
-## Next move
+## Next acceptance action
 
-Complete Circle Faucet funding and Vercel/Upstash provisioning, then execute and document one real MPP Charge and one Policy Escrow V2 USDC transfer. Then deploy Spend Account V1 from the production-domain passkey, grant the session and execute its policy-controlled USDC payment.
+Use `docs/scf-acceptance-runbook.md` for one supervised session: fund testnet USDC, settle MPP, reject replay, register the passkey, deploy/fund the account, grant the session, settle its payment, publish receipts, close gates, and run final QA.

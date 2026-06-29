@@ -4,6 +4,11 @@ import { Buffer } from "node:buffer";
 import { Keypair, StrKey } from "@stellar/stellar-sdk";
 import { USDC_SAC_TESTNET } from "@stellar/mpp";
 import { PublicEvidenceService } from "../src/publicEvidenceService.mjs";
+import {
+  VERIFIED_FOUNDATIONS,
+  assertEvidenceInvariant,
+  pendingMppEvidence,
+} from "../src/publicEvidenceCatalog.mjs";
 import { readUpstashConfig } from "../src/upstashConfig.mjs";
 import { buildContractAccountCommand } from "../scripts/contract-account-testnet.mjs";
 import { MppReceiptRepository } from "../src/mppReceiptRepository.mjs";
@@ -53,8 +58,12 @@ test("evidence live y replay son read-only y usan hashes publicos", async () => 
   assert.equal(replay.executionAllowed, false);
   assert.equal(replay.mode, "replay");
   assert.equal(live.coordinatedDemo.mpp.status, "verified");
+  assert.equal(live.coordinatedDemo.mpp.verificationStatus, "verified");
+  assert.equal(live.coordinatedDemo.mpp.evidenceType, "mpp-charge");
+  assert.equal(live.coordinatedDemo.mpp.verifiedAt, "2026-06-27T12:00:00.000Z");
   assert.equal(live.coordinatedDemo.contractAccount.status, "verified");
   assert.match(live.coordinatedDemo.mpp.explorerUrl, /stellar\.expert/);
+  assert.equal(live.verifiedFoundations.length, 3);
 });
 
 test("evidence pendiente nunca inventa transaction hash", async () => {
@@ -65,8 +74,24 @@ test("evidence pendiente nunca inventa transaction hash", async () => {
   });
   const evidence = await service.manifest();
   assert.equal(evidence.coordinatedDemo.mpp.status, "pending");
+  assert.equal(evidence.coordinatedDemo.mpp.verificationStatus, "pending");
+  assert.equal(evidence.coordinatedDemo.mpp.evidenceType, "mpp-charge");
   assert.equal(evidence.coordinatedDemo.mpp.transactionHash, null);
+  assert.equal(evidence.coordinatedDemo.mpp.explorerUrl, null);
+  assert.equal(evidence.coordinatedDemo.mpp.verifiedAt, null);
   assert.equal(evidence.coordinatedDemo.contractAccount.transactionHash, null);
+});
+
+test("catalogo publico exige prueba completa para marcar evidencia verificada", () => {
+  assert.equal(VERIFIED_FOUNDATIONS.every((item) => item.verifiedAt && item.explorerUrl), true);
+  assert.doesNotThrow(() => assertEvidenceInvariant(pendingMppEvidence()));
+  assert.throws(
+    () => assertEvidenceInvariant({
+      ...pendingMppEvidence(),
+      transactionHash: "ab".repeat(32),
+    }),
+    /Pending evidence cannot include settlement proof/,
+  );
 });
 
 test("diagnostico publico no expone URLs ni tokens privados", async () => {

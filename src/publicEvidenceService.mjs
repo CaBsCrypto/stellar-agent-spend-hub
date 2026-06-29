@@ -4,40 +4,14 @@ import { ContractAccountRepository } from "./contractAccountRepository.mjs";
 import { mppChargeReadiness } from "./mppChargeService.mjs";
 import { contractAccountReadiness } from "./contractAccountRelayer.mjs";
 import { readUpstashConfig } from "./upstashConfig.mjs";
-
-const EXPLORER = "https://stellar.expert/explorer/testnet";
-const KNOWN_EVIDENCE = Object.freeze([
-  {
-    id: "direct-stellar-testnet",
-    kind: "direct-payment",
-    label: "First direct Stellar testnet payment",
-    status: "verified",
-    network: "stellar:testnet",
-    asset: "XLM",
-    amount: "0.0000010",
-    transactionHash: "4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb",
-  },
-  {
-    id: "policy-sac-transfer",
-    kind: "policy-transfer",
-    label: "First policy-controlled SAC transfer",
-    status: "verified",
-    network: "stellar:testnet",
-    asset: "XLM",
-    amount: "tiny",
-    transactionHash: "8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f",
-  },
-  {
-    id: "guarded-runtime-settlement",
-    kind: "guarded-runtime",
-    label: "First guarded Soroban runtime settlement",
-    status: "verified",
-    network: "stellar:testnet",
-    asset: "XLM",
-    amount: "tiny",
-    transactionHash: "cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e",
-  },
-]);
+import {
+  PUBLIC_EVIDENCE_VERSION,
+  VERIFIED_FOUNDATIONS,
+  assertEvidenceInvariant,
+  pendingContractAccountEvidence,
+  pendingMppEvidence,
+  verifiedRuntimeEvidence,
+} from "./publicEvidenceCatalog.mjs";
 
 export class PublicEvidenceService {
   constructor({
@@ -63,18 +37,21 @@ export class PublicEvidenceService {
     const mpp = mppReceipts.map(mppEvidence);
     const contractAccount = accountReceipts.map(accountEvidence);
     const payload = {
-      version: "sprint-12-evidence-v1",
+      version: PUBLIC_EVIDENCE_VERSION,
       generatedAt: this.now().toISOString(),
       mode: safeMode,
       executionAllowed: false,
       network: "stellar:testnet",
-      evidence: [...mpp, ...contractAccount, ...KNOWN_EVIDENCE.map(withExplorer)],
+      evidence: [...mpp, ...contractAccount, ...VERIFIED_FOUNDATIONS],
+      verifiedFoundations: VERIFIED_FOUNDATIONS,
       coordinatedDemo: {
-        mpp: mpp[0] || pendingMpp(this.env),
+        mpp: mpp[0] || pendingMppEvidence(this.env),
         contractAccount: contractAccount.find((item) => item.action === "transfer")
-          || pendingContractAccount(this.env),
+          || pendingContractAccountEvidence(this.env),
       },
     };
+    payload.evidence.forEach(assertEvidenceInvariant);
+    Object.values(payload.coordinatedDemo).forEach(assertEvidenceInvariant);
     assertPublic(payload);
     return payload;
   }
@@ -96,11 +73,10 @@ export class PublicEvidenceService {
 }
 
 function mppEvidence(receipt) {
-  return withExplorer({
+  return verifiedRuntimeEvidence({
     id: `mpp:${receipt.transactionHash}`,
-    kind: "mpp-charge",
+    evidenceType: "mpp-charge",
     label: "Official MPP Stellar Charge",
-    status: "verified",
     protocol: receipt.protocol,
     network: receipt.network,
     asset: receipt.asset,
@@ -108,16 +84,21 @@ function mppEvidence(receipt) {
     amount: receipt.amount,
     recipient: receipt.recipient,
     transactionHash: receipt.transactionHash,
+    verifiedAt: receipt.settledAt,
     settledAt: receipt.settledAt,
+    policy: {
+      authorization: "local-human-confirmation",
+      price: `${receipt.amount} ${receipt.asset}`,
+      replayProtection: "atomic-consumption",
+    },
   });
 }
 
 function accountEvidence(receipt) {
-  return withExplorer({
+  return verifiedRuntimeEvidence({
     id: `ca:${receipt.transactionHash}`,
-    kind: "contract-account",
+    evidenceType: "contract-account",
     label: "Passkey-managed contract account",
-    status: "verified",
     protocol: receipt.protocol,
     network: receipt.network,
     asset: "USDC",
@@ -129,46 +110,14 @@ function accountEvidence(receipt) {
     policyDecision: receipt.policyDecision,
     signerType: receipt.signerType,
     transactionHash: receipt.transactionHash,
+    verifiedAt: receipt.settledAt,
     settledAt: receipt.settledAt,
+    policy: {
+      owner: "passkey",
+      sessionSigner: receipt.signerType,
+      decision: receipt.policyDecision || "allowed",
+    },
   });
-}
-
-function pendingMpp(env) {
-  return {
-    id: "mpp:pending",
-    kind: "mpp-charge",
-    label: "Official MPP Stellar Charge",
-    status: "pending",
-    network: "stellar:testnet",
-    asset: "USDC",
-    amount: "0.01",
-    recipient: env.MPP_STELLAR_RECIPIENT || null,
-    transactionHash: null,
-    explorerUrl: null,
-  };
-}
-
-function pendingContractAccount(env) {
-  return {
-    id: "ca:pending",
-    kind: "contract-account",
-    label: "Passkey-managed contract account",
-    status: "pending",
-    network: "stellar:testnet",
-    asset: "USDC",
-    amount: "0.01",
-    recipient: env.CONTRACT_ACCOUNT_MERCHANT || null,
-    contractId: env.CONTRACT_ACCOUNT_ID || null,
-    transactionHash: null,
-    explorerUrl: null,
-  };
-}
-
-function withExplorer(item) {
-  return {
-    ...item,
-    explorerUrl: item.transactionHash ? `${EXPLORER}/tx/${item.transactionHash}` : null,
-  };
 }
 
 function publicReadiness(value) {

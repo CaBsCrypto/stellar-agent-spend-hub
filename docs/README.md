@@ -1,49 +1,46 @@
-# Docs de Alto Nivel
+# Project Documentation
 
-Esta carpeta contiene la memoria estrategica y tecnica del proyecto. El README raiz funciona como landing publico para GitHub; estos documentos sirven para tomar decisiones, preparar pitch, conversar con Stellar y mantener el foco mientras avanzamos hacia Soroban smart wallets y partners MCP/API.
+## Start here
 
-## Orden recomendado
+1. [Current state](./current-state.md): verified evidence, pending gates, and current risks.
+2. [SCF application](./scf-application.md): funding request, milestones, metrics, and impact.
+3. [Resumen ejecutivo SCF](./scf-executive-summary-es.md): Spanish executive summary.
+4. [Architecture](./architecture.md): the two coordinated Stellar payment paths.
+5. [Public evidence contract](./public-evidence.md): canonical schema and anti-fabrication invariants.
+6. [Threat model](./threat-model.md): assets, trust boundaries, controls, and residual risks.
+7. [Provider Kit](./provider-kit.md): reusable MPP integration for Node/MCP providers.
+8. [SCF pitch deck](./scf-pitch-deck.md): ten-slide narrative.
+9. [Demo script](./demo-script.md): final 90-second English narration.
+10. [Demo storyboard](./demo-storyboard.md): shots, timing, and capture checklist.
+11. [Acceptance runbook](./scf-acceptance-runbook.md): supervised Faucet, MPP, and passkey session.
+12. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
 
-1. [Current state](./current-state.md): estado real, scores, hash testnet y riesgos actuales.
-2. [Producto](./product.md): que estamos construyendo, para quien y por que ahora.
-3. [Arquitectura](./architecture.md): componentes, flujo interno y rails.
-4. [Privacidad y seguridad](./privacy-security.md): reglas duras, datos prohibidos y modelo ZK.
-5. [Partner strategy](./partner-strategy.md): rutas para MCP/API providers, Stellar ecosystem y servicios digitales.
-6. [Runbook testnet](./testnet-runbook.md): camino controlado para pagos Stellar testnet.
-7. [Sprint 02 result](./sprint-02-testnet-payment-result.md): evidencia publica del primer pago testnet.
-8. [Sprint 03 smart wallet plan](./sprint-03-smart-wallet-plan.md): plan Soroban para limits, allowlists y session keys.
-9. [Roadmap](./roadmap.md): fases, decisiones pendientes y criterios de avance.
-10. [Deploy Vercel](./deploy-vercel.md): deploy, env vars privadas y limites del runtime serverless.
-11. [Pitch](./pitch.md): narrativa para grants, partners y primeros usuarios.
-12. [Sprint 08 Soroban runtime](./sprint-08-soroban-runtime.md): endpoint admin, modos, idempotencia y runbook testnet.
-13. [Sprint 09 MPP + Escrow V2](./sprint-09-mpp-escrow-v2.md): MPP Charge USDC, Risk API, Upstash CAS y policy escrow endurecido.
-14. [Sprint 10 Contract Account](./sprint-10-contract-account.md): passkey owner, agent session, relayer Vercel y evidencia testnet.
-15. [Threat model](./threat-model.md): activos, boundaries, amenazas, controles y respuesta.
-16. [Provider Kit](./provider-kit.md): contrato publico y ejemplo MPP para Node/MCP.
-17. [SCF application](./scf-application.md): pitch, milestones, presupuesto y metricas.
-18. [Demo script](./demo-script.md): guion verificable de 90 segundos.
-19. [Partner shortlist](./partner-shortlist.md): candidatos MCP/API para discovery.
-20. [Sprint 11-13 status](./sprint-11-13-status.md): deploy, Upstash, endpoints y acceptance gates.
+## Product and distribution
 
-## Principios del proyecto
+- [Product](./product.md)
+- [Privacy and security](./privacy-security.md)
+- [Partner strategy](./partner-strategy.md)
+- [Partner shortlist](./partner-shortlist.md)
+- [Roadmap](./roadmap.md)
+- [Vercel deployment](./deploy-vercel.md)
 
-- Stellar-first, pero con adaptadores para no quedar encerrados.
-- Usuario custodio; el agente no toca private keys ni credenciales bancarias.
-- Training Mode v1: todo pago real requiere confirmacion humana.
-- Privacy-first: no RUT, telefono, email, numero de cuenta, tarjeta, API keys ni client secrets en logs, receipts, memos o metadata publica.
-- Cuentas LatAm son roadmap importante, pero solo despues de tener capa privacy/ZK mas madura.
-- Wedge inicial: pagos MCP/API/servicios digitales y acciones crypto simples bajo policy.
+## Historical implementation record
 
-## Estado actual
+The following files preserve earlier testnet and contract experiments. They are engineering history, not the primary SCF narrative.
 
-- MVP local funcional con dashboard, provider directory, intents, receipts, proof demo y flujo HTTP 402.
-- Stellar testnet real rail probado con un pago tiny desde Vercel.
-- Primer hash testnet: `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb`.
-- `@stellar/stellar-sdk` instalado.
-- `STELLAR_SUBMIT_ENABLED=false` es el estado normal en produccion.
-- Sprint 04 implementado localmente: contrato Soroban smart wallet compilable con owner, session key, limits, allowlist, expiry, revoke y nonce tests.
-- Sprint 05 ejecutado: contrato Soroban smart wallet desplegado e invocado en testnet con owner/session signer y evento de ejecucion permitido.
-- Sprint 06 local implementado: contrato soporta `execute_allowed_transfer` via SAC nativo bajo asset allowlist.
-- Sprint 07 implementado: la app puede preparar/aprobar intents MCP/API por el adapter Soroban.
-- Sprint 08 implementado: receipts preview sin hash falso y endpoint admin Soroban con auth, tiny limit, testnet lock e idempotencia.
-- Sprint 09 local implementado: challenge MPP Charge oficial verificado, Risk API, buyer CLI y Policy Escrow V2 con 14 tests.
+- [First direct testnet payment](./sprint-02-testnet-payment-result.md)
+- [Soroban smart-wallet plan](./sprint-03-smart-wallet-plan.md)
+- [Soroban testnet deployment](./sprint-05-soroban-testnet-result.md)
+- [Native SAC transfer](./sprint-06-sac-transfer-result.md)
+- [Guarded Soroban runtime](./sprint-08-soroban-runtime.md)
+- [Archived MPP and escrow experiment](./sprint-09-mpp-escrow-v2.md)
+- [Contract Account V1](./sprint-10-contract-account.md)
+- [Sprint 11-13 implementation record](./sprint-11-13-status.md)
+
+## Hard rules
+
+- Stellar testnet only until security and operational gates pass.
+- Human authorization remains mandatory in v1.
+- Pending evidence never carries a transaction hash.
+- No PII, secrets, signatures, XDR, credential IDs, or customer references in public logs or receipts.
+- LatAm bill pay remains deferred until privacy and partner requirements are production-ready.
