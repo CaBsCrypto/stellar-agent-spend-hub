@@ -44,6 +44,35 @@ The paths intentionally remain separate. The current MPP buyer uses a classic G-
 - `Upstash`: atomic replay protection, request state, idempotency, and sanitized receipts.
 - `Horizon` and `Soroban RPC`: transaction lookup, simulation, submission, and verification.
 
+
+## Modular application boundary
+
+```mermaid
+flowchart TB
+  Shell["Persistent app shell"] --> Router["History API router"]
+  Router --> Overview["Overview"]
+  Router --> Spend["Agent Spend"]
+  Router --> Providers["Providers"]
+  Router --> MPPPage["Machine Payments"]
+  Router --> Wallet["Smart Wallet"]
+  Router --> EvidencePage["Evidence"]
+  Router --> Security["Security and Labs"]
+  Router --> Store["Resource cache and request deduplication"]
+  Store --> Views["Overview / Spend / Providers APIs"]
+  Views --> ApiRouter["Declarative API route registry"]
+  ApiRouter --> Services["Payment and policy services"]
+```
+
+The browser receives only `src/client`. Pages are loaded dynamically, share a short-lived resource cache, and cancel stale navigation work. WebAuthn code is loaded only on the Smart Wallet route.
+
+The API registry preserves existing endpoints and adds three optimized read models:
+
+- `GET /api/overview`: evidence plus dependency diagnostics.
+- `GET /api/spend`: intents, evaluations, policy, receipts, summary, and readiness.
+- `GET /api/providers`: provider directory only.
+
+`GET /api/state` remains available for compatibility. Known routes with an invalid method return `405`; malformed JSON returns `400`.
+
 ## Security boundaries
 
 - Buyer and session secrets remain local and never enter the browser or public repository.

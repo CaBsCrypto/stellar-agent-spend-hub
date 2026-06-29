@@ -14,7 +14,7 @@ export function loadLocalPasskey() {
 }
 
 export async function createDemoPasskey() {
-  if (!passkeySupported()) throw new Error("Este navegador no soporta passkeys.");
+  if (!passkeySupported()) throw new Error("This browser does not support passkeys.");
   const rpId = location.hostname === "localhost" ? "localhost" : RP_ID;
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   const userId = crypto.getRandomValues(new Uint8Array(32));
@@ -32,10 +32,10 @@ export async function createDemoPasskey() {
       timeout: 60_000,
     },
   });
-  if (!credential?.response?.getPublicKey) throw new Error("El authenticator no expuso la public key.");
+  if (!credential?.response?.getPublicKey) throw new Error("The authenticator did not expose a public key.");
   const publicKeyDer = new Uint8Array(credential.response.getPublicKey());
   const publicKey = publicKeyDer.slice(-65);
-  if (publicKey.length !== 65 || publicKey[0] !== 4) throw new Error("Public key P-256 inesperada.");
+  if (publicKey.length !== 65 || publicKey[0] !== 4) throw new Error("Unexpected P-256 public key.");
   const credentialId = new Uint8Array(credential.rawId);
   const registration = {
     credentialId: toBase64Url(credentialId),
@@ -52,7 +52,7 @@ export async function createDemoPasskey() {
 
 export async function signPasskeyPayload(signaturePayloadHex) {
   const stored = loadLocalPasskey();
-  if (!stored) throw new Error("Primero crea el passkey de esta demo.");
+  if (!stored) throw new Error("Create the demo passkey first.");
   const challenge = fromHex(signaturePayloadHex);
   const credential = await navigator.credentials.get({
     publicKey: {

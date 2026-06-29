@@ -1,0 +1,55 @@
+.app-shell { min-height: 100vh; }
+.sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; width: var(--sidebar-width); display: flex; flex-direction: column; padding: 22px 16px; color: #f6fbf8; background: var(--brand-strong); }
+.brand { display: flex; align-items: center; gap: 11px; padding: 8px; color: inherit; text-decoration: none; }
+.brand-mark { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid rgba(255,255,255,.35); background: var(--mint); color: var(--brand-strong); font-weight: 900; }
+.brand strong, .brand small { display: block; }
+.brand small { color: #b8ccc4; }
+.sidebar nav { display: grid; gap: 22px; margin-top: 32px; }
+.nav-group { display: grid; gap: 4px; }
+.nav-group > span { padding: 0 10px 6px; color: #83a69a; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
+.nav-group a { padding: 9px 10px; border-left: 3px solid transparent; color: #d9e7e1; font-size: .88rem; font-weight: 680; text-decoration: none; }
+.nav-group a:hover { background: rgba(255,255,255,.06); }
+.nav-group a[aria-current="page"] { border-left-color: var(--gold); background: rgba(255,255,255,.1); color: #fff; }
+.sidebar-footer { display: grid; gap: 4px; margin-top: auto; padding: 14px 10px 6px; border-top: 1px solid rgba(255,255,255,.14); }
+.sidebar-footer span { color: #a9c1b8; font-size: .72rem; }
+.sidebar-footer strong { font-size: .78rem; }
+.app-stage { min-height: 100vh; margin-left: var(--sidebar-width); }
+.page-content { width: min(100%, var(--content-max)); min-height: 100vh; margin: 0 auto; padding: 42px clamp(24px, 4vw, 60px) 72px; }
+.mobile-bar { display: none; }
+.sidebar-scrim { display: none; }
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-bottom: 30px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.page-header > div:first-child { max-width: 780px; }
+.page-header p:last-child { max-width: 720px; margin-bottom: 0; color: var(--muted); }
+.page-actions, .button-row { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; }
+.section-block { margin-top: 34px; }
+.section-heading, .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 28px; }
+.proof-grid, .two-column, .wallet-layout { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+.provider-grid, .labs-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.spend-layout { display: grid; grid-template-columns: minmax(230px,.85fr) minmax(360px,1.5fr) minmax(220px,.8fr); gap: 14px; align-items: start; }
+.foundation-list, .receipt-list, .intent-list, .legal-list, .wallet-steps { display: grid; gap: 8px; }
+.control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+@media (max-width: 1120px) {
+  .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .spend-layout { grid-template-columns: 1fr 1.5fr; }
+  .policy-panel { grid-column: 1 / -1; }
+  .provider-grid, .labs-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 780px) {
+  .sidebar { transform: translateX(-100%); transition: transform .2s ease; }
+  .app-shell.menu-open .sidebar { transform: translateX(0); }
+  .sidebar-scrim { position: fixed; inset: 0; z-index: 20; background: rgba(7,25,20,.45); }
+  .app-shell.menu-open .sidebar-scrim { display: block; }
+  .app-stage { margin-left: 0; }
+  .mobile-bar { position: sticky; top: 0; z-index: 15; display: flex; align-items: center; justify-content: space-between; min-height: 58px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.96); }
+  .mobile-brand { font-size: .84rem; font-weight: 850; text-decoration: none; }
+  .page-content { padding: 26px 14px 54px; }
+  .page-header { align-items: stretch; flex-direction: column; gap: 18px; margin-bottom: 22px; }
+  h1 { font-size: 2.25rem; }
+  .proof-grid, .two-column, .wallet-layout, .spend-layout, .control-grid { grid-template-columns: 1fr; }
+  .policy-panel { grid-column: auto; }
+}
+@media (max-width: 520px) {
+  .metric-grid, .provider-grid, .labs-grid { grid-template-columns: 1fr; }
+  .page-actions, .page-actions > * { width: 100%; }
+}

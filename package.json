@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",

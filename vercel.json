@@ -1,5 +1,13 @@
 {
   "version": 2,
-  "cleanUrls": true,
-  "trailingSlash": false
+  "cleanUrls": false,
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/spend", "destination": "/index.html" },
+    { "source": "/providers", "destination": "/index.html" },
+    { "source": "/mpp", "destination": "/index.html" },
+    { "source": "/wallet", "destination": "/index.html" },
+    { "source": "/evidence", "destination": "/index.html" },
+    { "source": "/security", "destination": "/index.html" }
+  ]
 }

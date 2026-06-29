@@ -28,7 +28,10 @@ A pending item cannot contain a transaction hash, explorer URL, or verification 
 - Official production MPP challenge verified at exactly `0.01 USDC`.
 - Spend Account V1 Wasm is installed on testnet; deployment awaits the production passkey.
 - Owner and merchant USDC trustlines exist; balances remain unfunded at the last verification.
-- JavaScript tests: `94/94` passing.
+- JavaScript tests: `104/104` passing.
+- Seven production routes use lazy Vanilla ESM modules and direct deep-link fallbacks.
+- Static builds publish only browser-safe `src/client` modules.
+- API routing is declarative with optimized Overview, Spend, and Providers read models.
 - Rust tests: `31/31`.
 - MPP, Contract Account deploy, and Contract Account submit gates are closed.
 

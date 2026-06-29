@@ -28,7 +28,7 @@ La evidencia publica contiene montos, red, activo, policy y hashes verificables,
 - Tres settlements XLM testnet verificados publicamente.
 - Challenge oficial Stellar MPP de `0.01 USDC` probado en produccion.
 - Contract Account V1 implementada y Wasm cargado en testnet.
-- `94/94` pruebas JavaScript y `31/31` pruebas Rust pasan el QA completo.
+- `104/104` pruebas JavaScript y `31/31` pruebas Rust pasan el QA completo.
 - Los dos pagos USDC permanecen pendientes y no muestran hashes simulados.
 
 ## Solicitud

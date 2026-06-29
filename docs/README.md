@@ -14,6 +14,7 @@
 10. [Demo storyboard](./demo-storyboard.md): shots, timing, and capture checklist.
 11. [Acceptance runbook](./scf-acceptance-runbook.md): supervised Faucet, MPP, and passkey session.
 12. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
+13. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
 
 ## Product and distribution
 

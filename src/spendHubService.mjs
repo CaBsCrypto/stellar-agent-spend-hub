@@ -88,6 +88,24 @@ export class SpendHubService {
     };
   }
 
+  async getSpendView() {
+    const evaluations = await this.evaluateAll();
+    return {
+      policy: this.policy,
+      intents: this.state.intents,
+      receipts: this.state.receipts,
+      proofs: this.state.proofs,
+      spendRequests: this.state.spendRequests,
+      evaluations,
+      summary: this.summary(evaluations),
+      readiness: await this.readiness(),
+    };
+  }
+
+  getProvidersView() {
+    return { providers: providerDirectory };
+  }
+
   searchProviders({ query = "", category = "" } = {}) {
     return this.directoryAdapter.search({ query, category: category || undefined });
   }

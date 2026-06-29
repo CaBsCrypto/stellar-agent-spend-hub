@@ -108,7 +108,7 @@ MPP and the contract account intentionally remain separate in this phase because
 - Spend Account V1 Wasm uploaded to testnet.
 - Production MPP endpoint returned an official `402` challenge for exactly `0.01 USDC`.
 - Upstash, Horizon, Soroban RPC, and Vercel production diagnostics are operational.
-- `94/94` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
+- `104/104` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
 
 ### Pending submission gate
 

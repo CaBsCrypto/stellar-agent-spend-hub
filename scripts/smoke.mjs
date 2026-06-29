@@ -23,11 +23,15 @@ try {
   });
   const state = await fetchJson(`${baseUrl}/api/state`);
   const page = await fetchText(`${baseUrl}/`);
+  for (const route of ["/spend", "/providers", "/mpp", "/wallet", "/evidence", "/security"]) {
+    const routedPage = await fetchText(`${baseUrl}${route}`);
+    if (!routedPage.includes("Stellar Agent Spend Hub")) throw new Error(`SPA route failed: ${route}`);
+  }
   const scan = assertNoSensitiveData({ agentResult, summary: state.summary }, "smokeTranscript");
   if (!scan.allowed) {
     throw new Error(scan.reasons.join("; "));
   }
-  if (!page.includes("Agente de Pagos Stellar")) {
+  if (!page.includes("Stellar Agent Spend Hub")) {
     throw new Error("Dashboard shell did not render expected app title");
   }
   if (!state.readiness?.connectors?.localApi) {
