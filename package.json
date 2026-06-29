@@ -5,13 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
     "setup:testnet": "node scripts/setup-testnet.mjs",
     "testnet:doctor": "node scripts/testnet-doctor.mjs",
     "testnet:payment": "node scripts/testnet-payment.mjs",
+    "mcp:serve": "node src/mcp/mcpServer.mjs",
+    "mcp:test": "node tests/mcp-test.mjs",
     "vercel:testnet-payment": "node scripts/vercel-testnet-payment.mjs",
     "vercel:admin-token": "node scripts/vercel-admin-token.mjs",
     "qa": "npm test && npm run smoke && npm run doctor",
@@ -61,12 +63,14 @@
     "account:fund:execute": "node scripts/contract-account-testnet.mjs --action=fund --execute"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@stellar/mpp": "^0.7.0",
     "@stellar/stellar-sdk": "^15.1.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "mppx": "^0.6.31",
-    "viem": "^2.51.0"
+    "viem": "^2.51.0",
+    "zod": "^4.4.3"
   },
   "overrides": {
     "axios": "1.16.1",

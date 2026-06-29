@@ -8,7 +8,8 @@ Stellar Agent Spend Hub is a control and verification layer for agentic spending
 
 ```mermaid
 flowchart LR
-  Agent["Buyer agent"] --> Directory["Provider Definition"]
+  Agent["Buyer agent"] --> MCP["Official MCP tool server"]
+  MCP --> Directory["Provider Definition"]
   Directory --> Authorization["Human confirmation or passkey"]
   Authorization --> Policy["Merchant, asset, amount, budget, expiry"]
   Policy --> MPP["Official Stellar MPP Charge"]
@@ -35,6 +36,7 @@ The paths intentionally remain separate. The current MPP buyer uses a classic G-
 
 ## Main components
 
+- `McpSpendHubTools`: bounded discovery, intent, preparation, status, and receipt tools with no settlement authority.
 - `ProviderKit`: validates machine-readable provider definitions and the paid-resource lifecycle.
 - `MppChargeService`: official Stellar MPP seller for the Horizon-backed risk report.
 - `SpendAccountV1`: contract account implementing passkey owner and bounded session authorization.
@@ -73,6 +75,11 @@ The API registry preserves existing endpoints and adds three optimized read mode
 
 `GET /api/state` remains available for compatibility. Known routes with an invalid method return `405`; malformed JSON returns `400`.
 
+## MCP boundary
+
+The local MCP server uses the official TypeScript SDK over stdio. Its tool layer calls `SpendHubService` rather than payment adapters directly. It can create and prepare an intent, but it cannot submit a transaction. The returned approval URL routes the human to `/spend`, preserving the same policy, privacy, idempotency, and receipt lifecycle used by the web application.
+
+A future authenticated Streamable HTTP transport will reuse the same tool service after tenant isolation and external review. It will not introduce a second execution path.
 ## Security boundaries
 
 - Buyer and session secrets remain local and never enter the browser or public repository.

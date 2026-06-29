@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-104%2F104%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-113%2F113%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -25,6 +25,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Live dashboard with read-only Live Evidence and Replay Demo modes.
 - Official Stellar MPP Charge seller for a paid Stellar Risk API.
 - Provider Kit V1 for Node/MCP services that want to charge in Stellar testnet USDC.
+- Official MCP SDK server for provider discovery, idempotent intent creation, payment preparation, status, and sanitized receipts.
 - Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
 - Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
 - Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
@@ -49,6 +50,16 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 
 Routes use the History API and support direct reloads locally and on Vercel.
 
+## MCP Agent Interface
+
+The local MCP server exposes five bounded tools through the official TypeScript SDK: provider discovery, intent creation, payment preparation, status, and receipt lookup. It does not expose `execute_payment`; every prepared payment links back to `/spend?intent=<id>` for explicit human approval.
+
+```powershell
+npm run mcp:serve
+npm run mcp:test
+```
+
+The MCP boundary fixes the demo maximum at `0.01 USDC`, requires idempotency, validates inputs with Zod, returns structured content, and applies the same privacy firewall used by public receipts. [MCP server guide](./docs/mcp-server.md)
 ## Machine Payment Proof
 
 The official Stellar MPP seller quotes exactly `0.01 USDC` testnet for a Horizon-backed Stellar Risk API. Production has returned a valid `stellar/charge` challenge and Upstash provides atomic replay protection. The buyer remains local so its key never enters the browser, repository, or Vercel.
@@ -298,6 +309,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 - [Public evidence contract](./docs/public-evidence.md)
 - [Threat model](./docs/threat-model.md)
 - [Provider Kit](./docs/provider-kit.md)
+- [MCP agent interface](./docs/mcp-server.md)
 - [Current state](./docs/current-state.md)
 - [Architecture](./docs/architecture.md)
 - [Historical documentation index](./docs/README.md)
@@ -314,7 +326,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 
 | Area | State |
 | --- | --- |
-| JavaScript tests | `104/104` passing |
+| JavaScript tests | `113/113` passing |
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |

@@ -46,7 +46,7 @@ for (const token of [
   "$18,000",
   "$25,000",
   "$20,000",
-  "104/104",
+  "113/113",
   "31/31",
   "Do not submit until both coordinated USDC testnet settlements are verified",
 ]) {

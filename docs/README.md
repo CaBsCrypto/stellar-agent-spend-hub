@@ -9,12 +9,13 @@
 5. [Public evidence contract](./public-evidence.md): canonical schema and anti-fabrication invariants.
 6. [Threat model](./threat-model.md): assets, trust boundaries, controls, and residual risks.
 7. [Provider Kit](./provider-kit.md): reusable MPP integration for Node/MCP providers.
-8. [SCF pitch deck](./scf-pitch-deck.md): ten-slide narrative.
-9. [Demo script](./demo-script.md): final 90-second English narration.
-10. [Demo storyboard](./demo-storyboard.md): shots, timing, and capture checklist.
-11. [Acceptance runbook](./scf-acceptance-runbook.md): supervised Faucet, MPP, and passkey session.
-12. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
-13. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
+8. [MCP agent interface](./mcp-server.md): official SDK tools and human approval boundary.
+9. [SCF pitch deck](./scf-pitch-deck.md): ten-slide narrative.
+10. [Demo script](./demo-script.md): final 90-second English narration.
+11. [Demo storyboard](./demo-storyboard.md): shots, timing, and capture checklist.
+12. [Acceptance runbook](./scf-acceptance-runbook.md): supervised Faucet, MPP, and passkey session.
+13. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
+14. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
 
 ## Product and distribution
 
