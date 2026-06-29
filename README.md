@@ -12,6 +12,8 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
 ![Vercel](https://img.shields.io/badge/Vercel-live-black)
 
+![Stellar Agent Spend Hub dashboard](./docs/assets/scf-dashboard-desktop.png)
+
 ## Why This Exists
 
 Agents are starting to buy things: MCP tools, APIs, browser sessions, cloud credits, data, software, reservations, and later real-world bills. The hard part is not only moving money. It is controlling what the agent can do, proving why a payment happened, and keeping private identifiers out of receipts, memos, logs, and metadata.

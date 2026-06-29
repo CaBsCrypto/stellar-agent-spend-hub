@@ -37,3 +37,8 @@
 - Keep hashes visible long enough to recognize, then open the explorer.
 - Add captions for `MPP`, `Passkey`, `Session Policy`, and `Public Receipt`.
 - Do not claim mainnet readiness or autonomous production spending.
+
+## Verified capture assets
+
+- [Desktop dashboard](./assets/scf-dashboard-desktop.png)
+- [Mobile dashboard](./assets/scf-dashboard-mobile.png)
