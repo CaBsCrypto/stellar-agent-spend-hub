@@ -108,8 +108,9 @@ MPP and the contract account intentionally remain separate in this phase because
 - Spend Account V1 Wasm uploaded to testnet.
 - Production MPP endpoint returned an official `402` challenge for exactly `0.01 USDC`.
 - An official MCP SDK server exposes bounded discovery, intent, preparation, status, and receipt tools without settlement authority.
+- A separately deployed Merchant Lab provides an independent seller boundary, public LCP, adversarial buyer tests, stateless simulated receipts, and replay rejection.
 - Upstash, Horizon, Soroban RPC, and Vercel production diagnostics are operational.
-- `113/113` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
+- `114/114` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
 
 ### Pending submission gate
 

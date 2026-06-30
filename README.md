@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-113%2F113%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-114%2F114%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -26,6 +26,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Official Stellar MPP Charge seller for a paid Stellar Risk API.
 - Provider Kit V1 for Node/MCP services that want to charge in Stellar testnet USDC.
 - Official MCP SDK server for provider discovery, idempotent intent creation, payment preparation, status, and sanitized receipts.
+- Independent [Merchant Lab](https://stellar-agent-merchant-lab.vercel.app) with MCP quotes, MPP challenges, LCP terms, adversarial scenarios, delivery, receipts, and replay rejection.
 - Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
 - Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
 - Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
@@ -326,7 +327,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 
 | Area | State |
 | --- | --- |
-| JavaScript tests | `113/113` passing |
+| JavaScript tests | `114/114` passing |
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |

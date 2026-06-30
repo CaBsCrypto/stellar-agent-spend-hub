@@ -177,3 +177,28 @@ test("MCP blocks non-Stellar providers and intents created outside its boundary"
   assert.equal(foreignPrepare.isError, true);
   assert.equal(structured(foreignPrepare).error.code, "INTENT_NOT_OWNED");
 });
+test("MCP discovers the independent Merchant Lab and creates an allowed intent", async (t) => {
+  const harness = await createHarness();
+  t.after(() => harness.close());
+
+  const discovered = structured(
+    await harness.client.callTool({ name: "discover_providers", arguments: { query: "merchant lab" } }),
+  );
+  assert.equal(discovered.count, 1);
+  assert.equal(discovered.providers[0].providerId, "stellar-agent-merchant-lab");
+
+  const created = structured(
+    await harness.client.callTool({
+      name: "create_payment_intent",
+      arguments: {
+        providerId: "stellar-agent-merchant-lab",
+        amount: 0.005,
+        idempotencyKey: "merchant-lab-purchase-0001",
+      },
+    }),
+  );
+  assert.equal(created.policy.allowed, true);
+  assert.equal(created.policy.requiresConfirmation, true);
+  assert.equal(created.intent.currency, "USDC");
+  assert.match(created.confirmation.approvalUrl, /\/spend\?intent=/);
+});

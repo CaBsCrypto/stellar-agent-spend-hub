@@ -10,6 +10,7 @@ Stellar Agent Spend Hub is a control and verification layer for agentic spending
 flowchart LR
   Agent["Buyer agent"] --> MCP["Official MCP tool server"]
   MCP --> Directory["Provider Definition"]
+  Directory --> MerchantLab["Independent Merchant Lab"]
   Directory --> Authorization["Human confirmation or passkey"]
   Authorization --> Policy["Merchant, asset, amount, budget, expiry"]
   Policy --> MPP["Official Stellar MPP Charge"]
@@ -37,6 +38,7 @@ The paths intentionally remain separate. The current MPP buyer uses a classic G-
 ## Main components
 
 - `McpSpendHubTools`: bounded discovery, intent, preparation, status, and receipt tools with no settlement authority.
+- `Merchant Lab`: independent MCP/MPP seller boundary with LCP, adversarial scenarios, resource delivery, receipts, and replay rejection.
 - `ProviderKit`: validates machine-readable provider definitions and the paid-resource lifecycle.
 - `MppChargeService`: official Stellar MPP seller for the Horizon-backed risk report.
 - `SpendAccountV1`: contract account implementing passkey owner and bounded session authorization.

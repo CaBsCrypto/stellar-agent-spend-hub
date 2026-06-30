@@ -2,6 +2,17 @@ import { IntentType, ReceiptStatus, RiskLevel } from "./domain.mjs";
 
 export const providerDirectory = [
   {
+    providerId: "stellar-agent-merchant-lab",
+    name: "Stellar Agent Merchant Lab",
+    category: "pay_service",
+    description: "Independent MCP and MPP merchant sandbox for reproducible Stellar testnet purchases.",
+    endpoint: "https://stellar-agent-merchant-lab.vercel.app/api/resource/market-signal",
+    paymentMethod: "stellar-mpp-usdc",
+    legalContextUrl: "https://stellar-agent-merchant-lab.vercel.app/.well-known/legal-context.json",
+    privacyRequirement: "no-pii",
+    tags: ["mcp", "mpp", "merchant sandbox", "testnet usdc"],
+  },
+  {
     providerId: "browserbase-mcp",
     name: "Browserbase MCP",
     category: "pay_service",
@@ -97,7 +108,7 @@ export const spendingPolicy = {
   allowedDefiProtocols: ["defindex"],
   maxPortfolioActionAmount: 75,
   maxSlippageBps: 80,
-  allowlistedProviders: ["browserbase-mcp", "exa-api", "link-commerce-demo", "stellar-swap", "defindex-vault", "enel-cl"],
+  allowlistedProviders: ["stellar-agent-merchant-lab", "browserbase-mcp", "exa-api", "link-commerce-demo", "stellar-swap", "defindex-vault", "enel-cl"],
   categoryRules: {
     pay_service: { autopay: false, maxAmount: 60 },
     buy_crypto: { autopay: false, maxAmount: 75 },
@@ -107,6 +118,16 @@ export const spendingPolicy = {
 };
 
 export const legalContextRegistry = {
+  "https://stellar-agent-merchant-lab.vercel.app/.well-known/legal-context.json": {
+    termsText: "Stellar Agent Merchant Lab terms v1: testnet-only machine purchases, maximum price 0.01 USDC, explicit buyer confirmation, no personal data in payment metadata, and no claim that simulated receipts represent on-chain settlement.",
+    legalContext: {
+      terms: "https://stellar-agent-merchant-lab.vercel.app/terms/mpp-sandbox-v1.md",
+      atrHash: "0xd3ec2999621a6b61f49e72c8057a2ee8162ac78c6a032a24abc5b7a596526b48",
+      acceptanceRequired: false,
+      trustLevel: 2,
+      disputeResolution: { method: "public-receipt-review", jurisdiction: "testnet-sandbox" },
+    },
+  },
   "https://browserbase.example/.well-known/legal-context.json": {
     termsText: "Browserbase MCP demo terms: pay-per-call browser sessions, no personal data in payment metadata.",
     legalContext: {
