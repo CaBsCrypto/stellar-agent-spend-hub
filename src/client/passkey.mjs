@@ -1,5 +1,6 @@
 const STORAGE_KEY = "spendhub-passkey-v1";
 const RP_ID = "agente-pagos-stellar.vercel.app";
+const CEREMONY_STORAGE_KEY = "spendhub-passkey-ceremony-v1";
 
 export function passkeySupported() {
   return Boolean(window.PublicKeyCredential && navigator.credentials);
@@ -15,6 +16,9 @@ export function loadLocalPasskey() {
 
 export async function createDemoPasskey() {
   if (!passkeySupported()) throw new Error("This browser does not support passkeys.");
+  const existing = loadLocalPasskey();
+  if (existing?.rpId === RP_ID) return registerPasskeyCeremony(existing);
+
   const rpId = location.hostname === "localhost" ? "localhost" : RP_ID;
   const challenge = crypto.getRandomValues(new Uint8Array(32));
   const userId = crypto.getRandomValues(new Uint8Array(32));
@@ -47,7 +51,39 @@ export async function createDemoPasskey() {
     createdAt: new Date().toISOString(),
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(registration));
-  return publicRegistration(registration);
+  return rpId === RP_ID ? registerPasskeyCeremony(registration) : publicRegistration(registration);
+}
+
+export function loadLocalCeremony() {
+  try {
+    return JSON.parse(localStorage.getItem(CEREMONY_STORAGE_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+export async function registerPasskeyCeremony(registration = loadLocalPasskey(), fetchImpl = fetch) {
+  if (!registration) throw new Error("Create the passkey before starting a deployment ceremony.");
+  const response = await fetchImpl("/api/contract-account/ceremony", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(publicRegistration(registration)),
+  });
+  const body = await response.json();
+  if (!response.ok) throw new Error(body.error || `Passkey ceremony failed with ${response.status}`);
+  const ceremony = {
+    ceremonyId: body.ceremonyId,
+    status: body.status,
+    expiresAt: body.expiresAt,
+    ownerKeyFingerprint: body.ownerKeyFingerprint,
+  };
+  localStorage.setItem(CEREMONY_STORAGE_KEY, JSON.stringify(ceremony));
+  if (typeof history !== "undefined" && typeof location !== "undefined") {
+    const url = new URL(location.href);
+    url.searchParams.set("ceremony", ceremony.ceremonyId);
+    history.replaceState({}, "", url);
+  }
+  return { ...publicRegistration(registration), ceremony };
 }
 
 export async function signPasskeyPayload(signaturePayloadHex) {

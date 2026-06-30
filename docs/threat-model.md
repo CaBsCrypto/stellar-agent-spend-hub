@@ -7,6 +7,7 @@
 - Session signer secret.
 - Relayer and MPP server secrets.
 - Payment authorization entries and ten-minute prepared requests.
+- Ten-minute passkey deployment ceremonies containing public registration hashes only.
 - Receipts and evidence that must remain free of PII.
 
 ## Trust boundaries
@@ -25,6 +26,7 @@
 | --- | --- |
 | Arbitrary relayer transaction | Server reconstructs calls from allowlisted parameters and rejects XDR input |
 | Stolen session signer | Merchant, asset, amount, total budget and 24-hour expiry enforced on-chain |
+| Ceremony substitution or replay | Production RP/origin hashes, explicit ceremony UUID, atomic one-time claim and ten-minute TTL |
 | Replay or concurrent submit | Soroban auth nonce plus atomic Upstash request consumption |
 | Malicious WebAuthn assertion | Challenge, origin, RP ID, credential hash and low-S P-256 verification |
 | Mainnet or asset substitution | Testnet and USDC SAC constants validated before simulation |

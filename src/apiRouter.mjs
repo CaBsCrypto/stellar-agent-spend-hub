@@ -5,6 +5,7 @@ import { MppReceiptRepository } from "./mppReceiptRepository.mjs";
 import { ContractAccountRelayer, contractAccountReadiness } from "./contractAccountRelayer.mjs";
 import { runAdminContractAccountDeploy } from "./adminContractAccountDeploy.mjs";
 import { PublicEvidenceService } from "./publicEvidenceService.mjs";
+import { ContractAccountCeremonyService } from "./contractAccountCeremony.mjs";
 import { STELLAR_RISK_PROVIDER, validateProviderDefinition } from "./providerKit.mjs";
 
 export function createApiRouter({ service, env = process.env, dependencies: suppliedDependencies = null } = {}) {
@@ -104,7 +105,14 @@ export function createRoutes({ service, env, dependencies }) {
       body: { provider: validateProviderDefinition(await readJson()) },
     })),
     exact("POST", "/api/admin/contract-account/deploy", async ({ request, readJson }) => ({
-      body: await runAdminContractAccountDeploy({ request, body: await readJson(), env }),
+      body: await runAdminContractAccountDeploy({ request, body: await readJson(), env, ceremonies: dependencies.contractAccountCeremonies() }),
+    })),
+    exact("POST", "/api/contract-account/ceremony", async ({ readJson, request }) => ({
+      status: 201,
+      body: await dependencies.contractAccountCeremonies().register(await readJson(), { ip: clientIp(request) }),
+    })),
+    dynamic("GET", /^\/api\/contract-account\/ceremony\/([^/]+)$/, ["ceremonyId"], async ({ params }) => ({
+      body: await dependencies.contractAccountCeremonies().status(params.ceremonyId),
     })),
     exact("GET", "/api/contract-account/status", async () => {
       const readiness = contractAccountReadiness(env);
@@ -179,11 +187,13 @@ function createDependencies(env) {
   let receipts;
   let contractAccount;
   let evidence;
+  let contractAccountCeremonies;
   return {
     mpp: () => (mpp ||= new MppChargeService({ env })),
     mppReceipts: () => (receipts ||= new MppReceiptRepository({ env })),
     contractAccount: () => (contractAccount ||= new ContractAccountRelayer({ env })),
     publicEvidence: () => (evidence ||= new PublicEvidenceService({ env })),
+    contractAccountCeremonies: () => (contractAccountCeremonies ||= new ContractAccountCeremonyService({ env })),
   };
 }
 

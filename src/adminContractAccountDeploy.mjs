@@ -10,6 +10,7 @@ export async function runAdminContractAccountDeploy({
   body = {},
   env = process.env,
   deployer = deployWithSdk,
+  ceremonies = null,
 } = {}) {
   authorize(request?.headers?.authorization, env);
   if (String(env.CONTRACT_ACCOUNT_DEPLOY_ENABLED || "").toLowerCase() !== "true") {
@@ -18,11 +19,31 @@ export async function runAdminContractAccountDeploy({
   if ((env.CONTRACT_ACCOUNT_NETWORK || "stellar:testnet") !== "stellar:testnet") {
     throw httpError(409, "Only Stellar testnet deployment is allowed");
   }
-  const registration = validateRegistration(body);
-  const result = await deployer({ registration, env });
+  const ceremony = body.ceremonyId
+    ? await claimCeremony(body.ceremonyId, ceremonies)
+    : null;
+  const registration = ceremony?.registration || validateRegistration(body);
+  let result;
+  try {
+    result = await deployer({ registration, env });
+  } catch (error) {
+    if (ceremony) await ceremonies.fail(ceremony.ceremonyId);
+    throw error;
+  }
+  let ceremonyStatus = ceremony ? "claimed" : null;
+  if (ceremony) {
+    try {
+      await ceremonies.complete(ceremony.ceremonyId, result);
+      ceremonyStatus = "deployed";
+    } catch {
+      ceremonyStatus = "deployed-record-pending";
+    }
+  }
   const response = {
     ok: true,
     network: "stellar:testnet",
+    ceremonyId: ceremony?.ceremonyId || null,
+    ceremonyStatus,
     contractId: result.contractId,
     transactionHash: result.transactionHash,
     wasmHash: SPEND_ACCOUNT_WASM_HASH,
@@ -31,6 +52,11 @@ export async function runAdminContractAccountDeploy({
   const scan = assertNoSensitiveData(response, "adminContractAccountDeploy");
   if (!scan.allowed) throw httpError(500, "Sensitive deployment output blocked");
   return response;
+}
+
+async function claimCeremony(ceremonyId, ceremonies) {
+  if (!ceremonies) throw httpError(503, "Passkey ceremony service is unavailable");
+  return ceremonies.claim(ceremonyId);
 }
 
 export async function deployWithSdk({ registration, env }) {

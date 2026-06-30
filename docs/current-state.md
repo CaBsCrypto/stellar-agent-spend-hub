@@ -29,7 +29,8 @@ A pending item cannot contain a transaction hash, explorer URL, or verification 
 - Official production MPP challenge verified at exactly `0.01 USDC`.
 - Spend Account V1 Wasm is installed on testnet; deployment awaits the production passkey.
 - Owner and merchant USDC trustlines exist; balances remain unfunded at the last verification.
-- JavaScript tests: `120/120` passing.
+- JavaScript tests: `131/131` passing.
+- Production passkeys now create a ten-minute, one-time deployment ceremony; raw credential IDs and assertions never leave the browser.
 - Official MCP SDK server exposes five bounded tools and no settlement tool.
 - Independent Merchant Lab is live, allowlisted, LCP-verified, and supports simulated `MCP -> 402 -> delivery -> receipt -> replay rejection`.
 - Seven production routes use lazy Vanilla ESM modules and direct deep-link fallbacks.

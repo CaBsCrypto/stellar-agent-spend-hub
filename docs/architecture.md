@@ -11,12 +11,14 @@ flowchart LR
   Agent["Buyer agent"] --> MCP["Official MCP tool server"]
   MCP --> Directory["Provider Definition"]
   Directory --> MerchantLab["Independent Merchant Lab"]
+  Authorization --> Ceremony["10-minute passkey ceremony"]
   Directory --> Authorization["Human confirmation or passkey"]
   Authorization --> Policy["Merchant, asset, amount, budget, expiry"]
   Policy --> MPP["Official Stellar MPP Charge"]
   Policy --> Account["Soroban Contract Account"]
   MPP --> Merchant["USDC merchant"]
   Account --> Merchant
+  Ceremony --> Upstash
   Merchant --> Evidence["Public Evidence API"]
   Upstash["Atomic replay and request state"] --> MPP
   Upstash --> Account
@@ -36,6 +38,7 @@ A WebAuthn passkey owns the account and can grant or revoke an Ed25519 agent ses
 The paths intentionally remain separate. The current MPP buyer uses a classic G-account keypair, while the Contract Account uses Soroban authorization entries. They share provider definitions, policy semantics, sanitized receipts, and public evidence.
 
 ## Main components
+- `ContractAccountCeremonyService`: stores public registration material for ten minutes and permits one admin claim before deploy.
 
 - `McpSpendHubTools`: bounded discovery, intent, preparation, status, and receipt tools with no settlement authority.
 - `Merchant Lab`: independent MCP/MPP seller boundary with LCP, adversarial scenarios, resource delivery, receipts, and replay rejection.

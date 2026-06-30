@@ -29,6 +29,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Independent [Merchant Lab](https://stellar-agent-merchant-lab.vercel.app) with MCP quotes, MPP challenges, LCP terms, adversarial scenarios, delivery, receipts, and replay rejection.
 - Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
 - Verified Contract Account fixture E2E: P-256 grant, bounded Ed25519 payment, owner revoke, and exact merchant balance delta ([public result](./docs/contract-account-fixture-result.md)).
+- Ten-minute passkey deployment ceremonies with production RP/origin binding, one-time admin claim, and no raw credential ID in transit.
 - Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
 - Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
 - Three verified XLM testnet foundations: direct payment, policy-controlled SAC transfer, and guarded runtime settlement.
@@ -328,7 +329,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 
 | Area | State |
 | --- | --- |
-| JavaScript tests | `120/120` passing |
+| JavaScript tests | `131/131` passing |
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |

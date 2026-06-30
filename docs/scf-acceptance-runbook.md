@@ -24,17 +24,19 @@ This is the supervised gate between a packaged application and an SCF submission
 
 ## Part B - Contract Account settlement
 
-1. Register a passkey only on the stable production domain.
-2. Copy only the public deploy data; never store the credential ID or assertion in docs.
-3. Temporarily set `CONTRACT_ACCOUNT_DEPLOY_ENABLED=true` and deploy the account.
-4. Record the public contract ID, then close the deploy gate.
-5. Fund the C-account with exactly `0.02 USDC` testnet.
-6. Temporarily enable the contract-account prepare/submit path.
-7. Use the passkey to grant the fixed Ed25519 session for 24 hours.
-8. Execute one session payment of `0.01 USDC` to the configured merchant.
-9. Verify merchant balance, public transaction hash, policy decision, and sanitized receipt.
-10. Confirm an invalid destination or repeated auth entry is rejected.
-11. Set `CONTRACT_ACCOUNT_ENABLED=false`, `CONTRACT_ACCOUNT_SUBMIT_ENABLED=false`, and `CONTRACT_ACCOUNT_DEPLOY_ENABLED=false`; deploy again.
+1. Open the stable production `/wallet` route and register the passkey.
+2. Confirm the URL now contains `?ceremony=<uuid>`; only public P-256 material is stored for ten minutes.
+3. Inspect it with `npm run account:ceremony -- --ceremony=<uuid>`.
+4. Temporarily set `CONTRACT_ACCOUNT_DEPLOY_ENABLED=true`.
+5. Set `CONTRACT_ACCOUNT_DEPLOY_ADMIN_TOKEN` only in the local shell and run `npm run account:ceremony:deploy -- --ceremony=<uuid>`.
+6. Record the public contract ID and deploy hash, then close the deploy gate and clear the local token.
+7. Set `CONTRACT_ACCOUNT_ID` in Vercel and fund the C-account with exactly `0.02 USDC` testnet.
+8. Temporarily enable the contract-account prepare/submit path.
+9. Use the same passkey to grant the fixed Ed25519 session for 24 hours.
+10. Execute one session payment of `0.01 USDC` to the configured merchant.
+11. Verify merchant balance, public transaction hash, policy decision and sanitized receipt.
+12. Confirm an invalid destination or repeated auth entry is rejected.
+13. Set `CONTRACT_ACCOUNT_ENABLED=false`, `CONTRACT_ACCOUNT_SUBMIT_ENABLED=false`, and `CONTRACT_ACCOUNT_DEPLOY_ENABLED=false`; deploy again.
 
 ## Evidence publication
 

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/contract-account-ceremony.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
@@ -55,6 +55,8 @@
     "account:plan": "node scripts/contract-account-testnet.mjs --action=plan",
     "account:fixture": "node scripts/contract-account-fixture-e2e.mjs",
     "account:fixture:execute": "node scripts/contract-account-fixture-e2e.mjs --execute",
+    "account:ceremony": "node scripts/contract-account-ceremony.mjs",
+    "account:ceremony:deploy": "node scripts/contract-account-ceremony.mjs --deploy",
     "account:deploy": "node scripts/contract-account-testnet.mjs --action=deploy",
     "account:deploy:execute": "node scripts/contract-account-testnet.mjs --action=deploy --execute",
     "account:owner": "node scripts/contract-account-testnet.mjs --action=owner --execute",
