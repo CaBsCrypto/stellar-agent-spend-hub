@@ -209,6 +209,7 @@ test("entrypoints Vercel existen para todas las rutas anidadas", async () => {
     "../api/mpp/stellar-risk.mjs",
     "../api/mpp/receipts.mjs",
     "../api/contract-account/[...path].mjs",
+    "../api/contract-account/ceremony/[ceremonyId].mjs",
     "../api/provider-kit/definition.mjs",
     "../api/provider-kit/validate.mjs",
     "../api/admin/contract-account/deploy.mjs",
