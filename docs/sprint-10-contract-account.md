@@ -12,7 +12,7 @@ Implemented and verified:
 - Policy enforces one merchant, `0.01 USDC` per payment, `0.02 USDC` total,
   expiry, revoke and cumulative spend.
 - Vercel relayer builds canonical calls, prepares auth entries, enforces a
-  `0.1 XLM` fee cap, re-simulates signed entries and submits only on testnet.
+  `1 XLM` testnet fee cap, re-simulates signed entries and submits only on testnet.
 - Upstash provides ten-minute requests, atomic consumption, rate limiting and
   30-day sanitized receipts.
 - Browser registration keeps the credential ID locally and sends only public

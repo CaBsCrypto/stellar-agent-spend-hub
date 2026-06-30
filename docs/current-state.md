@@ -18,6 +18,7 @@ Stellar Agent Spend Hub is a live, testnet-only trust demo for agentic payments.
 
 - MPP G-account payment: `pending`, `0.01 USDC`.
 - Passkey Contract Account session payment: `pending`, `0.01 USDC`.
+- Contract Account fixture E2E: `verified-fixture`, including `0.01 USDC` payment and owner revoke; it does not satisfy the human-passkey submission gate.
 
 A pending item cannot contain a transaction hash, explorer URL, or verification timestamp.
 
@@ -28,7 +29,7 @@ A pending item cannot contain a transaction hash, explorer URL, or verification 
 - Official production MPP challenge verified at exactly `0.01 USDC`.
 - Spend Account V1 Wasm is installed on testnet; deployment awaits the production passkey.
 - Owner and merchant USDC trustlines exist; balances remain unfunded at the last verification.
-- JavaScript tests: `115/115` passing.
+- JavaScript tests: `120/120` passing.
 - Official MCP SDK server exposes five bounded tools and no settlement tool.
 - Independent Merchant Lab is live, allowlisted, LCP-verified, and supports simulated `MCP -> 402 -> delivery -> receipt -> replay rejection`.
 - Seven production routes use lazy Vanilla ESM modules and direct deep-link fallbacks.

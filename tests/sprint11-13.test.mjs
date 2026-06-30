@@ -177,6 +177,7 @@ test("Contract Account funding fija USDC testnet y presupuesto maximo", () => {
   });
   assert.match(command.redacted, /transfer/);
   assert.match(command.redacted, /--amount 200000/);
+  assert.match(command.redacted, /--send yes/);
   assert.equal(command.redacted.includes("S".repeat(56)), false);
   assert.throws(
     () => buildContractAccountCommand({

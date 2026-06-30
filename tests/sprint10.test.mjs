@@ -4,6 +4,7 @@ import { Buffer } from "node:buffer";
 import { Keypair, StrKey } from "@stellar/stellar-sdk";
 import {
   ContractAccountRelayer,
+  attachAuthorization,
   contractAccountReadiness,
   validateCanonicalRequest,
 } from "../src/contractAccountRelayer.mjs";
@@ -179,4 +180,20 @@ test("readiness exige Upstash para estar listo en Vercel", () => {
     UPSTASH_REDIS_REST_TOKEN: "placeholder",
   }));
   assert.equal(ready.status, "ready-preview");
+});
+
+test("auth entry se adjunta sin destruir el objeto XDR de la operacion", () => {
+  let attached = null;
+  const operation = {
+    sourceAccount() { return null; },
+    body() {
+      return { invokeHostFunctionOp: () => ({ auth: (entries) => { attached = entries; } }) };
+    },
+  };
+  const entry = { fixture: true };
+  const result = attachAuthorization(operation, entry);
+
+  assert.equal(result, operation);
+  assert.equal(typeof result.sourceAccount, "function");
+  assert.deepEqual(attached, [entry]);
 });

@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { Keypair, StrKey } from "@stellar/stellar-sdk";
+import { Keypair, Networks, StrKey } from "@stellar/stellar-sdk";
 import { assertNoSensitiveData } from "../src/sensitiveDataGuard.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -62,7 +62,7 @@ export function buildContractAccountCommand({ action, env = process.env }) {
       "contract", "deploy",
       "--wasm", env.CONTRACT_ACCOUNT_WASM_PATH || DEFAULT_WASM,
       "--source-account", relayerIdentity,
-      "--network", "testnet",
+      ...networkArgs(env),
       "--",
       "--owner_public_key", fixedHex(env.CONTRACT_ACCOUNT_OWNER_PUBLIC_KEY_HEX, 65, "CONTRACT_ACCOUNT_OWNER_PUBLIC_KEY_HEX"),
       "--credential_id_hash", fixedHex(env.CONTRACT_ACCOUNT_CREDENTIAL_ID_HASH, 32, "CONTRACT_ACCOUNT_CREDENTIAL_ID_HASH"),
@@ -83,11 +83,11 @@ export function buildContractAccountCommand({ action, env = process.env }) {
       "--from", owner,
       "--to", contractId,
       "--amount", amount,
-    ]);
+    ], "yes", env);
   } else if (action === "owner") {
-    args = invoke(contractId, relayerIdentity, "owner", []);
+    args = invoke(contractId, relayerIdentity, "owner", [], "no", env);
   } else if (action === "session") {
-    args = invoke(contractId, relayerIdentity, "session", []);
+    args = invoke(contractId, relayerIdentity, "session", [], "no", env);
   } else {
     throw new Error(`Unsupported contract account action: ${action}`);
   }
@@ -145,16 +145,23 @@ async function runAgentPayment({ env, fetchImpl, runner, execute }) {
   });
 }
 
-function invoke(contractId, source, fn, fnArgs) {
+function invoke(contractId, source, fn, fnArgs, send = "no", env = {}) {
   return [
     "contract", "invoke",
     "--id", contractId,
     "--source-account", source,
-    "--send", "no",
-    "--network", "testnet",
+    "--send", send,
+    ...networkArgs(env),
     "--",
     fn,
     ...fnArgs,
+  ];
+}
+
+function networkArgs(env) {
+  return [
+    "--rpc-url", env.SOROBAN_RPC_URL || "https://soroban-testnet.stellar.org",
+    "--network-passphrase", Networks.TESTNET,
   ];
 }
 

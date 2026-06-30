@@ -14,8 +14,9 @@
 10. [Demo script](./demo-script.md): final 90-second English narration.
 11. [Demo storyboard](./demo-storyboard.md): shots, timing, and capture checklist.
 12. [Acceptance runbook](./scf-acceptance-runbook.md): supervised Faucet, MPP, and passkey session.
-13. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
-14. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
+13. [Contract Account fixture result](./contract-account-fixture-result.md): verified USDC policy payment before the human passkey ceremony.
+14. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
+15. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
 
 ## Product and distribution
 

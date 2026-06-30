@@ -28,6 +28,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Official MCP SDK server for provider discovery, idempotent intent creation, payment preparation, status, and sanitized receipts.
 - Independent [Merchant Lab](https://stellar-agent-merchant-lab.vercel.app) with MCP quotes, MPP challenges, LCP terms, adversarial scenarios, delivery, receipts, and replay rejection.
 - Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
+- Verified Contract Account fixture E2E: P-256 grant, bounded Ed25519 payment, owner revoke, and exact merchant balance delta ([public result](./docs/contract-account-fixture-result.md)).
 - Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
 - Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
 - Three verified XLM testnet foundations: direct payment, policy-controlled SAC transfer, and guarded runtime settlement.
@@ -73,7 +74,7 @@ The final MPP settlement is intentionally marked `pending` until Circle Faucet f
 
 The Wasm is installed on testnet with hash `6230e90601a82fd1afd8ae3dd59da55a4bc66d5e1fd4603996b1466f88c3c800`. [Verify the upload transaction](https://stellar.expert/explorer/testnet/tx/e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80).
 
-The merchant and relayer are deliberately separate. The relayer holds no USDC and can only pay network fees. Contract instance deployment waits for the production-domain passkey so the final owner credential is not a fixture.
+The merchant and relayer are deliberately separate. The relayer holds no USDC and can only pay network fees. A deterministic P-256 fixture now proves the complete testnet path; final coordinated evidence still waits for a production-domain user passkey.
 
 [Sprint 10 status and acceptance gates](./docs/sprint-10-contract-account.md)
 
@@ -327,7 +328,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 
 | Area | State |
 | --- | --- |
-| JavaScript tests | `115/115` passing |
+| JavaScript tests | `120/120` passing |
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |

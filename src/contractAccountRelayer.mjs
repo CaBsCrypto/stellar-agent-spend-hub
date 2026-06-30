@@ -22,7 +22,7 @@ import { readUpstashConfig } from "./upstashConfig.mjs";
 export const CONTRACT_ACCOUNT_NETWORK = "stellar:testnet";
 export const CONTRACT_ACCOUNT_PER_PAYMENT_LIMIT = 100_000n;
 export const CONTRACT_ACCOUNT_TOTAL_LIMIT = 200_000n;
-export const CONTRACT_ACCOUNT_MAX_FEE = 1_000_000n;
+export const CONTRACT_ACCOUNT_MAX_FEE = 10_000_000n;
 
 export class ContractAccountRelayer {
   constructor({
@@ -32,6 +32,7 @@ export class ContractAccountRelayer {
     now = () => new Date(),
   } = {}) {
     this.env = env;
+    this.rateLimiter = createContractAccountRateLimiter(env);
     this.config = validateContractAccountConfig(env);
     this.repository = repository || new ContractAccountRepository({ env });
     this.executor = executor || new StellarContractAccountExecutor({ config: this.config });
@@ -90,7 +91,9 @@ export class ContractAccountRelayer {
       return safePublic({ receipt });
     } catch (error) {
       await this.repository.markFailed(requestId, "submission_failed");
-      throw httpError(error.status || 502, "Contract account settlement failed");
+      const publicError = httpError(error.status || 502, "Contract account settlement failed");
+      publicError.cause = error;
+      throw publicError;
     }
   }
 
@@ -139,7 +142,7 @@ export class StellarContractAccountExecutor {
     const signedEntry = xdr.SorobanAuthorizationEntry.fromXDR(signedAuthEntryXdr, "base64");
     validateSignedEntry(record, signedEntry);
     const source = await this.server.getAccount(this.relayer.publicKey());
-    const operation = { ...buildOperation(record.canonical), auth: [signedEntry] };
+    const operation = attachAuthorization(buildOperation(record.canonical), signedEntry);
     const tx = new TransactionBuilder(source, {
       fee: BASE_FEE,
       networkPassphrase: Networks.TESTNET,
@@ -300,6 +303,12 @@ function buildOperation(request) {
   );
 }
 
+export function attachAuthorization(operation, signedEntry) {
+  const invocation = operation.body().invokeHostFunctionOp();
+  invocation.auth([signedEntry]);
+  return operation;
+}
+
 function extractSingleAddressAuthEntry(transaction, expectedAddress) {
   const operation = transaction.operations[0];
   const entries = operation?.auth || [];
@@ -346,7 +355,7 @@ function validateSignedEntry(record, signedEntry) {
 }
 
 function assertFeeWithinLimit(fee) {
-  if (BigInt(fee) > CONTRACT_ACCOUNT_MAX_FEE) throw httpError(409, "Relayer fee exceeds 0.1 XLM");
+  if (BigInt(fee) > CONTRACT_ACCOUNT_MAX_FEE) throw httpError(409, "Relayer fee exceeds 1 XLM");
 }
 
 async function pollTransaction(server, transactionHash) {

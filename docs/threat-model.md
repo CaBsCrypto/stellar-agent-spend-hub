@@ -28,7 +28,7 @@
 | Replay or concurrent submit | Soroban auth nonce plus atomic Upstash request consumption |
 | Malicious WebAuthn assertion | Challenge, origin, RP ID, credential hash and low-S P-256 verification |
 | Mainnet or asset substitution | Testnet and USDC SAC constants validated before simulation |
-| Excessive relayer fees | Hard cap of `0.1 XLM` |
+| Excessive relayer fees | Hard testnet cap of `1 XLM`; observed grant simulation requires about `0.864 XLM` |
 | Receipt or log leakage | PII guard, sanitized receipts and no signatures/full XDR in responses |
 | Fake demo evidence | Pending state has no hash; verified state requires a public transaction hash |
 | Replay demo moving funds | Evidence endpoints are GET-only and always return `executionAllowed: false` |

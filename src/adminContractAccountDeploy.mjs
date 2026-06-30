@@ -1,8 +1,9 @@
 import { timingSafeEqual } from "node:crypto";
-import { contract as contractSdk, Keypair, Networks, TransactionBuilder } from "@stellar/stellar-sdk";
+import { Address, contract as contractSdk, Keypair, Networks, rpc } from "@stellar/stellar-sdk";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
 
 export const SPEND_ACCOUNT_WASM_HASH = "6230e90601a82fd1afd8ae3dd59da55a4bc66d5e1fd4603996b1466f88c3c800";
+export const CONTRACT_ACCOUNT_DEPLOY_MAX_FEE = 3_500_000_000n;
 
 export async function runAdminContractAccountDeploy({
   request,
@@ -50,22 +51,44 @@ export async function deployWithSdk({ registration, env }) {
       rpcUrl,
       fee: "1000000",
       timeoutInSeconds: 300,
-      signTransaction: async (xdr) => {
-        const transaction = TransactionBuilder.fromXDR(xdr, Networks.TESTNET);
-        transaction.sign(relayer);
-        return { signedTxXdr: transaction.toXDR(), signerAddress: relayer.publicKey() };
-      },
     },
   );
-  const sent = await assembled.signAndSend();
-  const contractId = sent.result?.options?.contractId || sent.result?.contractId;
-  if (!contractId) throw httpError(502, "Contract deployment did not return a contract ID");
-  return {
-    contractId,
-    transactionHash: sent.sendTransactionResponse?.hash || sent.hash || null,
-  };
+  const server = new rpc.Server(rpcUrl);
+  return sendAssembledDeployment({ assembled, relayer, server });
 }
 
+
+export async function sendAssembledDeployment({ assembled, relayer, server }) {
+  const transaction = assembled?.built;
+  if (!transaction) throw httpError(502, "Contract deployment was not assembled");
+  const fee = BigInt(transaction.fee);
+  if (fee <= 0n || fee > CONTRACT_ACCOUNT_DEPLOY_MAX_FEE) {
+    throw httpError(409, "Contract deployment fee exceeds the testnet cap");
+  }
+  transaction.sign(relayer);
+  const sent = await server.sendTransaction(transaction);
+  if (sent.status !== "PENDING") throw httpError(502, `Contract deploy returned ${sent.status}`);
+  const settled = await pollDeployment(server, sent.hash);
+  if (settled.status !== "SUCCESS" || !settled.returnValue) {
+    throw httpError(502, "Contract deployment did not succeed");
+  }
+  let contractId;
+  try {
+    contractId = Address.fromScVal(settled.returnValue).toString();
+  } catch {
+    throw httpError(502, "Contract deployment returned an invalid contract ID");
+  }
+  return { contractId, transactionHash: sent.hash };
+}
+
+async function pollDeployment(server, transactionHash) {
+  for (let attempt = 0; attempt < 30; attempt += 1) {
+    const result = await server.getTransaction(transactionHash);
+    if (result.status !== "NOT_FOUND") return result;
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  }
+  throw httpError(504, "Contract deployment confirmation timed out");
+}
 export function validateRegistration(body) {
   return {
     ownerPublicKeyHex: fixedHex(body.ownerPublicKeyHex, 65, "ownerPublicKeyHex"),

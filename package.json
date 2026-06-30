@@ -53,6 +53,8 @@
     "account:test": "cargo test --manifest-path contracts/spend-account-v1/Cargo.toml",
     "account:build": "stellar contract build --manifest-path contracts/spend-account-v1/Cargo.toml",
     "account:plan": "node scripts/contract-account-testnet.mjs --action=plan",
+    "account:fixture": "node scripts/contract-account-fixture-e2e.mjs",
+    "account:fixture:execute": "node scripts/contract-account-fixture-e2e.mjs --execute",
     "account:deploy": "node scripts/contract-account-testnet.mjs --action=deploy",
     "account:deploy:execute": "node scripts/contract-account-testnet.mjs --action=deploy --execute",
     "account:owner": "node scripts/contract-account-testnet.mjs --action=owner --execute",
