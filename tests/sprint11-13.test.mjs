@@ -208,14 +208,12 @@ test("entrypoints Vercel existen para todas las rutas anidadas", async () => {
     "../api/diagnostics/public.mjs",
     "../api/mpp/stellar-risk.mjs",
     "../api/mpp/receipts.mjs",
-    "../api/contract-account/status.mjs",
-    "../api/contract-account/prepare.mjs",
-    "../api/contract-account/submit.mjs",
+    "../api/contract-account/[...path].mjs",
     "../api/provider-kit/definition.mjs",
     "../api/provider-kit/validate.mjs",
     "../api/admin/contract-account/deploy.mjs",
   ];
-  assert.equal(routes.length, 12, "Hobby deployment must stay within Vercel's function budget");
+  assert.ok(routes.length <= 12, "Hobby deployment must stay within Vercel's function budget");
   for (const route of routes) {
     const module = await import(route);
     assert.equal(typeof module.default, "function");
