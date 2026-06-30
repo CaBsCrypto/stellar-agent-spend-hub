@@ -162,3 +162,17 @@ function getFreePort() {
     });
   });
 }
+test("canonical providers endpoint supports filtered production-safe queries", async () => {
+  const service = {
+    ...mockService,
+    searchProviders: ({ query, category }) => [{ providerId: `${query}:${category}` }],
+  };
+  const router = createApiRouter({ service, env: {}, dependencies: fakeDependencies() });
+  const result = await invoke(router, {
+    method: "GET",
+    path: "/api/providers?q=merchant%20lab&category=pay_service",
+  });
+
+  assert.equal(result.status, 200);
+  assert.deepEqual(result.body.providers, [{ providerId: "merchant lab:pay_service" }]);
+});

@@ -70,7 +70,15 @@ export function createRoutes({ service, env, dependencies }) {
     exact("GET", "/api/link/diagnostics", async () => ({ body: await service.linkDiagnostics() })),
     exact("GET", "/api/state", async () => ({ body: await service.getState() })),
     exact("GET", "/api/spend", async () => ({ body: await service.getSpendView() })),
-    exact("GET", "/api/providers", async () => ({ body: service.getProvidersView() })),
+    exact("GET", "/api/providers", async ({ url }) => {
+      const query = url.searchParams.get("q") || "";
+      const category = url.searchParams.get("category") || "";
+      return {
+        body: query || category
+          ? { providers: service.searchProviders({ query, category }) }
+          : service.getProvidersView(),
+      };
+    }),
     exact("GET", "/api/overview", async ({ url }) => {
       const evidenceService = dependencies.publicEvidence();
       const [evidence, diagnostics] = await Promise.all([

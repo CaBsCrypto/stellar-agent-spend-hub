@@ -10,7 +10,7 @@ export function createPage() {
       const query = queryValue(url, "q", "");
       const [directory, kit] = await Promise.all([
         query
-          ? api(`/api/providers/search?q=${encodeURIComponent(query)}`, { signal })
+          ? api(`/api/providers?q=${encodeURIComponent(query)}`, { signal })
           : store.load("providers", "/api/providers", { signal }),
         store.load("provider-kit", "/api/provider-kit/definition", { signal }),
       ]);

@@ -110,7 +110,7 @@ MPP and the contract account intentionally remain separate in this phase because
 - An official MCP SDK server exposes bounded discovery, intent, preparation, status, and receipt tools without settlement authority.
 - A separately deployed Merchant Lab provides an independent seller boundary, public LCP, adversarial buyer tests, stateless simulated receipts, and replay rejection.
 - Upstash, Horizon, Soroban RPC, and Vercel production diagnostics are operational.
-- `114/114` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
+- `115/115` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
 
 ### Pending submission gate
 
