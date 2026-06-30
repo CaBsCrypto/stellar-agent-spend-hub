@@ -202,18 +202,20 @@ test("Vercel Marketplace KV aliases habilitan Upstash sin duplicar secretos", ()
 });
 test("entrypoints Vercel existen para todas las rutas anidadas", async () => {
   const routes = [
+    "../api/[...path].mjs",
+    "../api/admin/soroban-transfer.mjs",
+    "../api/admin/testnet-payment.mjs",
     "../api/diagnostics/public.mjs",
     "../api/mpp/stellar-risk.mjs",
     "../api/mpp/receipts.mjs",
     "../api/contract-account/status.mjs",
     "../api/contract-account/prepare.mjs",
     "../api/contract-account/submit.mjs",
-    "../api/contract-account/ceremony.mjs",
-    "../api/contract-account/ceremony/[ceremonyId].mjs",
     "../api/provider-kit/definition.mjs",
     "../api/provider-kit/validate.mjs",
     "../api/admin/contract-account/deploy.mjs",
   ];
+  assert.equal(routes.length, 12, "Hobby deployment must stay within Vercel's function budget");
   for (const route of routes) {
     const module = await import(route);
     assert.equal(typeof module.default, "function");
