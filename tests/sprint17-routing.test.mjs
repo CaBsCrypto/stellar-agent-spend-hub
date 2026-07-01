@@ -88,6 +88,13 @@ test("overview endpoint combines evidence and diagnostics", async () => {
   assert.deepEqual(result.body.diagnostics.dependencies, {});
 });
 
+test("Vercel pilot rewrite resolves through the shared API router", async () => {
+  const router = createApiRouter({ service: mockService, env: {}, dependencies: fakeDependencies() });
+  const result = await invoke(router, { method: "GET", path: "/api/pilot?pilotPath=readiness" });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.providerCount, 1);
+});
+
 test("API router returns 404 and 405 with Allow", async () => {
   const router = createApiRouter({ service: mockService, env: {}, dependencies: fakeDependencies() });
   const missing = await invoke(router, { method: "GET", path: "/api/does-not-exist" });
@@ -113,7 +120,11 @@ test("dynamic route matcher decodes path parameters", () => {
 test("local server supports deep links and blocks server source files", async () => {
   const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8"));
   assert.equal(vercelConfig.cleanUrls, false);
-  assert.equal(vercelConfig.rewrites.length, 6);
+  assert.equal(vercelConfig.rewrites.length, 7);
+  assert.deepEqual(vercelConfig.rewrites[0], {
+    source: "/api/pilot/:pilotPath*",
+    destination: "/api/pilot?pilotPath=:pilotPath*",
+  });
   const port = await getFreePort();
   const statePath = join(tmpdir(), `spendhub-sprint17-${Date.now()}.json`);
   const { server } = await createSpendHubServer({ root: process.cwd(), port, statePath, env: {} });

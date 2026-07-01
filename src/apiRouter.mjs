@@ -23,8 +23,14 @@ export function createApiRouter({ service, env = process.env, dependencies: supp
     routes,
     async handle({ request, response, url }) {
       const method = String(request.method || "GET").toUpperCase();
+      const rewrittenPilotPath = url.pathname === "/api/pilot"
+        ? url.searchParams.get("pilotPath")
+        : null;
+      const pathname = rewrittenPilotPath && /^[a-zA-Z0-9/_-]+$/.test(rewrittenPilotPath)
+        ? `/api/pilot/${rewrittenPilotPath.replace(/^\/+|\/+$/g, "")}`
+        : url.pathname;
       const pathMatches = routes
-        .map((route) => ({ route, params: matchRoute(route, url.pathname) }))
+        .map((route) => ({ route, params: matchRoute(route, pathname) }))
         .filter((candidate) => candidate.params !== null);
       const selected = pathMatches.find((candidate) => candidate.route.method === method);
 

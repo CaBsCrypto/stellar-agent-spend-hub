@@ -3,6 +3,7 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
+    { "source": "/api/pilot/:pilotPath*", "destination": "/api/pilot?pilotPath=:pilotPath*" },
     { "source": "/spend", "destination": "/index.html" },
     { "source": "/providers", "destination": "/index.html" },
     { "source": "/mpp", "destination": "/index.html" },
