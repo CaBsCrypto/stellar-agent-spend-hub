@@ -22,13 +22,14 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Merchant balance after payment: `0.03 USDC`.
 - Session policy spent: `0.01` of `0.02 USDC`.
 - Submit and deploy gates are closed outside supervised acceptance windows.
-- JavaScript tests: `131/131` passing before Sprint 19 additions.
+- JavaScript tests: `141/141` passing.
 - Rust tests: `31/31` passing.
 - Official MCP server and independent Merchant Lab remain available.
+- Sprint 20 Remote MCP Provider Pilot is implemented with its production gate closed pending supervised acceptance.
 
 ## Submission freeze
 
-The payment proof is complete. Owner revoke `27010be2...afc3cc` is verified, `revoked=true`, and all submit gates are closed. Remaining work is package QA, screenshots, and video capture.
+The SCF payment proof is frozen and complete. Owner revoke `27010be2...afc3cc` is verified, `revoked=true`, and all financial submit gates are closed. Provider Pilot evidence is maintained separately.
 
 ## Deferred scope
 

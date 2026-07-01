@@ -8,20 +8,22 @@ export function createPage() {
   return {
     async load({ store, api, signal, url }) {
       const query = queryValue(url, "q", "");
-      const [directory, kit] = await Promise.all([
+      const [directory, kit, pilot] = await Promise.all([
         query
           ? api(`/api/providers?q=${encodeURIComponent(query)}`, { signal })
           : store.load("providers", "/api/providers", { signal }),
         store.load("provider-kit", "/api/provider-kit/definition", { signal }),
+        store.load("pilot-readiness", "/api/pilot/readiness", { signal }),
       ]);
-      return { providers: directory.providers || [], providerKit: kit.provider, query };
+      return { providers: directory.providers || [], providerKit: kit.provider, pilot, query };
     },
-    render({ providers, providerKit, query }) {
+    render({ providers, providerKit, pilot, query }) {
       return `<section>
         ${pageHeader({ eyebrow: "Machine-readable commerce", title: "Providers", summary: "Discover priced services, inspect their privacy requirements, and create a bounded payment intent." })}
         <form class="search-bar" data-provider-search><label><span class="sr-only">Search providers</span><input name="q" value="${escapeHtml(query)}" placeholder="Search MCP, APIs, digital services" /></label><button class="secondary-button" type="submit">Search</button></form>
         <div class="provider-grid">${providers.length ? providers.map(providerCard).join("") : emptyState("No providers found", "Try a broader query.")}</div>
         <section class="section-block panel"><div class="section-heading"><div><span class="section-label">Provider Kit V1</span><h2>Monetize a Node or MCP API</h2></div>${statusPill("ready")}</div><dl class="definition-list"><div><dt>Provider ID</dt><dd>${escapeHtml(providerKit.providerId)}</dd></div><div><dt>Endpoint</dt><dd><code>${escapeHtml(providerKit.endpoint)}</code></dd></div><div><dt>Maximum price</dt><dd>${escapeHtml(providerKit.maxPrice)} ${escapeHtml(providerKit.asset)}</dd></div><div><dt>Network</dt><dd>${escapeHtml(providerKit.network)}</dd></div></dl></section>
+        <section class="section-block panel"><div class="section-heading"><div><span class="section-label">Remote MCP pilot</span><h2>Merchant Lab design partner</h2></div>${statusPill(pilot.pilot.status)}</div><dl class="definition-list"><div><dt>MCP endpoint</dt><dd><code>/api/mcp</code></dd></div><div><dt>Tenant</dt><dd>${escapeHtml(pilot.pilot.tenantId)}</dd></div><div><dt>Persistence</dt><dd>${escapeHtml(pilot.repository.status)}</dd></div><div><dt>Settlement</dt><dd>Local buyer only</dd></div></dl></section>
       </section>`;
     },
     bind(outlet, data, context) {

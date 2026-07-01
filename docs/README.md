@@ -25,6 +25,7 @@
 - [Partner strategy](./partner-strategy.md)
 - [Partner shortlist](./partner-shortlist.md)
 - [Roadmap](./roadmap.md)
+- [Sprint 20 Remote MCP Provider Pilot](./sprint-20-provider-pilot.md)
 - [Vercel deployment](./deploy-vercel.md)
 
 ## Historical implementation record

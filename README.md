@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-131%2F131%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-141%2F141%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -26,6 +26,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Official Stellar MPP Charge seller for a paid Stellar Risk API.
 - Provider Kit V1 for Node/MCP services that want to charge in Stellar testnet USDC.
 - Official MCP SDK server for provider discovery, idempotent intent creation, payment preparation, status, and sanitized receipts.
+- Remote MCP Provider Pilot with bearer authentication, tenant-scoped Upstash state, one-time human approval, and a local-only buyer.
 - Independent [Merchant Lab](https://stellar-agent-merchant-lab.vercel.app) with MCP quotes, MPP challenges, LCP terms, adversarial scenarios, delivery, receipts, and replay rejection.
 - Passkey-owned Soroban Contract Account with a bounded Ed25519 agent session.
 - Verified Contract Account fixture E2E: P-256 grant, bounded Ed25519 payment, owner revoke, and exact merchant balance delta ([public result](./docs/contract-account-fixture-result.md)).
@@ -64,6 +65,9 @@ npm run mcp:test
 ```
 
 The MCP boundary fixes the demo maximum at `0.01 USDC`, requires idempotency, validates inputs with Zod, returns structured content, and applies the same privacy firewall used by public receipts. [MCP server guide](./docs/mcp-server.md)
+
+The Sprint 20 pilot additionally exposes authenticated stateless Streamable HTTP at `POST /api/mcp`. Its tools create and prepare a fixed Merchant Lab `0.01 USDC` draft, while settlement remains exclusively in `npm run pilot:buyer`. [Provider Pilot runbook](./docs/sprint-20-provider-pilot.md)
+
 ## Machine Payment Proof
 
 The official Stellar MPP seller quotes exactly `0.01 USDC` testnet for a Horizon-backed Stellar Risk API. Production has returned a valid `stellar/charge` challenge and Upstash provides atomic replay protection. The buyer remains local so its key never enters the browser, repository, or Vercel.
@@ -330,7 +334,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 
 | Area | State |
 | --- | --- |
-| JavaScript tests | `131/131` passing |
+| JavaScript tests | `141/141` passing |
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |

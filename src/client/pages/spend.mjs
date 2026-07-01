@@ -6,12 +6,18 @@ export function createPage() {
   let boundOutlet;
   return {
     async load({ store, signal, url }) {
+      const pilotId = queryValue(url, "pilot", "");
+      if (pilotId) {
+        const payload = await store.load(`pilot:${pilotId}`, `/api/pilot/requests/${encodeURIComponent(pilotId)}`, { signal, maxAgeMs: 0 });
+        return { pilotMode: true, pilot: payload.request };
+      }
       const data = await store.load("spend", "/api/spend", { signal });
       const requestedId = queryValue(url, "intent", data.intents[0]?.id || "");
       const selected = data.intents.find((intent) => intent.id === requestedId) || data.intents[0] || null;
       return { ...data, selected, evaluation: selected ? data.evaluations[selected.id] : null };
     },
     render(data) {
+      if (data.pilotMode) return renderPilotApproval(data.pilot);
       const { selected, evaluation, summary } = data;
       return `<section>
         ${pageHeader({ eyebrow: "User-controlled spending", title: "Agent Spend", summary: "Review proposed payments, privacy evidence, policy decisions, and receipts before settlement." })}
@@ -26,6 +32,26 @@ export function createPage() {
     },
     bind(outlet, data, context) {
       clickHandler = async (event) => {
+        const pilotButton = event.target.closest("[data-pilot-approve]");
+        if (pilotButton && data.pilotMode) {
+          pilotButton.disabled = true;
+          try {
+            const approvalToken = new URLSearchParams(window.location.hash.slice(1)).get("approval");
+            if (!approvalToken) throw new Error("This approval link is missing its one-time token.");
+            await context.api(`/api/pilot/requests/${encodeURIComponent(data.pilot.requestId)}/approve`, {
+              method: "POST",
+              body: JSON.stringify({ approvalToken }),
+            });
+            history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+            context.store.invalidate(`pilot:${data.pilot.requestId}`);
+            context.showToast("Pilot payment approved. The local buyer may now claim it.");
+            await context.router.refresh();
+          } catch (error) {
+            context.showToast(error.message);
+            pilotButton.disabled = false;
+          }
+          return;
+        }
         const actionButton = event.target.closest("[data-intent-action]");
         if (!actionButton || !data.selected) return;
         actionButton.disabled = true;
@@ -64,6 +90,24 @@ export function createPage() {
       if (boundOutlet && clickHandler) boundOutlet.removeEventListener("click", clickHandler);
     },
   };
+}
+
+function renderPilotApproval(request) {
+  const canApprove = request.status === "prepared";
+  return `<section>
+    ${pageHeader({ eyebrow: "Remote MCP Provider Pilot", title: "Human Approval", summary: "Review the immutable Merchant Lab payment proposal before the local buyer can claim it." })}
+    <div class="metric-grid">${metric("Amount", `${escapeHtml(request.amount)} ${escapeHtml(request.asset)}`, "Exact pilot price")}${metric("Network", request.network, "Testnet only")}${metric("Status", request.status, "One-time approval")}${metric("Provider", request.providerName, "Allowlisted")}</div>
+    <section class="panel review-panel">
+      <div class="section-heading"><div><span class="section-label">Payment proposal</span><h2>${escapeHtml(request.resourceId)}</h2></div>${statusPill(request.status)}</div>
+      <dl class="definition-list">
+        <div><dt>Recipient</dt><dd><code>${escapeHtml(request.recipient)}</code></dd></div>
+        <div><dt>Asset contract</dt><dd><code>${escapeHtml(request.assetContractId)}</code></dd></div>
+        <div><dt>Request</dt><dd><code>${escapeHtml(request.requestId)}</code></dd></div>
+      </dl>
+      <div class="security-callout"><strong>Human boundary</strong><p>Approval changes only the request state. The browser never receives the buyer secret and cannot settle funds.</p></div>
+      <div class="button-row"><button class="primary-button" data-pilot-approve ${canApprove ? "" : "disabled"}>Approve 0.01 USDC</button></div>
+    </section>
+  </section>`;
 }
 
 function intentLink(intent, evaluation = {}, selectedId) {

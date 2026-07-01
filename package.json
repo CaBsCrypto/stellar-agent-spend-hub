@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/contract-account-ceremony.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/contract-account-ceremony.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs && node tests/sprint20-pilot.test.mjs && node tests/sprint20-mcp-http.test.mjs && node tests/sprint20-verification.test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
@@ -38,6 +38,8 @@
     "soroban:admin-transfer": "node scripts/soroban-admin-transfer.mjs",
     "soroban:admin-submit": "node scripts/soroban-admin-transfer.mjs --submit",
     "mpp:agent-risk": "node scripts/mpp-agent-risk.mjs",
+    "pilot:key": "node scripts/pilot-api-key.mjs",
+    "pilot:buyer": "node scripts/pilot-buyer.mjs",
     "escrow-v2:test": "cargo test --manifest-path contracts/policy-escrow-v2/Cargo.toml",
     "escrow-v2:build": "stellar contract build --manifest-path contracts/policy-escrow-v2/Cargo.toml",
     "escrow-v2:plan": "node scripts/escrow-v2-testnet.mjs",

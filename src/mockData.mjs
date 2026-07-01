@@ -6,7 +6,7 @@ export const providerDirectory = [
     name: "Stellar Agent Merchant Lab",
     category: "pay_service",
     description: "Independent MCP and MPP merchant sandbox for reproducible Stellar testnet purchases.",
-    endpoint: "https://stellar-agent-merchant-lab.vercel.app/api/resource/market-signal",
+    endpoint: "https://stellar-agent-merchant-lab.vercel.app/api/resource/stellar-risk-snapshot",
     paymentMethod: "stellar-mpp-usdc",
     legalContextUrl: "https://stellar-agent-merchant-lab.vercel.app/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
