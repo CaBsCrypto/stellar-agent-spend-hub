@@ -32,6 +32,15 @@ export function foundationCard(evidence = {}) {
   </article>`;
 }
 
+export function lifecycleRow(label, step = {}) {
+  const status = step.status || "pending";
+  return `<article class="foundation-row">
+    <div><strong>${escapeHtml(label)}</strong><small>${escapeHtml(status)}</small></div>
+    <code title="${escapeHtml(step.transactionHash || "Pending")}">${escapeHtml(shortHash(step.transactionHash || "Pending"))}</code>
+    ${step.explorerUrl ? `<a class="text-link" href="${escapeHtml(step.explorerUrl)}" target="_blank" rel="noreferrer">Verify</a>` : statusPill(status)}
+  </article>`;
+}
+
 export function dependencyStrip(dependencies = {}) {
   return `<div class="dependency-strip" aria-label="Dependency status">
     ${["horizon", "rpc", "upstash"].map((key) => `<span><strong>${escapeHtml(key === "rpc" ? "Soroban RPC" : key[0].toUpperCase() + key.slice(1))}</strong>${statusPill(dependencies[key] || "checking")}</span>`).join("")}

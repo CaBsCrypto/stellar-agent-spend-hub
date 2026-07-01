@@ -2,7 +2,7 @@
 
 ## Start here
 
-1. [Current state](./current-state.md): verified evidence, pending gates, and current risks.
+1. [Current state](./current-state.md): verified evidence, freeze status, and current risks.
 2. [SCF application](./scf-application.md): funding request, milestones, metrics, and impact.
 3. [Resumen ejecutivo SCF](./scf-executive-summary-es.md): Spanish executive summary.
 4. [Architecture](./architecture.md): the two coordinated Stellar payment paths.
@@ -47,3 +47,6 @@ The following files preserve earlier testnet and contract experiments. They are 
 - Pending evidence never carries a transaction hash.
 - No PII, secrets, signatures, XDR, credential IDs, or customer references in public logs or receipts.
 - LatAm bill pay remains deferred until privacy and partner requirements are production-ready.
+
+19. [Human passkey acceptance](./contract-account-human-acceptance.md): deploy, funding, grant, payment, replay, and revoke lifecycle.
+20. [Frozen SCF evidence](./scf-evidence-snapshot.json): sanitized submission snapshot generated from production.

@@ -1,54 +1,26 @@
-# SCF USDC Acceptance Runbook
+# SCF Acceptance and Evidence Freeze Runbook
 
-This is the supervised gate between a packaged application and an SCF submission. Do not execute it without Circle Faucet funding and the production-domain passkey ceremony.
+## Verified payment evidence
 
-## Preconditions
+- MPP `0.01 USDC`: `8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836`.
+- Contract Account `0.01 USDC`: `b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094`.
+- First Contract Account submit returned `200`; identical replay returned `409`.
+- Contract balance changed `0.02 -> 0.01 USDC`; merchant changed `0.02 -> 0.03 USDC`.
 
-- Production alias is `https://agente-pagos-stellar.vercel.app`.
-- `spendhub-owner` holds at least `0.03 USDC` testnet.
-- Merchant trustline is active.
-- Horizon, Soroban RPC, and Upstash diagnostics are reachable.
-- `npm run qa:full` passes.
-- All submit gates begin as `false`.
+## Freeze procedure
 
-## Part A - MPP settlement
+1. Confirm both coordinated entries are `verified` in `GET /api/evidence`.
+2. Have the passkey owner execute `Revoke` from `/wallet`.
+3. Verify the revoke hash through Soroban RPC and confirm `session.revoked=true`.
+4. Set deploy and submit gates to `false`, redeploy, and confirm public readiness is not submit-capable.
+5. Run `npm run evidence:capture`; it must fail unless revoke is verified and gates are closed.
+6. Run full QA, secret audit, explorer-link checks, and desktop/mobile browser verification.
+7. Commit the frozen snapshot and acceptance report. Do not execute more payments from this Contract Account.
 
-1. Confirm recipient, testnet USDC SAC, network, and exact maximum price `0.01 USDC`.
-2. Temporarily set `MPP_ENABLED=true` and deploy production.
-3. Run `npm run mpp:agent-risk -- --tx <verified-testnet-hash>` locally.
-4. Review the challenge and type the interactive confirmation.
-5. Confirm the API returns the resource and a sanitized receipt.
-6. Verify the payment hash through Horizon or Stellar Expert.
-7. Reuse the credential/request and confirm replay is rejected without a second debit.
-8. Set `MPP_ENABLED=false`, deploy, and confirm the endpoint returns its disabled response.
+## Submission rules
 
-## Part B - Contract Account settlement
-
-1. Open the stable production `/wallet` route and register the passkey.
-2. Confirm the URL now contains `?ceremony=<uuid>`; only public P-256 material is stored for ten minutes.
-3. Inspect it with `npm run account:ceremony -- --ceremony=<uuid>`.
-4. Temporarily set `CONTRACT_ACCOUNT_DEPLOY_ENABLED=true`.
-5. Set `CONTRACT_ACCOUNT_DEPLOY_ADMIN_TOKEN` only in the local shell and run `npm run account:ceremony:deploy -- --ceremony=<uuid>`.
-6. Record the public contract ID and deploy hash, then close the deploy gate and clear the local token.
-7. Set `CONTRACT_ACCOUNT_ID` in Vercel and fund the C-account with exactly `0.02 USDC` testnet.
-8. Temporarily enable the contract-account prepare/submit path.
-9. Use the same passkey to grant the fixed Ed25519 session for 24 hours.
-10. Execute one session payment of `0.01 USDC` to the configured merchant.
-11. Verify merchant balance, public transaction hash, policy decision and sanitized receipt.
-12. Confirm an invalid destination or repeated auth entry is rejected.
-13. Set `CONTRACT_ACCOUNT_ENABLED=false`, `CONTRACT_ACCOUNT_SUBMIT_ENABLED=false`, and `CONTRACT_ACCOUNT_DEPLOY_ENABLED=false`; deploy again.
-
-## Evidence publication
-
-- Confirm `GET /api/evidence` changes each coordinated proof from `pending` to `verified` only after a stored receipt exists.
-- Confirm each verified entry includes `verificationStatus`, `evidenceType`, `transactionHash`, `explorerUrl`, `verifiedAt`, `network`, `asset`, `amount`, and public policy.
-- Update README, SCF application, demo script, screenshots, and final video.
-- Do not manually insert a hash into pending evidence.
-
-## Final submission gate
-
-- Both USDC explorer links resolve and match merchant balances.
-- Replay and policy rejection are recorded.
-- All gates are closed.
-- Secret audit, JavaScript/Rust tests, contract builds, Vercel build, production smoke test, and desktop/mobile browser QA pass.
-- Only then mark the SCF package ready to submit.
+- The payment hash, not the grant hash, is the primary Contract Account proof.
+- Human amount is `0.01 USDC`; raw amount is `100000` base units.
+- Replay Demo is read-only and never signs.
+- Never expose secrets, signatures, full XDR, credential IDs, or PII.
+- Team identity and payout information stay outside the public repository.

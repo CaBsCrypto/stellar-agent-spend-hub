@@ -14,7 +14,7 @@ Open Live Evidence. Show the delivered report and the first coordinated USDC set
 
 ## 47-68 seconds: Contract Account policy
 
-Show the passkey-owned Soroban Contract Account. Its agent session is limited to one merchant, testnet USDC, `0.01 USDC` per payment, `0.02 USDC` total, and 24 hours. Execute the second payment and open its explorer link. Show one blocked invalid destination or replay.
+Show the passkey-owned Soroban Contract Account. Its agent session is limited to one merchant, testnet USDC, `0.01 USDC` per payment, `0.02 USDC` total, and 24 hours. Open the verified second payment and its explorer link. Show the `200` first submit, `409` replay, and revoked session lifecycle.
 
 ## 68-82 seconds: Privacy-safe evidence
 
@@ -26,4 +26,4 @@ Spend Hub combines official MPP interoperability, low-cost USDC settlement, and 
 
 ## Recording gate
 
-Do not record the final version until both coordinated USDC entries are `verified`. Use the stable production domain, preload explorer tabs, keep every submit gate closed outside the recorded acceptance actions, and never reveal terminal environment variables.
+Both coordinated USDC entries are verified. Record only after the revoke is verified and every submit gate is closed. Use the stable production domain, preload explorer tabs, keep every submit gate closed outside the recorded acceptance actions, and never reveal terminal environment variables.

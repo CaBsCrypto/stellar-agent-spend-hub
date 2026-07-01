@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-114%2F114%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-131%2F131%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -31,7 +31,8 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Verified Contract Account fixture E2E: P-256 grant, bounded Ed25519 payment, owner revoke, and exact merchant balance delta ([public result](./docs/contract-account-fixture-result.md)).
 - Ten-minute passkey deployment ceremonies with production RP/origin binding, one-time admin claim, and no raw credential ID in transit.
 - Policy controls for merchant, asset, per-payment amount, cumulative budget, expiry, revoke, and replay.
-- Public Evidence API with an explicit `pending` or `verified` schema and no fabricated hashes.
+- Two verified `0.01 USDC` proofs: official Stellar MPP and a passkey-managed Contract Account session payment.
+- Public Evidence API with normalized amounts, lifecycle hashes, replay status, and no fabricated evidence.
 - Three verified XLM testnet foundations: direct payment, policy-controlled SAC transfer, and guarded runtime settlement.
 - Privacy guard blocking RUTs, phone numbers, emails, account data, card data, secrets, signatures, full XDR, and credential IDs from public receipts.
 - Vercel production, Upstash atomic storage, Horizon, and Soroban RPC diagnostics.
@@ -67,7 +68,7 @@ The MCP boundary fixes the demo maximum at `0.01 USDC`, requires idempotency, va
 
 The official Stellar MPP seller quotes exactly `0.01 USDC` testnet for a Horizon-backed Stellar Risk API. Production has returned a valid `stellar/charge` challenge and Upstash provides atomic replay protection. The buyer remains local so its key never enters the browser, repository, or Vercel.
 
-The final MPP settlement is intentionally marked `pending` until Circle Faucet funding is available. Pending evidence has no transaction hash, explorer URL, or verification timestamp.
+The official MPP settlement is verified at `0.01 USDC`: [`8290da7e...985836`](https://stellar.expert/explorer/testnet/tx/8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836). The paid resource was delivered and an identical replay was rejected.
 
 ## Sprint 10: Passkey Contract Account
 
@@ -75,7 +76,7 @@ The final MPP settlement is intentionally marked `pending` until Circle Faucet f
 
 The Wasm is installed on testnet with hash `6230e90601a82fd1afd8ae3dd59da55a4bc66d5e1fd4603996b1466f88c3c800`. [Verify the upload transaction](https://stellar.expert/explorer/testnet/tx/e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80).
 
-The merchant and relayer are deliberately separate. The relayer holds no USDC and can only pay network fees. A deterministic P-256 fixture now proves the complete testnet path; final coordinated evidence still waits for a production-domain user passkey.
+The merchant and relayer are deliberately separate. The relayer holds no USDC and can only pay network fees. A production-domain passkey deployed the live Contract Account, granted the bounded session, and authorized the session payment. The `0.01 USDC` payment is verified at [`b37ab921...6af094`](https://stellar.expert/explorer/testnet/tx/b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094).
 
 [Sprint 10 status and acceptance gates](./docs/sprint-10-contract-account.md)
 
@@ -333,10 +334,10 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 | Rust tests | `31/31` passing |
 | XLM testnet foundations | 3 verified public settlements |
 | Official MPP challenge | Verified in production |
-| MPP USDC settlement | Pending supervised Faucet session |
-| Spend Account V1 | Wasm installed; instance waits for production passkey |
-| Contract Account USDC settlement | Pending supervised passkey session |
+| MPP USDC settlement | Verified `0.01 USDC` |
+| Spend Account V1 | Human passkey instance deployed and funded |
+| Contract Account USDC settlement | Verified `0.01 USDC`; replay rejected |
 | Vercel / Upstash / Horizon / RPC | Operational |
-| SCF package | Prepared; submission blocked until both USDC hashes exist |
+| SCF package | Evidence complete; final freeze and media QA in progress |
 
 No mainnet, production autopilot, production ZK, or LatAm bill pay is enabled.

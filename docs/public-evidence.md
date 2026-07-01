@@ -2,44 +2,33 @@
 
 ## Canonical source
 
-The live manifest at <https://agente-pagos-stellar.vercel.app/api/evidence> is the public source of truth for settlement status. `src/publicEvidenceCatalog.mjs` owns immutable verified foundations and pending coordinated-proof definitions. Runtime receipts can promote a coordinated proof only after a real settlement is stored.
+The live manifest at <https://agente-pagos-stellar.vercel.app/api/evidence> is the source of truth. A frozen submission snapshot is generated only after both payments, replay rejection, passkey revoke, and closed gates are verified.
 
-## Public fields
+## Coordinated proofs
 
-Every evidence item exposes:
+| Proof | Amount | Hash | Status |
+| --- | ---: | --- | --- |
+| Official Stellar MPP Charge | `0.01 USDC` | `8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836` | verified |
+| Passkey-managed Contract Account | `0.01 USDC` | `b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094` | verified |
 
-- `id` and human-readable `label`;
-- `verificationStatus`: `pending` or `verified`;
-- `evidenceType`;
-- compatibility aliases `status` and `kind`;
-- `network`, `asset`, and `amount`;
-- a privacy-safe `policy` summary;
-- `transactionHash`, `explorerUrl`, and `verifiedAt` only when verified.
+## Public schema
 
-A contract-account item may additionally expose its public contract ID, destination, signer type, and policy decision. An MPP item may expose its protocol, recipient, and public asset contract ID.
+Evidence items expose status, type, network, asset, human amount, policy, transaction hash, explorer URL, and verification time. Contract Account transfers additionally expose `amountBaseUnits`.
+
+`contractAccountLifecycle` exposes only public acceptance data:
+
+- contract ID and USDC SAC;
+- deploy, funding, grant, payment, and revoke proofs;
+- first submit `200` and replay submit `409`;
+- whether submission gates are closed.
 
 ## Invariants
 
-- `pending` evidence must have `transactionHash=null`, `explorerUrl=null`, and `verifiedAt=null`.
-- `verified` evidence must include all three proof fields.
-- `status` must equal `verificationStatus`.
-- `kind` must equal `evidenceType`.
+- Pending evidence cannot include a hash, explorer URL, or verification time.
+- Verified evidence requires all three proof fields.
+- The coordinated Contract Account proof always points to the payment, never the grant.
+- `amount="0.01"` and `amountBaseUnits="100000"` cannot be conflated.
 - Replay mode always returns `executionAllowed=false`.
-- Public payloads cannot contain private keys, signatures, full XDR, credential IDs, tokens, PII, or customer references.
+- Public payloads cannot contain secrets, signatures, full XDR, credential IDs, PII, or customer references.
 
-These invariants are enforced at manifest construction time and covered by JavaScript tests.
-
-## Verified foundations
-
-| Evidence | Asset | Hash | Verified at |
-| --- | --- | --- | --- |
-| Direct Stellar payment | XLM | `4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb` | `2026-06-26T02:17:02Z` |
-| Policy-controlled SAC transfer | XLM | `8d9810cde8839895cd421756115df3de4b9f8e56f2460076a439b318e0b3ba7f` | `2026-06-26T07:44:24Z` |
-| Guarded runtime settlement | XLM | `cb9bf9fcef3a79d045285b9c82a2633d8e78f36e9625fd6fb46ab799aae7152e` | `2026-06-26T23:06:16Z` |
-
-## Coordinated submission proofs
-
-- Official MPP Stellar Charge: pending supervised `0.01 USDC` settlement.
-- Passkey-managed Contract Account: pending supervised `0.01 USDC` settlement.
-
-Neither item becomes verified by editing documentation. Only a validated runtime receipt can publish the settlement fields.
+These invariants are enforced in code and tests. Documentation edits cannot promote runtime evidence.

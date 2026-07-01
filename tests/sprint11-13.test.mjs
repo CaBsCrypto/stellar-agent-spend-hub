@@ -61,9 +61,30 @@ test("evidence live y replay son read-only y usan hashes publicos", async () => 
   assert.equal(live.coordinatedDemo.mpp.verificationStatus, "verified");
   assert.equal(live.coordinatedDemo.mpp.evidenceType, "mpp-charge");
   assert.equal(live.coordinatedDemo.mpp.verifiedAt, "2026-06-27T12:00:00.000Z");
-  assert.equal(live.coordinatedDemo.contractAccount.status, "verified");
+assert.equal(live.coordinatedDemo.contractAccount.status, "verified");
+  assert.equal(live.coordinatedDemo.contractAccount.amount, "0.01");
+  assert.equal(live.coordinatedDemo.contractAccount.amountBaseUnits, "100000");
+  assert.equal(live.coordinatedDemo.contractAccount.transactionHash, "12".repeat(32));
+  assert.equal(live.contractAccountLifecycle.payment.transactionHash, "b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094");
+  assert.equal(live.contractAccountLifecycle.replay.replaySubmitStatus, 409);
+  assert.equal(live.contractAccountLifecycle.revoke.status, "pending");
   assert.match(live.coordinatedDemo.mpp.explorerUrl, /stellar\.expert/);
-  assert.equal(live.verifiedFoundations.length, 3);
+assert.equal(live.verifiedFoundations.length, 3);
+
+  await accountRepository.saveReceipt({
+    transactionHash: "34".repeat(32),
+    contractId,
+    action: "revoke",
+    assetContractId: USDC_SAC_TESTNET,
+    destination: merchant,
+    amount: null,
+    signerType: "owner-passkey",
+    settledAt: "2026-06-27T12:03:00.000Z",
+  });
+  const frozen = await service.manifest({ mode: "live" });
+  assert.equal(frozen.contractAccountLifecycle.status, "frozen");
+  assert.equal(frozen.contractAccountLifecycle.gatesClosed, true);
+  assert.equal(frozen.contractAccountLifecycle.revoke.transactionHash, "34".repeat(32));
 });
 
 test("evidence pendiente nunca inventa transaction hash", async () => {

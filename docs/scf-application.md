@@ -6,7 +6,7 @@
 **Category:** Infrastructure and Services / Payments
 **Requested funding:** USD 75,000 equivalent in XLM
 **Target track:** SCF Build Open track
-**Submission gate:** Do not submit until both coordinated USDC testnet settlements are verified.
+**Evidence gate:** Complete. Both coordinated `0.01 USDC` testnet settlements are publicly verified; final media and form QA remain.
 
 ## One-line pitch
 
@@ -19,7 +19,7 @@ AI agents can already discover tools and invoke APIs, but they cannot safely rec
 1. An official MPP Charge flow where a local buyer agent pays `0.01 USDC` to unlock a Horizon-backed Stellar Risk API.
 2. A Soroban contract account where a passkey owner grants a bounded Ed25519 agent session that can pay only one merchant, in one asset, under per-payment, cumulative-budget, and expiry limits.
 
-The project is testnet-only. Three XLM settlements are already publicly verified. The coordinated USDC settlements remain explicitly pending Circle Faucet funding and a production-domain passkey ceremony. No simulated hash is presented as evidence.
+The project is testnet-only. Both coordinated USDC settlements and three earlier XLM foundations are publicly verified. MPP paid `0.01 USDC` and delivered the resource; a production-domain passkey then authorized a bounded Contract Account session payment of `0.01 USDC`. The identical Contract Account submit replay returned `409` and did not move funds.
 
 ## Problem
 
@@ -111,15 +111,20 @@ MPP and the contract account intentionally remain separate in this phase because
 - A separately deployed Merchant Lab provides an independent seller boundary, public LCP, adversarial buyer tests, stateless simulated receipts, and replay rejection.
 - Upstash, Horizon, Soroban RPC, and Vercel production diagnostics are operational.
 - `131/131` JavaScript tests and `31/31` Rust tests pass through the full QA pipeline.
-- A separately labeled Contract Account fixture has verified deploy, funding, P-256 authorization, bounded session payment and revoke on testnet; human passkey evidence remains pending.
+- The production-domain passkey Contract Account was deployed, funded with `0.02 USDC`, granted a bounded session, and paid `0.01 USDC` to the allowlisted merchant.
 
-### Pending submission gate
+### Coordinated acceptance evidence
 
-- One real `0.01 USDC` MPP settlement and replay rejection.
-- Production-domain passkey registration and Spend Account V1 deployment.
-- One policy-controlled `0.01 USDC` contract-account settlement.
+- Official MPP Charge: `8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836`.
+- Passkey-managed Contract Account payment: `b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094`.
+- Contract Account deploy: `c3d90c92ca4baeb926c899a229b64ef75c49e0f464217c46c770093df19b71f3`.
+- Contract Account funding: `c02c6c935881d4acdc178af3d66477b65c9b8f626a69db3c1afa1dc4719d41f4`.
+- Contract Account grant: `46de0acb3fa8b62eb99bef2950f5564d0fb505eb3cfe036210482f8e23e78e9b`.
+- Replay evidence: first submit `200`, identical replay `409`, one balance movement.
+- Owner revoke: `27010be282572c1fb8c5cd4762aac28588e61aed2d8f3317647f83bafbafc3cc`; session state `revoked=true`.
+- Public manifest: <https://agente-pagos-stellar.vercel.app/api/evidence>.
 
-Pending entries have no transaction hash or explorer URL. The application is packaged now but will not be submitted until both USDC proofs are public.
+The owner revoke is verified, the session is frozen, and all submit gates are closed.
 
 ## Milestones, timeline, and budget
 
@@ -194,7 +199,7 @@ The project creates new Stellar demand from machine-priced digital resources and
 
 ## Submission readiness
 
-SCF currently advertises Build awards of up to `$150,000` in XLM across Open, Integration, and RFP tracks. The current SCF #45 page lists a July 26, 2026 submission deadline and asks interested teams to submit the interest form as soon as possible. Requirements and dates must be checked again on submission day:
+SCF Build currently advertises awards of up to `$150,000` in XLM and an approximately six-week award cycle. The project requests `$75,000`; the active interest form, track, dates, and official rules must be rechecked on submission day:
 
 - <https://communityfund.stellar.org/>
 - <https://communityfund.stellar.org/awards>

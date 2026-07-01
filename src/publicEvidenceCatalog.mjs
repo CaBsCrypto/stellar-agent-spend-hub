@@ -2,6 +2,21 @@ const EXPLORER = "https://stellar.expert/explorer/testnet";
 
 export const PUBLIC_EVIDENCE_VERSION = "scf-evidence-v2";
 
+export const CONTRACT_ACCOUNT_ACCEPTANCE = Object.freeze({
+  network: "stellar:testnet",
+  contractId: "CASKG5OOMM2WH6RDCO7FX4XFP6T62SX22WXVTFPIIP2XKGXBHZ4L7HPO",
+  asset: "USDC",
+  assetContractId: "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+  amount: "0.01",
+  amountBaseUnits: "100000",
+  deploy: lifecycleStep("c3d90c92ca4baeb926c899a229b64ef75c49e0f464217c46c770093df19b71f3", 3365645, "2026-06-30T18:07:36.000Z"),
+  funding: lifecycleStep("c02c6c935881d4acdc178af3d66477b65c9b8f626a69db3c1afa1dc4719d41f4", 3365681, "2026-06-30T18:10:36.000Z"),
+  grant: lifecycleStep("46de0acb3fa8b62eb99bef2950f5564d0fb505eb3cfe036210482f8e23e78e9b", 3365911, "2026-06-30T18:29:48.000Z"),
+  payment: lifecycleStep("b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094", 3367749, "2026-06-30T21:03:12.000Z"),
+  revoke: lifecycleStep("27010be282572c1fb8c5cd4762aac28588e61aed2d8f3317647f83bafbafc3cc", 3370263, "2026-07-01T00:33:00.000Z"),
+  replay: Object.freeze({ firstSubmitStatus: 200, replaySubmitStatus: 409, rejected: true }),
+});
+
 export const VERIFIED_FOUNDATIONS = Object.freeze([
   verifiedEvidence({
     id: "direct-stellar-testnet",
@@ -80,6 +95,24 @@ export function verifiedRuntimeEvidence(item) {
   return verifiedEvidence(item);
 }
 
+export function contractAccountLifecycle({ receipts = [], submitEnabled = false } = {}) {
+  const revoke = receipts.find((receipt) => receipt.action === "revoke");
+  return {
+    ...CONTRACT_ACCOUNT_ACCEPTANCE,
+    status: revoke ? "frozen" : "revoke-pending",
+    gatesClosed: !submitEnabled,
+    revoke: revoke
+      ? lifecycleStep(revoke.transactionHash, revoke.transactionHash === CONTRACT_ACCOUNT_ACCEPTANCE.revoke.transactionHash ? CONTRACT_ACCOUNT_ACCEPTANCE.revoke.ledger : null, revoke.settledAt)
+      : {
+          status: "pending",
+          transactionHash: null,
+          explorerUrl: null,
+          verifiedAt: null,
+          ledger: null,
+        },
+  };
+}
+
 export function assertEvidenceInvariant(item) {
   const status = item.verificationStatus;
   if (!["pending", "verified"].includes(status)) {
@@ -121,5 +154,15 @@ function finalizeEvidence(item) {
     ...item,
     status: item.verificationStatus,
     kind: item.evidenceType,
+  });
+}
+
+function lifecycleStep(transactionHash, ledger, verifiedAt) {
+  return Object.freeze({
+    status: "verified",
+    transactionHash,
+    explorerUrl: `${EXPLORER}/tx/${transactionHash}`,
+    verifiedAt,
+    ledger,
   });
 }

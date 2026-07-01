@@ -48,13 +48,13 @@ Provider definitions make price and requirements machine-readable. Human authori
 ## Slide 7 - What is already real
 
 - Live Vercel demo and public Evidence API.
-- Three verified XLM testnet settlements.
-- Official production MPP `402` challenge.
-- Contract Account V1 Wasm installed on testnet.
+- Two verified `0.01 USDC` coordinated payments plus three XLM foundations.
+- MPP payment `8290da7e...985836`, paid resource delivery, and replay rejection.
+- Human passkey Contract Account payment `b37ab921...6af094`.
 - Upstash replay store and dependency diagnostics.
 - Full JavaScript and Rust test suites.
 
-The two coordinated USDC proofs are intentionally marked pending until supervised acceptance.
+Both coordinated proofs are live in the Evidence API. The Contract Account lifecycle separately proves deploy, funding, grant, payment, replay rejection, and owner revoke.
 
 ## Slide 8 - Go to market
 

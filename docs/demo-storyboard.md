@@ -25,8 +25,8 @@
 
 - Desktop dashboard with all dependencies reachable.
 - Mobile dashboard at 390x844 for submission assets.
-- MPP transaction on Stellar Expert.
-- Contract-account transaction on Stellar Expert.
+- MPP transaction `8290da7e...985836` on Stellar Expert.
+- Contract Account payment `b37ab921...6af094` on Stellar Expert.
 - Sanitized `GET /api/evidence` response.
 - Provider Kit definition.
 - One blocked policy or replay result.

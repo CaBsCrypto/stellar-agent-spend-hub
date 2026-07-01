@@ -8,6 +8,7 @@ import {
   PUBLIC_EVIDENCE_VERSION,
   VERIFIED_FOUNDATIONS,
   assertEvidenceInvariant,
+  contractAccountLifecycle,
   pendingContractAccountEvidence,
   pendingMppEvidence,
   verifiedRuntimeEvidence,
@@ -36,6 +37,7 @@ export class PublicEvidenceService {
     ]);
     const mpp = mppReceipts.map(mppEvidence);
     const contractAccount = accountReceipts.map(accountEvidence);
+    const accountReadiness = contractAccountReadiness(this.env);
     const payload = {
       version: PUBLIC_EVIDENCE_VERSION,
       generatedAt: this.now().toISOString(),
@@ -49,6 +51,10 @@ export class PublicEvidenceService {
         contractAccount: contractAccount.find((item) => item.action === "transfer")
           || pendingContractAccountEvidence(this.env),
       },
+      contractAccountLifecycle: contractAccountLifecycle({
+        receipts: accountReceipts,
+        submitEnabled: accountReadiness.submitEnabled,
+      }),
     };
     payload.evidence.forEach(assertEvidenceInvariant);
     Object.values(payload.coordinatedDemo).forEach(assertEvidenceInvariant);
@@ -95,6 +101,7 @@ function mppEvidence(receipt) {
 }
 
 function accountEvidence(receipt) {
+  const isTransfer = receipt.action === "transfer";
   return verifiedRuntimeEvidence({
     id: `ca:${receipt.transactionHash}`,
     evidenceType: "contract-account",
@@ -103,7 +110,8 @@ function accountEvidence(receipt) {
     network: receipt.network,
     asset: "USDC",
     assetContractId: receipt.assetContractId,
-    amount: receipt.amount,
+    amount: isTransfer ? formatUsdcAmount(receipt.amount) : null,
+    amountBaseUnits: isTransfer ? receipt.amount : null,
     recipient: receipt.destination,
     contractId: receipt.contractId,
     action: receipt.action,
@@ -118,6 +126,14 @@ function accountEvidence(receipt) {
       decision: receipt.policyDecision || "allowed",
     },
   });
+}
+
+function formatUsdcAmount(baseUnits) {
+  if (!/^\d+$/.test(baseUnits || "")) return null;
+  const value = BigInt(baseUnits);
+  const whole = value / 10_000_000n;
+  const fraction = (value % 10_000_000n).toString().padStart(7, "0").replace(/0+$/, "");
+  return fraction ? `${whole}.${fraction}` : whole.toString();
 }
 
 function publicReadiness(value) {

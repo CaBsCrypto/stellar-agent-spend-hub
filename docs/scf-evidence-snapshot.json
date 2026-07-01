@@ -1,0 +1,109 @@
+{
+  "snapshotVersion": "scf-submission-evidence-v1",
+  "capturedAt": "2026-07-01T00:38:13.631Z",
+  "sourceUrl": "https://agente-pagos-stellar.vercel.app/api/evidence",
+  "network": "stellar:testnet",
+  "coordinatedDemo": {
+    "mpp": {
+      "network": "stellar:testnet",
+      "id": "mpp:8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836",
+      "evidenceType": "mpp-charge",
+      "label": "Official MPP Stellar Charge",
+      "protocol": "mpp/stellar-charge@0.7",
+      "asset": "USDC",
+      "assetContractId": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+      "amount": "0.01",
+      "recipient": "GAJK6AKXWGMRNRNZRLPZ5J7MUT4X7TZWHPEFEJJ5TL7V7XWPYKGG2CNV",
+      "transactionHash": "8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836",
+      "verifiedAt": "2026-06-29T07:55:53.701Z",
+      "settledAt": "2026-06-29T07:55:53.701Z",
+      "policy": {
+        "authorization": "local-human-confirmation",
+        "price": "0.01 USDC",
+        "replayProtection": "atomic-consumption"
+      },
+      "verificationStatus": "verified",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836",
+      "status": "verified",
+      "kind": "mpp-charge"
+    },
+    "contractAccount": {
+      "network": "stellar:testnet",
+      "id": "ca:b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
+      "evidenceType": "contract-account",
+      "label": "Passkey-managed contract account",
+      "protocol": "soroban-contract-account-v1",
+      "asset": "USDC",
+      "assetContractId": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+      "amount": "0.01",
+      "amountBaseUnits": "100000",
+      "recipient": "GAJK6AKXWGMRNRNZRLPZ5J7MUT4X7TZWHPEFEJJ5TL7V7XWPYKGG2CNV",
+      "contractId": "CASKG5OOMM2WH6RDCO7FX4XFP6T62SX22WXVTFPIIP2XKGXBHZ4L7HPO",
+      "action": "transfer",
+      "policyDecision": "allow",
+      "signerType": "session-ed25519",
+      "transactionHash": "b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
+      "verifiedAt": "2026-06-30T21:03:13.019Z",
+      "settledAt": "2026-06-30T21:03:13.019Z",
+      "policy": {
+        "owner": "passkey",
+        "sessionSigner": "session-ed25519",
+        "decision": "allow"
+      },
+      "verificationStatus": "verified",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
+      "status": "verified",
+      "kind": "contract-account"
+    }
+  },
+  "contractAccountLifecycle": {
+    "network": "stellar:testnet",
+    "contractId": "CASKG5OOMM2WH6RDCO7FX4XFP6T62SX22WXVTFPIIP2XKGXBHZ4L7HPO",
+    "asset": "USDC",
+    "assetContractId": "CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA",
+    "amount": "0.01",
+    "amountBaseUnits": "100000",
+    "deploy": {
+      "status": "verified",
+      "transactionHash": "c3d90c92ca4baeb926c899a229b64ef75c49e0f464217c46c770093df19b71f3",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/c3d90c92ca4baeb926c899a229b64ef75c49e0f464217c46c770093df19b71f3",
+      "verifiedAt": "2026-06-30T18:07:36.000Z",
+      "ledger": 3365645
+    },
+    "funding": {
+      "status": "verified",
+      "transactionHash": "c02c6c935881d4acdc178af3d66477b65c9b8f626a69db3c1afa1dc4719d41f4",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/c02c6c935881d4acdc178af3d66477b65c9b8f626a69db3c1afa1dc4719d41f4",
+      "verifiedAt": "2026-06-30T18:10:36.000Z",
+      "ledger": 3365681
+    },
+    "grant": {
+      "status": "verified",
+      "transactionHash": "46de0acb3fa8b62eb99bef2950f5564d0fb505eb3cfe036210482f8e23e78e9b",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/46de0acb3fa8b62eb99bef2950f5564d0fb505eb3cfe036210482f8e23e78e9b",
+      "verifiedAt": "2026-06-30T18:29:48.000Z",
+      "ledger": 3365911
+    },
+    "payment": {
+      "status": "verified",
+      "transactionHash": "b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
+      "verifiedAt": "2026-06-30T21:03:12.000Z",
+      "ledger": 3367749
+    },
+    "revoke": {
+      "status": "verified",
+      "transactionHash": "27010be282572c1fb8c5cd4762aac28588e61aed2d8f3317647f83bafbafc3cc",
+      "explorerUrl": "https://stellar.expert/explorer/testnet/tx/27010be282572c1fb8c5cd4762aac28588e61aed2d8f3317647f83bafbafc3cc",
+      "verifiedAt": "2026-07-01T00:33:00.917Z",
+      "ledger": 3370263
+    },
+    "replay": {
+      "firstSubmitStatus": 200,
+      "replaySubmitStatus": 409,
+      "rejected": true
+    },
+    "status": "frozen",
+    "gatesClosed": true
+  }
+}

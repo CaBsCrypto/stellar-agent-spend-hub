@@ -2,38 +2,28 @@
 
 ## Propuesta
 
-Stellar Agent Spend Hub permite que agentes de IA paguen APIs en USDC sin recibir control ilimitado sobre los fondos del usuario. El usuario administra una cuenta programable mediante passkey y puede entregar al agente una sesion limitada por comercio, activo, monto, presupuesto total y vencimiento.
+Stellar Agent Spend Hub permite que agentes de IA paguen APIs en USDC sin recibir control ilimitado sobre los fondos del usuario. Una passkey administra la Contract Account y concede una sesion limitada por comercio, activo, monto, presupuesto y vencimiento.
 
-## Problema
+## Prueba verificada
 
-Los agentes necesitan comprar datos, herramientas MCP, sesiones de navegador, inferencia y otros recursos digitales. Hoy las alternativas suelen exigir aprobacion manual para cada uso o entregar credenciales demasiado amplias. Al mismo tiempo, los proveedores necesitan cobrar, entregar el recurso y emitir evidencia sin manejar tarjetas ni datos personales.
+La demo coordina dos pagos reales en Stellar testnet:
 
-## Solucion Stellar
+1. Stellar MPP pago `0.01 USDC` y desbloqueo una API: `8290da7e...985836`.
+2. Una session key autorizada por passkey pago `0.01 USDC` bajo policy Soroban: `b37ab921...6af094`.
 
-La demo coordina dos pruebas separadas:
+El segundo submit identico fue rechazado con `409` y no movio fondos. La evidencia publica contiene montos, red, activo, policy y hashes, sin llaves privadas, firmas, XDR completo, IDs de credenciales ni PII.
 
-1. Un comprador local paga `0.01 USDC` mediante Stellar MPP y desbloquea una API de analisis tecnico de transacciones.
-2. Una Contract Account Soroban, administrada por passkey, permite que una session key pague `0.01 USDC` solamente al merchant autorizado y dentro de su presupuesto.
+## Estado
 
-El flujo comun es:
-
-`Discover -> Authorize -> Policy -> Settle -> Verify`
-
-La evidencia publica contiene montos, red, activo, policy y hashes verificables, pero no llaves privadas, firmas, XDR completo, IDs de credenciales ni PII.
-
-## Estado actual
-
-- Aplicacion publica operativa en Vercel.
+- Aplicacion y Evidence API publicas en Vercel.
+- Contract Account humana desplegada, fondeada y limitada a un merchant y USDC testnet.
 - Upstash, Horizon y Soroban RPC operativos.
-- Tres settlements XLM testnet verificados publicamente.
-- Challenge oficial Stellar MPP de `0.01 USDC` probado en produccion.
-- Contract Account V1 implementada y Wasm cargado en testnet.
-- `104/104` pruebas JavaScript y `31/31` pruebas Rust pasan el QA completo.
-- Los dos pagos USDC permanecen pendientes y no muestran hashes simulados.
+- `131/131` pruebas JavaScript antes de Sprint 19 y `31/31` pruebas Rust.
+- Mainnet, autopilot y pagos LatAm permanecen fuera de alcance.
 
 ## Solicitud
 
-Se solicita el equivalente a **US$75.000 en XLM** para cuatro hitos durante 24 semanas:
+Se solicita el equivalente a **US$75.000 en XLM** durante 24 semanas:
 
 | Hito | Presupuesto |
 | --- | ---: |
@@ -42,4 +32,4 @@ Se solicita el equivalente a **US$75.000 en XLM** para cuatro hitos durante 24 s
 | Seguridad y beta | US$25.000 |
 | Preparacion mainnet | US$20.000 |
 
-La postulacion no se enviara hasta verificar ambos pagos USDC testnet. Mainnet, autopilot, ZK productivo y pago de cuentas LatAm quedan fuera de alcance hasta completar revision de seguridad y validacion con proveedores.
+El siguiente uso de fondos es convertir la prueba en un Provider Kit integrado por un design partner, realizar revision de seguridad y operar una beta supervisada antes de cualquier decision de mainnet.
