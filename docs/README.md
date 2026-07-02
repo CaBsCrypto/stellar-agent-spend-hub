@@ -19,6 +19,7 @@
 15. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
 16. [Sprint 21-23 multichain](./sprint-21-23-multichain.md): Stellar-first routing, Privy, Base x402 and CCTP runbook.
 17. [Sprint 24 Base acceptance](./sprint-24-base-x402-acceptance.md): encrypted merchant identity, readiness doctor and supervised payment runbook.
+18. [Sprint 25 Stellar product experience](./sprint-25-stellar-product-experience.md): Agent Home, Discover, Activity and focused provider onboarding.
 
 ## Product and distribution
 

@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { SpendHubService } from "../src/spendHubService.mjs";
 import { createApiRouter } from "../src/apiRouter.mjs";
 
-const SPA_ROUTES = new Set(["/", "/spend", "/providers", "/mpp", "/wallet", "/treasury", "/evidence", "/security"]);
+const SPA_ROUTES = new Set(["/", "/discover", "/spend", "/activity", "/providers", "/mpp", "/wallet", "/treasury", "/evidence", "/security"]);
 const routerCache = new WeakMap();
 const contentTypes = {
   ".html": "text/html; charset=utf-8",

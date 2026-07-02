@@ -4,7 +4,7 @@
 .brand-mark { display: grid; width: 36px; height: 36px; place-items: center; border: 1px solid rgba(255,255,255,.35); background: var(--mint); color: var(--brand-strong); font-weight: 900; }
 .brand strong, .brand small { display: block; }
 .brand small { color: #b8ccc4; }
-.sidebar nav { display: grid; gap: 22px; margin-top: 32px; }
+.sidebar nav { display: grid; gap: 16px; margin-top: 26px; overflow-y: auto; scrollbar-width: thin; }
 .nav-group { display: grid; gap: 4px; }
 .nav-group > span { padding: 0 10px 6px; color: #83a69a; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
 .nav-group a { padding: 9px 10px; border-left: 3px solid transparent; color: #d9e7e1; font-size: .88rem; font-weight: 680; text-decoration: none; }
@@ -25,7 +25,7 @@
 .section-heading, .card-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-bottom: 28px; }
 .proof-grid, .two-column, .wallet-layout { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
-.provider-grid, .labs-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+.provider-grid, .labs-grid, .recommendation-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
 .spend-layout { display: grid; grid-template-columns: minmax(230px,.85fr) minmax(360px,1.5fr) minmax(220px,.8fr); gap: 14px; align-items: start; }
 .foundation-list, .receipt-list, .intent-list, .legal-list, .wallet-steps { display: grid; gap: 8px; }
 .control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
@@ -33,7 +33,7 @@
   .metric-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .spend-layout { grid-template-columns: 1fr 1.5fr; }
   .policy-panel { grid-column: 1 / -1; }
-  .provider-grid, .labs-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .provider-grid, .labs-grid, .recommendation-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 780px) {
   .sidebar { transform: translateX(-100%); transition: transform .2s ease; }
@@ -50,6 +50,6 @@
   .policy-panel { grid-column: auto; }
 }
 @media (max-width: 520px) {
-  .metric-grid, .provider-grid, .labs-grid { grid-template-columns: 1fr; }
+  .metric-grid, .provider-grid, .labs-grid, .recommendation-grid { grid-template-columns: 1fr; }
   .page-actions, .page-actions > * { width: 100%; }
 }

@@ -4,11 +4,12 @@ export class ProviderDirectoryAdapter {
   }
 
   search({ query = "", category } = {}) {
-    const normalized = query.toLowerCase();
+    const terms = query.toLowerCase().split(/\s+/).map((term) => term.replace(/[^a-z0-9-]/g, "")).filter((term) => term.length > 2);
     return this.providers.filter((provider) => {
       const matchesCategory = category ? provider.category === category : true;
       const haystack = `${provider.name} ${provider.description} ${provider.tags.join(" ")}`.toLowerCase();
-      return matchesCategory && (!normalized || haystack.includes(normalized));
+      const matchesQuery = terms.length === 0 || terms.some((term) => haystack.includes(term));
+      return matchesCategory && matchesQuery;
     });
   }
 

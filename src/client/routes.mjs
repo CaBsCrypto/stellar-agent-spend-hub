@@ -1,12 +1,14 @@
 export const ROUTES = Object.freeze([
-  { path: "/", id: "overview", label: "Overview", group: "Product", loader: () => import("./pages/overview.mjs") },
-  { path: "/spend", id: "spend", label: "Agent Spend", group: "Product", loader: () => import("./pages/spend.mjs") },
-  { path: "/providers", id: "providers", label: "Providers", group: "Product", loader: () => import("./pages/providers.mjs") },
-  { path: "/mpp", id: "mpp", label: "Machine Payments", group: "Stellar", loader: () => import("./pages/mpp.mjs") },
+  { path: "/", id: "overview", label: "Agent Home", group: "Agent", loader: () => import("./pages/overview.mjs") },
+  { path: "/discover", id: "discover", label: "Discover", group: "Agent", loader: () => import("./pages/discover.mjs") },
+  { path: "/spend", id: "spend", label: "Agent Spend", group: "Agent", loader: () => import("./pages/spend.mjs") },
+  { path: "/activity", id: "activity", label: "Activity", group: "Agent", loader: () => import("./pages/activity.mjs") },
   { path: "/wallet", id: "wallet", label: "Smart Wallet", group: "Stellar", loader: () => import("./pages/wallet.mjs") },
-  { path: "/treasury", id: "treasury", label: "Treasury", group: "Multichain", loader: () => import("./pages/treasury.mjs") },
+  { path: "/mpp", id: "mpp", label: "MPP Payments", group: "Stellar", loader: () => import("./pages/mpp.mjs") },
   { path: "/evidence", id: "evidence", label: "Evidence", group: "Trust", loader: () => import("./pages/evidence.mjs") },
   { path: "/security", id: "security", label: "Security", group: "Trust", loader: () => import("./pages/security.mjs") },
+  { path: "/providers", id: "providers", label: "For Providers", group: "Builders", loader: () => import("./pages/providers.mjs") },
+  { path: "/treasury", id: "treasury", label: "Multichain Lab", group: "Labs", hidden: true, loader: () => import("./pages/treasury.mjs") },
 ]);
 
 export function resolveRoute(pathname) {

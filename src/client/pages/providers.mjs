@@ -1,67 +1,19 @@
-import { pageHeader, emptyState, statusPill } from "../components.mjs";
-import { escapeHtml, queryValue } from "../format.mjs";
+import { pageHeader, statusPill } from "../components.mjs";
+import { escapeHtml } from "../format.mjs";
 
 export function createPage() {
-  let onClick;
-  let onSubmit;
-  let boundOutlet;
   return {
-    async load({ store, api, signal, url }) {
-      const query = queryValue(url, "q", "");
-      const [directory, kit, pilot] = await Promise.all([
-        query
-          ? api(`/api/providers?q=${encodeURIComponent(query)}`, { signal })
-          : store.load("providers", "/api/providers", { signal }),
+    async load({ store, signal }) {
+      const [kit, pilot] = await Promise.all([
         store.load("provider-kit", "/api/provider-kit/definition", { signal }),
         store.load("pilot-readiness", "/api/pilot/readiness", { signal }),
       ]);
-      return { providers: directory.providers || [], providerKit: kit.provider, pilot, query };
+      return { providerKit: kit.provider, pilot };
     },
-    render({ providers, providerKit, pilot, query }) {
-      return `<section>
-        ${pageHeader({ eyebrow: "Machine-readable commerce", title: "Providers", summary: "Discover priced services, inspect their privacy requirements, and create a bounded payment intent." })}
-        <form class="search-bar" data-provider-search><label><span class="sr-only">Search providers</span><input name="q" value="${escapeHtml(query)}" placeholder="Search MCP, APIs, digital services" /></label><button class="secondary-button" type="submit">Search</button></form>
-        <div class="provider-grid">${providers.length ? providers.map(providerCard).join("") : emptyState("No providers found", "Try a broader query.")}</div>
-        <section class="section-block panel"><div class="section-heading"><div><span class="section-label">Provider Kit V1</span><h2>Monetize a Node or MCP API</h2></div>${statusPill("ready")}</div><dl class="definition-list"><div><dt>Provider ID</dt><dd>${escapeHtml(providerKit.providerId)}</dd></div><div><dt>Endpoint</dt><dd><code>${escapeHtml(providerKit.endpoint)}</code></dd></div><div><dt>Maximum price</dt><dd>${escapeHtml(providerKit.maxPrice)} ${escapeHtml(providerKit.asset)}</dd></div><div><dt>Network</dt><dd>${escapeHtml(providerKit.network)}</dd></div></dl></section>
-        <section class="section-block panel"><div class="section-heading"><div><span class="section-label">Remote MCP pilot</span><h2>Merchant Lab design partner</h2></div>${statusPill(pilot.pilot.status)}</div><dl class="definition-list"><div><dt>MCP endpoint</dt><dd><code>/api/mcp</code></dd></div><div><dt>Tenant</dt><dd>${escapeHtml(pilot.pilot.tenantId)}</dd></div><div><dt>Persistence</dt><dd>${escapeHtml(pilot.repository.status)}</dd></div><div><dt>Settlement</dt><dd>Local buyer only</dd></div></dl></section>
-      </section>`;
+    render({ providerKit, pilot }) {
+      return `<section>${pageHeader({ eyebrow: "Build on Stellar", title: "Charge your API in USDC", summary: "Provider Kit gives Node and MCP services a bounded Stellar MPP flow: challenge, payment, retry, resource, and sanitized receipt." })}<div class="two-column"><section class="panel"><div class="section-heading"><div><span class="section-label">Provider Kit V1</span><h2>Machine-readable definition</h2></div>${statusPill("ready")}</div><dl class="definition-list"><div><dt>Provider ID</dt><dd>${escapeHtml(providerKit.providerId)}</dd></div><div><dt>Endpoint</dt><dd><code>${escapeHtml(providerKit.endpoint)}</code></dd></div><div><dt>Maximum price</dt><dd>${escapeHtml(providerKit.maxPrice)} ${escapeHtml(providerKit.asset)}</dd></div><div><dt>Network</dt><dd>${escapeHtml(providerKit.network)}</dd></div></dl></section><section class="panel"><div class="section-heading"><div><span class="section-label">Reference pilot</span><h2>Merchant Lab</h2></div>${statusPill(pilot.pilot.status)}</div><dl class="definition-list"><div><dt>MCP endpoint</dt><dd><code>/api/mcp</code></dd></div><div><dt>Tenant</dt><dd>${escapeHtml(pilot.pilot.tenantId)}</dd></div><div><dt>Persistence</dt><dd>${escapeHtml(pilot.repository.status)}</dd></div><div><dt>Settlement</dt><dd>Local supervised buyer</dd></div></dl></section></div><section class="section-block"><div class="section-heading"><div><span class="section-label">Integration flow</span><h2>From request to verified resource</h2></div></div><ol class="trust-flow" aria-label="Provider integration flow"><li><span>1</span><strong>Define</strong></li><li><span>2</span><strong>Challenge</strong></li><li><span>3</span><strong>Settle</strong></li><li><span>4</span><strong>Deliver</strong></li><li><span>5</span><strong>Receipt</strong></li></ol><p class="body-copy section-block">The provider never receives wallet secrets. Spend Hub validates the provider definition, preserves the official MPP challenge, and records only public settlement evidence.</p></section><div class="button-row section-block"><a class="primary-button" href="/mpp" data-link>Inspect MPP flow</a><a class="secondary-button" href="/evidence" data-link>View live evidence</a></div></section>`;
     },
-    bind(outlet, data, context) {
-      onSubmit = (event) => {
-        const form = event.target.closest("[data-provider-search]");
-        if (!form) return;
-        event.preventDefault();
-        const query = new FormData(form).get("q")?.toString().trim() || "";
-        context.router.navigate(query ? `/providers?q=${encodeURIComponent(query)}` : "/providers");
-      };
-      onClick = async (event) => {
-        const button = event.target.closest("[data-create-intent]");
-        if (!button) return;
-        button.disabled = true;
-        try {
-          const provider = data.providers.find((item) => item.providerId === button.dataset.createIntent);
-          const payload = { providerId: provider.providerId, intentType: provider.category };
-          if (provider.category === "buy_crypto") payload.asset = "XLM";
-          const result = await context.api("/api/intents", { method: "POST", body: JSON.stringify(payload) });
-          context.store.invalidate("spend");
-          context.showToast("Payment intent created.");
-          await context.router.navigate(`/spend?intent=${encodeURIComponent(result.intent.id)}`);
-        } catch (error) {
-          context.showToast(error.message);
-          button.disabled = false;
-        }
-      };
-      boundOutlet = outlet;
-      outlet.addEventListener("submit", onSubmit);
-      outlet.addEventListener("click", onClick);
-    },
-    destroy() {
-      if (boundOutlet && onSubmit) boundOutlet.removeEventListener("submit", onSubmit);
-      if (boundOutlet && onClick) boundOutlet.removeEventListener("click", onClick);
-    },
+    bind() {},
+    destroy() {},
   };
-}
-
-function providerCard(provider) {
-  return `<article class="card provider-card"><div class="card-heading"><strong>${escapeHtml(provider.name)}</strong>${statusPill(provider.verificationStatus || "available")}</div><p>${escapeHtml(provider.category)} | ${escapeHtml(provider.paymentMethod)}</p><code>${escapeHtml(provider.endpoint)}</code><small>${escapeHtml(provider.privacyRequirement)}</small><button class="secondary-button" data-create-intent="${escapeHtml(provider.providerId)}">Create intent</button></article>`;
 }

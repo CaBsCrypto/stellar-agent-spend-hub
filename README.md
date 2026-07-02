@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-158%2F158%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-163%2F163%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -38,33 +38,30 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 - Privacy guard blocking RUTs, phone numbers, emails, account data, card data, secrets, signatures, full XDR, and credential IDs from public receipts.
 - Vercel production, Upstash atomic storage, Horizon, and Soroban RPC diagnostics.
 - Human confirmation remains mandatory and every submit gate is closed by default.
-- Eight focused routes with lazy page modules, route-specific API loading, deep-link support, and a responsive navigation shell.
-- Stellar-first multichain control plane with ProviderDefinition v2, exact base-unit math, deterministic routing, Base x402 and supervised CCTP adapters.
-- Official Privy Core JS integration for a separate user-controlled EVM authority; no wallet simulation or signing material in app state.
+- Stellar-first Agent Home, service discovery, supervised spend queue, wallet controls, activity, evidence, and provider onboarding.
+- Natural-language provider search and one-click proposal creation without granting the browser payment authority.
+- Experimental multichain adapters remain isolated in a hidden lab and do not compete with the Stellar product journey.
 - Client-only static builds; server modules and payment adapters are no longer published as browser assets.
 
 ## Application Routes
 
 | Route | Purpose | Primary API |
 | --- | --- | --- |
-| `/` | Product thesis and coordinated proof | `GET /api/overview` |
-| `/spend` | Intents, policy, review, proof, approval, receipts | `GET /api/spend` |
-| `/providers` | Directory, search, intent creation, Provider Kit | `GET /api/providers` |
-| `/mpp` | Stellar MPP seller, resource, receipts | MPP endpoints |
-| `/wallet` | Passkey owner and bounded Stellar Contract Account session | Contract Account endpoints |
-| `/treasury` | Privy EVM authority, multichain routing, Base x402 and CCTP | Multichain endpoints |
-| `/evidence` | Live/Replay evidence and diagnostics | `GET /api/overview` |
-| `/security` | Privacy, LCP, ZK demo, Labs and LatAm roadmap | Compatibility state |
+| `/` | Agent command center, recommendations and proposals | `GET /api/home` |
+| `/discover` | Stellar API/MCP service discovery | `GET /api/providers` |
+| `/spend` | Policy review, human approval and receipts | `GET /api/spend` |
+| `/activity` | Verified Stellar evidence and sanitized history | `GET /api/activity` |
+| `/wallet` | Passkey owner and bounded Contract Account session | Contract Account endpoints |
+| `/mpp` | Stellar MPP seller, resource and receipts | MPP endpoints |
+| `/providers` | Provider Kit and Merchant Lab integration | Provider Kit endpoints |
+| `/evidence` | Live/Replay public evidence | `GET /api/overview` |
+| `/security` | Privacy, LCP and threat model | Compatibility state |
 
-Routes use the History API and support direct reloads locally and on Vercel.
+Routes use the History API and support direct reloads locally and on Vercel. The previous `/treasury` multichain surface remains an unlisted experimental lab; it is not part of the product navigation or current sprint goals.
 
-## Stellar-First Multichain
+## Stellar Product Focus
 
-The new control plane discovers payment options across networks while preserving Stellar as the primary trust layer. Provider definitions can advertise Stellar MPP, Stellar Contract Account or Base x402 options. Quotes compare compatible assets, policy, network gates and per-network balances; Stellar wins equal scores.
-
-Base Sepolia execution is pinned to official testnet USDC and an allowlisted merchant. Avalanche Fuji is registered for wallet/readiness work but submit is hard-disabled. CCTP Base-to-Stellar is a separate supervised `BridgeIntent` fixed to `1 USDC`; it can never run automatically because a payment lacks balance.
-
-The code paths and Treasury UI are implemented. Real Base x402 and CCTP hashes remain pending a supervised Privy/funding acceptance session, and the frozen SCF Stellar evidence is unchanged. [Multichain architecture and runbook](./docs/sprint-21-23-multichain.md)
+The active roadmap is fully Stellar-first. The product combines official MPP payments, Soroban Contract Accounts, passkey ownership, bounded agent sessions, USDC settlement and public receipts. Base, Avalanche and CCTP code is retained only as dormant architectural research with every submit gate closed.
 
 ## MCP Agent Interface
 

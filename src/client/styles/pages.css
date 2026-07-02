@@ -60,3 +60,68 @@
   .network-row { align-items: flex-start; }
   .network-row > div:last-child { align-items: flex-end; flex-direction: column; }
 }
+
+
+/* Sprint 25: Stellar-first agent experience */
+.agent-home .page-header { align-items: center; }
+.agent-command { margin-bottom: 24px; padding: 22px; border: 1px solid #2d6655; background: var(--brand-strong); color: #fff; }
+.agent-presence { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.agent-presence strong, .agent-presence small { display: block; }
+.agent-presence small { margin-top: 2px; color: #bad0c7; }
+.agent-status-dot { width: 10px; height: 10px; border-radius: 50%; background: #65d6a5; box-shadow: 0 0 0 4px rgba(101,214,165,.13); }
+.agent-command form { display: grid; gap: 7px; }
+.agent-command label { color: #c7d9d2; font-size: .75rem; font-weight: 750; }
+.agent-command-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.agent-command input, .discover-search input { width: 100%; min-width: 0; min-height: 46px; padding: 10px 13px; border: 1px solid #9db5ac; background: #fff; color: var(--ink); }
+.agent-command .primary-button { border-color: #d9efe5; background: var(--mint); color: var(--brand-strong); }
+.prompt-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.prompt-suggestions button { padding: 7px 10px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: #dcebe5; font-size: .76rem; cursor: pointer; }
+.home-metrics { margin-top: 0; }
+.recommendation-card { display: grid; min-height: 235px; gap: 13px; }
+.recommendation-card h3 { margin-bottom: 6px; font-size: 1.08rem; }
+.recommendation-card p { margin-bottom: 0; color: var(--muted); font-size: .84rem; }
+.recommendation-card dl { display: flex; gap: 20px; margin: 0; }
+.recommendation-card dl div { display: grid; gap: 2px; }
+.recommendation-card dt { color: var(--muted); font-size: .68rem; text-transform: uppercase; }
+.recommendation-card dd { margin: 0; font-size: .8rem; font-weight: 750; }
+.recommendation-card button { align-self: end; }
+.provider-kind { color: var(--mint-strong); font-size: .7rem; font-weight: 800; text-transform: uppercase; }
+.home-workbench { display: grid; grid-template-columns: minmax(0,1.55fr) minmax(260px,.75fr); gap: 18px; align-items: start; }
+.proposal-list, .activity-preview, .activity-ledger { display: grid; gap: 8px; }
+.proposal-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 14px; padding: 14px; border-left: 3px solid var(--gold); background: var(--surface); text-decoration: none; }
+.proposal-row > div, .proposal-row > span { min-width: 0; }
+.proposal-row strong, .proposal-row small { display: block; }
+.proposal-row small { margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proposal-row > span { display: grid; justify-items: end; gap: 5px; }
+.agent-boundary { padding: 20px; border-top: 3px solid var(--mint-strong); background: var(--surface); }
+.agent-boundary ol { display: grid; gap: 13px; margin: 18px 0; padding: 0; list-style: none; }
+.agent-boundary li { display: grid; grid-template-columns: 26px 1fr; gap: 9px; align-items: start; }
+.agent-boundary li > span { display: grid; width: 24px; height: 24px; place-items: center; background: var(--brand); color: #fff; font-size: .7rem; font-weight: 800; }
+.agent-boundary p { margin: 1px 0 0; font-size: .8rem; }
+.activity-row { display: grid; grid-template-columns: minmax(220px,1fr) auto minmax(130px,.5fr) auto; align-items: center; gap: 14px; padding: 13px 14px; background: var(--surface); }
+.activity-row strong, .activity-row small { display: block; }
+.discover-search { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line); background: var(--surface); }
+.discover-search label { font-size: .78rem; font-weight: 800; }
+.discover-search > div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.discovery-context { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
+.discovery-context span, .provider-facts span { padding: 5px 8px; border: 1px solid var(--line); background: var(--surface-soft); color: var(--muted); font-size: .7rem; font-weight: 700; }
+.discover-card { min-height: 250px; }
+.discover-card h2 { font-size: 1.08rem; }
+.provider-facts { display: flex; flex-wrap: wrap; gap: 5px; }
+.ledger-row { display: grid; grid-template-columns: 18px minmax(190px,1.3fr) minmax(120px,.55fr) auto minmax(130px,.5fr) auto; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--line); background: var(--surface); }
+.ledger-row > div { min-width: 0; }
+.ledger-row strong, .ledger-row small { display: block; }
+.ledger-state span { display: block; width: 9px; height: 9px; border-radius: 50%; background: var(--mint-strong); }
+@media (max-width: 960px) {
+  .home-workbench { grid-template-columns: 1fr; }
+  .ledger-row { grid-template-columns: 18px minmax(180px,1fr) auto auto; }
+  .ledger-row code, .ledger-row .text-link { grid-column: 2 / -1; }
+}
+@media (max-width: 780px) {
+  .agent-command-row, .discover-search > div { grid-template-columns: 1fr; }
+  .activity-row, .proposal-row { grid-template-columns: 1fr; }
+  .proposal-row > span { justify-items: start; }
+  .activity-row code { max-width: 100%; }
+  .ledger-row { grid-template-columns: 14px minmax(0,1fr) auto; align-items: start; }
+  .ledger-row > div:nth-child(3), .ledger-row .status-pill, .ledger-row code, .ledger-row .text-link { grid-column: 2 / -1; }
+}

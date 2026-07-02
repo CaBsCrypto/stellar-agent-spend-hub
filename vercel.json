@@ -16,6 +16,14 @@
       "destination": "/api/router?routePath=:segment1/:segment2"
     },
     {
+      "source": "/discover",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/activity",
+      "destination": "/index.html"
+    },
+    {
       "source": "/spend",
       "destination": "/index.html"
     },

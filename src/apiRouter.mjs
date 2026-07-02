@@ -89,6 +89,70 @@ export function createRoutes({ service, env, dependencies }) {
     exact("GET", "/api/link/diagnostics", async () => ({ body: await service.linkDiagnostics() })),
     exact("GET", "/api/state", async () => ({ body: await service.getState() })),
     exact("GET", "/api/spend", async () => ({ body: await service.getSpendView() })),
+    exact("GET", "/api/home", async () => {
+      const [spend, evidence] = await Promise.all([
+        service.getSpendView(),
+        dependencies.publicEvidence().manifest({ mode: "live" }),
+      ]);
+      const providers = service.getProvidersView().providers.filter((provider) =>
+        provider.paymentMethod?.includes("stellar") || provider.providerId === "stellar-agent-merchant-lab"
+      );
+      const verified = (evidence.evidence || []).filter((item) => item.verificationStatus === "verified");
+      return { body: {
+        agent: { mode: "Supervised", network: "stellar:testnet", asset: "USDC" },
+        policy: spend.policy,
+        summary: { ...spend.summary, verifiedPayments: verified.length },
+        recommendations: providers.filter((provider) => !["defi_allocate", "bill_pay"].includes(provider.category)).slice(0, 3).map((provider) => ({
+          ...provider,
+          categoryLabel: provider.category === "buy_crypto" ? "Portfolio" : "API / MCP",
+          status: provider.paymentMethod === "stellar-mpp-usdc" ? "pilot-ready" : "sandbox",
+        })),
+        proposals: spend.intents.filter((intent) => spend.evaluations[intent.id]?.allowed).slice(0, 3).map((intent) => ({ ...intent, status: "ready" })),
+        recentActivity: verified.slice(0, 3).map((item) => ({
+          id: item.id,
+          label: item.label,
+          network: item.network,
+          asset: item.asset,
+          amount: item.amount,
+          status: item.verificationStatus,
+          transactionHash: item.transactionHash,
+          explorerUrl: item.explorerUrl,
+        })),
+      } };
+    }),
+    exact("GET", "/api/activity", async () => {
+      const [spend, evidence] = await Promise.all([
+        service.getSpendView(),
+        dependencies.publicEvidence().manifest({ mode: "live" }),
+      ]);
+      const verified = (evidence.evidence || []).filter((item) => item.verificationStatus === "verified");
+      const evidenceItems = verified.map((item) => ({
+        id: item.id,
+        label: item.label,
+        kindLabel: item.evidenceType || "On-chain evidence",
+        network: item.network,
+        asset: item.asset,
+        amount: item.amount,
+        status: "verified",
+        timestamp: item.verifiedAt,
+        transactionHash: item.transactionHash,
+        explorerUrl: item.explorerUrl,
+      }));
+      const receiptItems = spend.receipts.map((receipt) => ({
+        id: receipt.id,
+        label: receipt.providerName || receipt.providerId || "Agent payment",
+        kindLabel: "Agent receipt",
+        network: receipt.network || "stellar:testnet",
+        asset: receipt.asset || receipt.currency,
+        amount: String(receipt.amount || ""),
+        status: receipt.status || "settled",
+        timestamp: receipt.timestamp,
+        transactionHash: receipt.transactionHash,
+        explorerUrl: null,
+      }));
+      const items = [...evidenceItems, ...receiptItems].sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+      return { body: { items, summary: { verified: verified.length, receipts: spend.receipts.length } } };
+    }),
     exact("GET", "/api/providers", async ({ url }) => {
       const query = url.searchParams.get("q") || "";
       const category = url.searchParams.get("category") || "";
