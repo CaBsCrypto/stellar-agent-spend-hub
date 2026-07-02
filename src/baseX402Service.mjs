@@ -16,12 +16,14 @@ export class BaseX402Service {
     runtimeFactory = null,
     riskLoader = null,
     onSettlement = null,
+    facilitatorFactory = null,
   } = {}) {
     this.env = env;
     this.fetch = fetchImpl;
     this.runtimeFactory = runtimeFactory || (() => createRuntime(env));
     this.riskLoader = riskLoader || ((hash) => buildBaseRiskReport(hash, { env, fetchImpl }));
     this.onSettlement = onSettlement;
+    this.facilitatorFactory = facilitatorFactory || ((url) => new HTTPFacilitatorClient({ url }));
     this.runtimePromise = null;
   }
 
@@ -41,6 +43,52 @@ export class BaseX402Service {
       amountBaseUnits: PRICE_BASE_UNITS,
       recipient: isAddress(recipient) ? getAddress(recipient) : null,
       facilitator: this.env.X402_FACILITATOR_URL || DEFAULT_FACILITATOR,
+    };
+  }
+
+  async acceptanceReadiness() {
+    const readiness = this.readiness();
+    const [rpc, facilitator] = await Promise.all([
+      checkBaseRpc(this.env, this.fetch),
+      checkFacilitator(readiness.facilitator, this.facilitatorFactory),
+    ]);
+    const checks = {
+      merchant: { configured: Boolean(readiness.recipient), address: readiness.recipient },
+      privy: {
+        configured: Boolean(this.env.PRIVY_APP_ID && this.env.PRIVY_CLIENT_ID),
+        loginMethods: ["email", "google"],
+      },
+      rpc,
+      facilitator,
+      gates: {
+        multichain: flag(this.env.MULTICHAIN_ENABLED),
+        baseX402: flag(this.env.BASE_X402_ENABLED),
+      },
+    };
+    const configurationReady = checks.merchant.configured && checks.privy.configured;
+    const infrastructureReady = rpc.ready && facilitator.supported;
+    const executionReady = configurationReady
+      && infrastructureReady
+      && checks.gates.multichain
+      && checks.gates.baseX402;
+    const safeClosed = !checks.gates.multichain && !checks.gates.baseX402;
+    return {
+      status: executionReady
+        ? "ready-for-supervised-payment"
+        : configurationReady && infrastructureReady
+          ? safeClosed ? "configured-gates-closed" : "partially-open"
+          : "configuration-required",
+      network: NetworkId.baseSepolia,
+      asset: "USDC",
+      assetId: BASE_SEPOLIA_USDC,
+      amount: PRICE,
+      amountBaseUnits: PRICE_BASE_UNITS,
+      configurationReady,
+      infrastructureReady,
+      executionReady,
+      safeClosed,
+      checks,
+      nextSteps: acceptanceNextSteps(checks),
     };
   }
 
@@ -141,6 +189,48 @@ export function createRuntime(env = process.env) {
       }),
     },
   });
+}
+
+async function checkBaseRpc(env, fetchImpl) {
+  const url = String(env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org");
+  try {
+    const response = await fetchImpl(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_chainId", params: [] }),
+    });
+    if (!response.ok) return { ready: false, chainId: null };
+    const payload = await response.json();
+    return { ready: payload.result === "0x14a34", chainId: payload.result || null };
+  } catch {
+    return { ready: false, chainId: null };
+  }
+}
+
+async function checkFacilitator(url, factory) {
+  try {
+    const supported = await factory(url).getSupported();
+    const match = supported.kinds?.some((kind) => (
+      Number(kind.x402Version) === 2
+      && kind.scheme === "exact"
+      && kind.network === NetworkId.baseSepolia
+    ));
+    return { reachable: true, supported: Boolean(match), network: NetworkId.baseSepolia, scheme: "exact" };
+  } catch {
+    return { reachable: false, supported: false, network: NetworkId.baseSepolia, scheme: "exact" };
+  }
+}
+
+function acceptanceNextSteps(checks) {
+  const steps = [];
+  if (!checks.merchant.configured) steps.push("Create the encrypted local merchant identity and configure its public address.");
+  if (!checks.privy.configured) steps.push("Configure PRIVY_APP_ID and PRIVY_CLIENT_ID for production and localhost.");
+  if (!checks.rpc.ready) steps.push("Restore the Base Sepolia RPC dependency.");
+  if (!checks.facilitator.supported) steps.push("Confirm the facilitator supports x402 v2 exact on Base Sepolia.");
+  if (!checks.gates.multichain || !checks.gates.baseX402) {
+    steps.push("Keep gates closed until the Privy buyer wallet has Base Sepolia ETH and more than 0.01 USDC.");
+  }
+  return steps;
 }
 
 function requestContext(request, url) {

@@ -22,7 +22,7 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Merchant balance after payment: `0.03 USDC`.
 - Session policy spent: `0.01` of `0.02 USDC`.
 - Submit and deploy gates are closed outside supervised acceptance windows.
-- JavaScript tests: `154/154` passing.
+- JavaScript tests: `158/158` passing.
 - Rust tests: `31/31` passing.
 - Official MCP server and independent Merchant Lab remain available.
 - Sprint 20 Remote MCP Provider Pilot is implemented with its production gate closed pending supervised acceptance.

@@ -124,6 +124,9 @@ export function createRoutes({ service, env, dependencies }) {
         loginMethods: ["email", "google"],
       },
     })),
+    exact("GET", "/api/x402/base-readiness", async () => ({
+      body: await dependencies.baseX402().acceptanceReadiness(),
+    })),
     exact("GET", "/api/x402/base-risk", async ({ request, url }) => (
       dependencies.baseX402().handle(request, url)
     )),

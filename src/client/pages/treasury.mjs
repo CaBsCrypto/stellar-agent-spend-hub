@@ -12,9 +12,10 @@ export function createPage() {
 
   return {
     async load({ store, signal }) {
-      const [chains, treasury] = await Promise.all([
+      const [chains, treasury, baseAcceptance] = await Promise.all([
         store.load("chains", "/api/chains", { signal }),
         store.load("treasury", "/api/treasury", { signal }),
+        store.load("base-acceptance", "/api/x402/base-readiness", { signal }),
       ]);
       privy ||= new PrivyAdapter();
       await privy.initialize();
@@ -26,6 +27,7 @@ export function createPage() {
       return {
         chains,
         treasury,
+        baseAcceptance,
         privy: privy.getState(),
         inspectedPayment,
         preparedBridge,
@@ -45,7 +47,7 @@ export function createPage() {
           ${networkPanel(data.chains.chains)}
         </div>
         <div class="treasury-grid">
-          ${x402Panel(x402, data.inspectedPayment, data.privy)}
+          ${x402Panel(x402, data.baseAcceptance, data.inspectedPayment, data.privy)}
           ${bridgePanel(cctp, data.preparedBridge, data.privy)}
         </div>
       </section>`;
@@ -149,8 +151,19 @@ function networkPanel(chains) {
   return `<section class="panel"><div class="section-heading"><div><span class="section-label">Chain registry</span><h2>Execution networks</h2></div>${statusPill("testnet")}</div><div class="network-list">${chains.map((chain) => `<article class="network-row"><div><strong>${escapeHtml(chain.name)}</strong><small>${escapeHtml(chain.network)}</small></div><div><span>${escapeHtml(chain.asset.symbol)}</span>${statusPill(chain.submitEnabled ? "submit-ready" : chain.enabled ? "preview" : "guarded")}</div></article>`).join("")}</div></section>`;
 }
 
-function x402Panel(readiness, inspected, privy) {
-  return `<section class="panel"><div class="section-heading"><div><span class="section-label">Base x402</span><h2>Paid risk API</h2></div>${statusPill(readiness.status || "disabled")}</div><div class="form-stack"><label>Base Sepolia transaction<input data-base-tx placeholder="0x..."></label><div class="button-row"><button class="secondary-button" data-treasury-action="x402-inspect" ${readiness.enabled ? "" : "disabled"}>Inspect challenge</button><button class="primary-button" data-treasury-action="x402-pay" ${inspected && privy.authenticated ? "" : "disabled"}>Confirm 0.01 USDC</button></div>${inspected ? `<div class="quote-summary"><strong>${escapeHtml(inspected.summary.amount)} USDC</strong><span>${escapeHtml(inspected.summary.network)}</span><code>${escapeHtml(shortHash(inspected.summary.recipient))}</code></div>` : emptyState("No active quote", "Inspect a valid Base Sepolia transaction before signing.")}</div></section>`;
+function x402Panel(readiness, acceptance, inspected, privy) {
+  return `<section class="panel"><div class="section-heading"><div><span class="section-label">Base x402</span><h2>Paid risk API</h2></div>${statusPill(acceptance.status || readiness.status || "disabled")}</div>${acceptanceChecklist(acceptance)}<div class="form-stack"><label>Base Sepolia transaction<input data-base-tx placeholder="0x..."></label><div class="button-row"><button class="secondary-button" data-treasury-action="x402-inspect" ${readiness.enabled ? "" : "disabled"}>Inspect challenge</button><button class="primary-button" data-treasury-action="x402-pay" ${inspected && privy.authenticated ? "" : "disabled"}>Confirm 0.01 USDC</button></div>${inspected ? `<div class="quote-summary"><strong>${escapeHtml(inspected.summary.amount)} USDC</strong><span>${escapeHtml(inspected.summary.network)}</span><code>${escapeHtml(shortHash(inspected.summary.recipient))}</code></div>` : emptyState("No active quote", "Inspect a valid Base Sepolia transaction before signing.")}</div></section>`;
+}
+
+function acceptanceChecklist(acceptance) {
+  const checks = acceptance.checks || {};
+  const items = [
+    ["Merchant", checks.merchant?.configured],
+    ["Privy", checks.privy?.configured],
+    ["Base RPC", checks.rpc?.ready],
+    ["Facilitator", checks.facilitator?.supported],
+  ];
+  return `<div class="check-list compact-check-list">${items.map(([label, ready]) => `<div><span>${ready ? "OK" : "--"}</span><p>${escapeHtml(label)}</p></div>`).join("")}</div>`;
 }
 
 function bridgePanel(readiness, prepared, privy) {

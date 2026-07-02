@@ -12,3 +12,4 @@ target/
 target*/
 contracts/*/test_snapshots/
 .env*.local
+.local-identities/
