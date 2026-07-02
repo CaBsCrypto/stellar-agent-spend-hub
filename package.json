@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node scripts/serve.mjs",
-    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/contract-account-ceremony.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs && node tests/sprint20-pilot.test.mjs && node tests/sprint20-mcp-http.test.mjs && node tests/sprint20-verification.test.mjs",
+    "dev": "node scripts/build-static.mjs && node scripts/serve.mjs",
+    "test": "node tests/policy.test.mjs && node tests/sprint09.test.mjs && node tests/sprint10.test.mjs && node tests/sprint10-deploy.test.mjs && node tests/contract-account-ceremony.test.mjs && node tests/sprint11-13.test.mjs && node tests/sprint17-routing.test.mjs && node tests/mcp-test.mjs && node tests/sprint20-pilot.test.mjs && node tests/sprint20-mcp-http.test.mjs && node tests/sprint20-verification.test.mjs && node tests/sprint21-23-multichain.test.mjs",
     "build": "npm test && node scripts/build-static.mjs",
     "smoke": "node scripts/smoke.mjs",
     "doctor": "node scripts/doctor.mjs",
@@ -71,10 +71,14 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "@privy-io/js-sdk-core": "^0.67.4",
     "@stellar/mpp": "^0.7.0",
     "@stellar/stellar-sdk": "^15.1.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
+    "@x402/core": "^2.17.0",
+    "@x402/evm": "^2.17.0",
+    "@x402/fetch": "^2.17.0",
     "mppx": "^0.6.31",
     "viem": "^2.51.0",
     "zod": "^4.4.3"
@@ -82,5 +86,8 @@
   "overrides": {
     "axios": "1.16.1",
     "ws": "8.21.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }

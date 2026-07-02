@@ -22,10 +22,22 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Merchant balance after payment: `0.03 USDC`.
 - Session policy spent: `0.01` of `0.02 USDC`.
 - Submit and deploy gates are closed outside supervised acceptance windows.
-- JavaScript tests: `141/141` passing.
+- JavaScript tests: `154/154` passing.
 - Rust tests: `31/31` passing.
 - Official MCP server and independent Merchant Lab remain available.
 - Sprint 20 Remote MCP Provider Pilot is implemented with its production gate closed pending supervised acceptance.
+- Sprint 21 multichain control plane is implemented: chain/rail registries, ProviderDefinition v2, exact amount math, routing and Treasury.
+- Sprint 22 Base Sepolia x402 seller/buyer paths are implemented; real `0.01 USDC` evidence remains pending Privy configuration and testnet funding.
+- Sprint 23 CCTP Base-to-Stellar prepare/monitor paths are implemented; real `1 USDC` evidence remains pending the forwarding contract, destination trustline and funding.
+- Avalanche Fuji is visible for readiness and Privy network switching but submit is hard-disabled.
+
+## Multichain safety state
+
+- Stellar and EVM signing authorities remain separate.
+- All multichain, Base x402, CCTP and Avalanche gates are closed by default.
+- Per-network balances are never presented as a pooled balance.
+- A bridge is a distinct human-confirmed intent and never a payment side effect.
+- No Base or CCTP transaction is listed as verified yet.
 
 ## Submission freeze
 

@@ -4,6 +4,7 @@ export const ROUTES = Object.freeze([
   { path: "/providers", id: "providers", label: "Providers", group: "Product", loader: () => import("./pages/providers.mjs") },
   { path: "/mpp", id: "mpp", label: "Machine Payments", group: "Stellar", loader: () => import("./pages/mpp.mjs") },
   { path: "/wallet", id: "wallet", label: "Smart Wallet", group: "Stellar", loader: () => import("./pages/wallet.mjs") },
+  { path: "/treasury", id: "treasury", label: "Treasury", group: "Multichain", loader: () => import("./pages/treasury.mjs") },
   { path: "/evidence", id: "evidence", label: "Evidence", group: "Trust", loader: () => import("./pages/evidence.mjs") },
   { path: "/security", id: "security", label: "Security", group: "Trust", loader: () => import("./pages/security.mjs") },
 ]);

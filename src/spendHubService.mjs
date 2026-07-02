@@ -106,6 +106,10 @@ export class SpendHubService {
     return { providers: providerDirectory };
   }
 
+  getProvider(providerId) {
+    return this.directoryAdapter.get(providerId);
+  }
+
   searchProviders({ query = "", category = "" } = {}) {
     return this.directoryAdapter.search({ query, category: category || undefined });
   }

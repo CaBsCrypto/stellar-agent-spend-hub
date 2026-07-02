@@ -17,6 +17,7 @@
 13. [Contract Account fixture result](./contract-account-fixture-result.md): verified USDC policy payment before the human passkey ceremony.
 14. [Sprint 14-16 status](./sprint-14-16-status.md): completed work and submission blockers.
 15. [Sprint 17 modular routing](./sprint-17-modular-routing.md): route map, client boundary, and API refinement.
+16. [Sprint 21-23 multichain](./sprint-21-23-multichain.md): Stellar-first routing, Privy, Base x402 and CCTP runbook.
 
 ## Product and distribution
 

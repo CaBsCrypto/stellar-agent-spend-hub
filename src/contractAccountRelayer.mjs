@@ -198,7 +198,7 @@ export function validateContractAccountConfig(env = process.env) {
   const contractId = env.CONTRACT_ACCOUNT_ID || "";
   const merchant = env.CONTRACT_ACCOUNT_MERCHANT || "";
   const relayerSecret = env.CONTRACT_ACCOUNT_RELAYER_SECRET || "";
-  if (!StrKey.isValidContract(contractId)) throw httpError(503, "CONTRACT_ACCOUNT_ID is invalid");
+  if (contractId && !StrKey.isValidContract(contractId)) throw httpError(503, "CONTRACT_ACCOUNT_ID is invalid");
   if (!StrKey.isValidEd25519PublicKey(merchant)) throw httpError(503, "CONTRACT_ACCOUNT_MERCHANT is invalid");
   if (!StrKey.isValidEd25519SecretSeed(relayerSecret)) {
     throw httpError(503, "CONTRACT_ACCOUNT_RELAYER_SECRET is invalid");

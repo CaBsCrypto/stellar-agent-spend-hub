@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { SpendHubService } from "../src/spendHubService.mjs";
 import { createApiRouter } from "../src/apiRouter.mjs";
 
-const SPA_ROUTES = new Set(["/", "/spend", "/providers", "/mpp", "/wallet", "/evidence", "/security"]);
+const SPA_ROUTES = new Set(["/", "/spend", "/providers", "/mpp", "/wallet", "/treasury", "/evidence", "/security"]);
 const routerCache = new WeakMap();
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -67,16 +67,31 @@ export async function handleStatic({ response, url, root }) {
 
   const normalized = normalize(requested).replace(/^([/\\])+/, "");
   const rootPath = resolve(root);
-  const filePath = resolve(rootPath, normalized);
-  const allowedRoot = requested === "/index.html" ? rootPath : resolve(rootPath, "src", "client");
-  const insideAllowedRoot = filePath === allowedRoot || filePath.startsWith(`${allowedRoot}${sep}`);
-  if (!insideAllowedRoot) throw Object.assign(new Error("Not found"), { status: 404 });
-  const body = await readFile(filePath);
-  response.writeHead(200, {
-    "Content-Type": contentTypes[extname(filePath)] || "application/octet-stream",
-    "Cache-Control": extname(filePath) === ".html" ? "no-cache" : "public, max-age=300",
-  });
-  response.end(body);
+  const sourceAllowedRoot = requested === "/index.html" ? rootPath : resolve(rootPath, "src", "client");
+  const publicAllowedRoot = requested === "/index.html"
+    ? resolve(rootPath, "public")
+    : resolve(rootPath, "public", "src", "client");
+  const candidates = [
+    { filePath: resolve(rootPath, "public", normalized), allowedRoot: publicAllowedRoot },
+    { filePath: resolve(rootPath, normalized), allowedRoot: sourceAllowedRoot },
+  ];
+  for (const candidate of candidates) {
+    const insideAllowedRoot = candidate.filePath === candidate.allowedRoot
+      || candidate.filePath.startsWith(`${candidate.allowedRoot}${sep}`);
+    if (!insideAllowedRoot) continue;
+    try {
+      const body = await readFile(candidate.filePath);
+      response.writeHead(200, {
+        "Content-Type": contentTypes[extname(candidate.filePath)] || "application/octet-stream",
+        "Cache-Control": extname(candidate.filePath) === ".html" ? "no-cache" : "public, max-age=300",
+      });
+      response.end(body);
+      return;
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+  throw Object.assign(new Error("Not found"), { status: 404 });
 }
 
 function writeJson(response, status, payload) {

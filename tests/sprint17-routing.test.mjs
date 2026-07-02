@@ -32,8 +32,8 @@ function fakeDependencies() {
   };
 }
 
-test("frontend registry exposes exactly seven focused routes", () => {
-  assert.deepEqual(ROUTES.map(({ path }) => path), ["/", "/spend", "/providers", "/mpp", "/wallet", "/evidence", "/security"]);
+test("frontend registry exposes focused product routes plus multichain treasury", () => {
+  assert.deepEqual(ROUTES.map(({ path }) => path), ["/", "/spend", "/providers", "/mpp", "/wallet", "/treasury", "/evidence", "/security"]);
   assert.equal(resolveRoute("/evidence/")?.id, "evidence");
   assert.equal(resolveRoute("/unknown"), null);
 });
@@ -120,10 +120,12 @@ test("dynamic route matcher decodes path parameters", () => {
 test("local server supports deep links and blocks server source files", async () => {
   const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8"));
   assert.equal(vercelConfig.cleanUrls, false);
-  assert.equal(vercelConfig.rewrites.length, 7);
+  assert.equal(vercelConfig.rewrites.some((rewrite) => rewrite.source === "/treasury"), true);
+  assert.equal(vercelConfig.rewrites.some((rewrite) => rewrite.source.includes(":segment1")), true);
+  assert.equal(vercelConfig.rewrites.some((rewrite) => rewrite.source.includes("*")), false);
   assert.deepEqual(vercelConfig.rewrites[0], {
-    source: "/api/pilot/:pilotPath*",
-    destination: "/api/pilot?pilotPath=:pilotPath*",
+    source: "/api/:segment1/:segment2/:segment3/:segment4",
+    destination: "/api/router?routePath=:segment1/:segment2/:segment3/:segment4",
   });
   const port = await getFreePort();
   const statePath = join(tmpdir(), `spendhub-sprint17-${Date.now()}.json`);
@@ -133,6 +135,8 @@ test("local server supports deep links and blocks server source files", async ()
     const deepLink = await fetch(`http://localhost:${port}/evidence`);
     assert.equal(deepLink.status, 200);
     assert.match(await deepLink.text(), /Stellar Agent Spend Hub/);
+    const treasury = await fetch(`http://localhost:${port}/treasury`);
+    assert.equal(treasury.status, 200);
     const clientAsset = await fetch(`http://localhost:${port}/src/client/app.mjs`);
     assert.equal(clientAsset.status, 200);
     const serverSource = await fetch(`http://localhost:${port}/src/spendHubService.mjs`);

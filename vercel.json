@@ -3,12 +3,45 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/api/pilot/:pilotPath*", "destination": "/api/pilot?pilotPath=:pilotPath*" },
-    { "source": "/spend", "destination": "/index.html" },
-    { "source": "/providers", "destination": "/index.html" },
-    { "source": "/mpp", "destination": "/index.html" },
-    { "source": "/wallet", "destination": "/index.html" },
-    { "source": "/evidence", "destination": "/index.html" },
-    { "source": "/security", "destination": "/index.html" }
+    {
+      "source": "/api/:segment1/:segment2/:segment3/:segment4",
+      "destination": "/api/router?routePath=:segment1/:segment2/:segment3/:segment4"
+    },
+    {
+      "source": "/api/:segment1/:segment2/:segment3",
+      "destination": "/api/router?routePath=:segment1/:segment2/:segment3"
+    },
+    {
+      "source": "/api/:segment1/:segment2",
+      "destination": "/api/router?routePath=:segment1/:segment2"
+    },
+    {
+      "source": "/spend",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/providers",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/mpp",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/wallet",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/treasury",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/evidence",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/security",
+      "destination": "/index.html"
+    }
   ]
 }

@@ -12,6 +12,8 @@ import { PilotRateLimiter } from "./pilotRateLimit.mjs";
 import { pilotRepositoryReadiness } from "./pilotRepository.mjs";
 import { PilotService } from "./pilotService.mjs";
 import { handlePilotMcpHttp } from "./mcp/pilotMcpHttp.mjs";
+import { BaseX402Service } from "./baseX402Service.mjs";
+import { MultichainService } from "./multichainService.mjs";
 
 export function createApiRouter({ service, env = process.env, dependencies: suppliedDependencies = null } = {}) {
   if (!service) throw new Error("API router requires SpendHubService");
@@ -26,9 +28,14 @@ export function createApiRouter({ service, env = process.env, dependencies: supp
       const rewrittenPilotPath = url.pathname === "/api/pilot"
         ? url.searchParams.get("pilotPath")
         : null;
-      const pathname = rewrittenPilotPath && /^[a-zA-Z0-9/_-]+$/.test(rewrittenPilotPath)
-        ? `/api/pilot/${rewrittenPilotPath.replace(/^\/+|\/+$/g, "")}`
-        : url.pathname;
+      const rewrittenRoutePath = url.pathname === "/api/router"
+        ? url.searchParams.get("routePath")
+        : null;
+      const pathname = rewrittenRoutePath && /^[a-zA-Z0-9/_-]+$/.test(rewrittenRoutePath)
+        ? `/api/${rewrittenRoutePath.replace(/^\/+|\/+$/g, "")}`
+        : rewrittenPilotPath && /^[a-zA-Z0-9/_-]+$/.test(rewrittenPilotPath)
+          ? `/api/pilot/${rewrittenPilotPath.replace(/^\/+|\/+$/g, "")}`
+          : url.pathname;
       const pathMatches = routes
         .map((route) => ({ route, params: matchRoute(route, pathname) }))
         .filter((candidate) => candidate.params !== null);
@@ -99,6 +106,30 @@ export function createRoutes({ service, env, dependencies }) {
       ]);
       return { body: { evidence, diagnostics } };
     }),
+    exact("GET", "/api/chains", async () => ({
+      body: {
+        ...dependencies.multichain().chains(),
+        baseX402: dependencies.baseX402().readiness(),
+      },
+    })),
+    exact("GET", "/api/treasury", async ({ url }) => ({
+      body: dependencies.multichain().treasury({ evmAddress: url.searchParams.get("evmAddress") }),
+    })),
+    exact("GET", "/api/privy/config", async () => ({
+      body: {
+        enabled: Boolean(env.PRIVY_APP_ID && env.PRIVY_CLIENT_ID),
+        appId: env.PRIVY_APP_ID || null,
+        clientId: env.PRIVY_CLIENT_ID || null,
+        supportedNetworks: ["eip155:84532", "eip155:43113"],
+        loginMethods: ["email", "google"],
+      },
+    })),
+    exact("GET", "/api/x402/base-risk", async ({ request, url }) => (
+      dependencies.baseX402().handle(request, url)
+    )),
+    exact("GET", "/api/multichain/evidence", async () => ({
+      body: await dependencies.multichain().evidence(),
+    })),
     exact("GET", "/api/mpp/stellar-risk", async ({ request, url }) => (
       dependencies.mpp().handleRiskRequest(toWebRequest(request, url), url.searchParams.get("tx"))
     )),
@@ -217,6 +248,57 @@ export function createRoutes({ service, env, dependencies }) {
         return { body: { spendRequest: await service.denyLinkSpendRequest(intentId, body.deniedBy || "user") } };
       },
     ),
+    dynamic("POST", /^\/api\/intents\/([^/]+)\/quote$/, ["intentId"], async ({ params, readJson }) => {
+      const intent = service.findIntent(params.intentId);
+      const provider = service.getProvider(intent.providerId);
+      if (!provider) throw Object.assign(new Error("Provider not found"), { status: 404 });
+      const body = await readJson();
+      const merchant = env.BASE_X402_MERCHANT_ADDRESS || null;
+      const paymentOptions = [
+        {
+          protocol: provider.paymentMethod?.includes("smart-wallet")
+            ? "stellar-contract-account"
+            : "stellar-mpp",
+          network: "stellar:testnet",
+          maxPrice: String(intent.amount),
+          assetId: env.USDC_SAC_TESTNET || env.CONTRACT_ACCOUNT_USDC_SAC || undefined,
+          recipient: env.MPP_STELLAR_RECIPIENT || env.CONTRACT_ACCOUNT_MERCHANT || undefined,
+        },
+        ...(merchant ? [{
+          protocol: "x402",
+          network: "eip155:84532",
+          maxPrice: "0.01",
+          recipient: merchant,
+        }] : []),
+      ];
+      return {
+        body: {
+          quote: await dependencies.multichain().quote({
+            provider: { ...provider, resource: provider.description, paymentOptions },
+            balances: body.balances || {},
+            allowedNetworks: body.allowedNetworks,
+            preferredNetwork: body.preferredNetwork,
+          }),
+        },
+      };
+    }),
+    dynamic("POST", /^\/api\/intents\/([^/]+)\/record-settlement$/, ["intentId"], async ({ params, readJson }) => {
+      service.findIntent(params.intentId);
+      return { body: { receipt: await dependencies.multichain().verifyAndRecordSettlement(await readJson()) } };
+    }),
+    exact("POST", "/api/bridges", async ({ readJson }) => ({
+      status: 201,
+      body: { bridge: await dependencies.multichain().createBridge(await readJson()) },
+    })),
+    dynamic("POST", /^\/api\/bridges\/([^/]+)\/prepare$/, ["bridgeId"], async ({ params }) => ({
+      body: await dependencies.multichain().prepareBridge(params.bridgeId),
+    })),
+    dynamic("POST", /^\/api\/bridges\/([^/]+)\/record-burn$/, ["bridgeId"], async ({ params, readJson }) => ({
+      body: { bridge: await dependencies.multichain().recordBurn(params.bridgeId, await readJson()) },
+    })),
+    dynamic("GET", /^\/api\/bridges\/([^/]+)$/, ["bridgeId"], async ({ params }) => ({
+      body: { bridge: await dependencies.multichain().bridgeStatus(params.bridgeId) },
+    })),
   ];
 }
 
@@ -239,6 +321,8 @@ function createDependencies(env) {
   let contractAccountCeremonies;
   let pilot;
   let pilotRateLimiter;
+  let multichain;
+  let baseX402;
   return {
     mpp: () => (mpp ||= new MppChargeService({ env })),
     mppReceipts: () => (receipts ||= new MppReceiptRepository({ env })),
@@ -247,6 +331,11 @@ function createDependencies(env) {
     contractAccountCeremonies: () => (contractAccountCeremonies ||= new ContractAccountCeremonyService({ env })),
     pilot: () => (pilot ||= new PilotService({ env })),
     pilotRateLimiter: () => (pilotRateLimiter ||= new PilotRateLimiter({ env })),
+    multichain: () => (multichain ||= new MultichainService({ env })),
+    baseX402: () => (baseX402 ||= new BaseX402Service({
+      env,
+      onSettlement: (receipt) => (multichain ||= new MultichainService({ env })).verifyAndRecordSettlement(receipt),
+    })),
   };
 }
 
