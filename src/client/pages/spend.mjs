@@ -20,7 +20,7 @@ export function createPage() {
       if (data.pilotMode) return renderPilotApproval(data.pilot);
       const { selected, evaluation, summary } = data;
       return `<section>
-        ${pageHeader({ eyebrow: "User-controlled spending", title: "Agent Spend", summary: "Review proposed payments, privacy evidence, policy decisions, and receipts before settlement." })}
+        ${pageHeader({ eyebrow: "User-controlled spending", title: "Approvals", summary: "Review what the agent prepared, then authorize or reject each payment." })}
         <div class="metric-grid">${metric("Ready intents", summary.ready, `${summary.blocked} blocked`)}${metric("Receipts", summary.receipts, "Sanitized history")}${metric("Per-payment limit", money(data.policy.perPaymentLimit), "Policy enforced")}${metric("Human approval", data.policy.requireHumanConfirmation ? "Required" : "Disabled", "Training mode")}</div>
         <div class="spend-layout">
           <aside class="panel intent-panel"><div class="section-heading"><div><span class="section-label">Queue</span><h2>Payment intents</h2></div></div><div class="intent-list">${data.intents.length ? data.intents.map((intent) => intentLink(intent, data.evaluations[intent.id], selected?.id)).join("") : emptyState("No intents", "Create one from the Providers route.")}</div></aside>

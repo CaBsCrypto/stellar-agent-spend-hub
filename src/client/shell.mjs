@@ -3,12 +3,16 @@ import { escapeHtml } from "./format.mjs";
 
 export function renderShell(activeRoute) {
   const visibleRoutes = ROUTES.filter((route) => !route.hidden);
-  const groups = [...new Set(visibleRoutes.map((route) => route.group))];
+  const primaryRoutes = visibleRoutes.filter((route) => !route.secondary);
+  const secondaryRoutes = visibleRoutes.filter((route) => route.secondary);
+  const groups = [...new Set(primaryRoutes.map((route) => route.group))];
+  const navLink = (route) => `<a href="${route.path}" data-link ${activeRoute?.id === route.id ? 'aria-current="page"' : ""}>${escapeHtml(route.label)}</a>`;
   return `<div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="/" data-link><span class="brand-mark">S</span><span><strong>Stellar Agent</strong><small>Spend Hub</small></span></a>
       <nav aria-label="Primary navigation">
-        ${groups.map((group) => `<div class="nav-group"><span>${escapeHtml(group)}</span>${visibleRoutes.filter((route) => route.group === group).map((route) => `<a href="${route.path}" data-link ${activeRoute?.id === route.id ? 'aria-current="page"' : ""}>${escapeHtml(route.label)}</a>`).join("")}</div>`).join("")}
+        ${groups.map((group) => `<div class="nav-group"><span>${escapeHtml(group)}</span>${primaryRoutes.filter((route) => route.group === group).map(navLink).join("")}</div>`).join("")}
+        ${secondaryRoutes.length ? `<details class="nav-secondary" ${secondaryRoutes.some((route) => route.id === activeRoute?.id) ? "open" : ""}><summary>Trust &amp; Builders</summary><div class="nav-group">${secondaryRoutes.map(navLink).join("")}</div></details>` : ""}
       </nav>
       <div class="sidebar-footer"><span>Stellar testnet | USDC</span><strong>Supervised agent mode</strong></div>
     </aside>

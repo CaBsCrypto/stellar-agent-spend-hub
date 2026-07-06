@@ -44,9 +44,11 @@ export function createPage() {
     },
   };
 }
-function isStellarProvider(provider) { return provider.paymentMethod?.includes("stellar") || provider.providerId === "stellar-agent-merchant-lab"; }
+function isStellarProvider(provider) {
+  const stellar = provider.paymentMethod?.includes("stellar") || provider.providerId === "stellar-agent-merchant-lab";
+  return stellar && !["buy_crypto", "defi_allocate", "bill_pay"].includes(provider.category);
+}
 function providerCard(provider) {
   const live = provider.paymentMethod === "stellar-mpp-usdc";
-  return `<article class="card provider-card discover-card"><div class="card-heading"><span class="provider-kind">${escapeHtml(categoryLabel(provider.category))}</span>${statusPill(live ? "pilot-ready" : "sandbox")}</div><div><h2>${escapeHtml(provider.name)}</h2><p>${escapeHtml(provider.description)}</p></div><div class="provider-facts"><span>Stellar</span><span>USDC</span><span>${escapeHtml(provider.privacyRequirement)}</span></div><button class="secondary-button" data-create-intent="${escapeHtml(provider.providerId)}">Prepare payment</button></article>`;
+  return `<article class="card provider-card discover-card"><div class="card-heading"><span class="provider-kind">API / MCP</span>${statusPill(live ? "pilot-ready" : "sandbox")}</div><div><h2>${escapeHtml(provider.name)}</h2><p>${escapeHtml(provider.description)}</p></div><button class="secondary-button" data-create-intent="${escapeHtml(provider.providerId)}">Prepare payment</button></article>`;
 }
-function categoryLabel(category) { return { pay_service: "API / MCP", buy_crypto: "Portfolio", bill_pay: "Roadmap" }[category] || "Stellar service"; }

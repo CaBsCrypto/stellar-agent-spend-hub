@@ -76,6 +76,8 @@
 .agent-command .primary-button { border-color: #d9efe5; background: var(--mint); color: var(--brand-strong); }
 .prompt-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .prompt-suggestions button { padding: 7px 10px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: #dcebe5; font-size: .76rem; cursor: pointer; }
+.agent-boundary-note { margin: 14px 0 0; color: #bad0c7; font-size: .78rem; }
+.agent-statusline { margin: 0 0 6px; color: var(--muted); font-size: .82rem; }
 .home-metrics { margin-top: 0; }
 .recommendation-card { display: grid; min-height: 235px; gap: 13px; }
 .recommendation-card h3 { margin-bottom: 6px; font-size: 1.08rem; }

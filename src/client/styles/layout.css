@@ -10,6 +10,12 @@
 .nav-group a { padding: 9px 10px; border-left: 3px solid transparent; color: #d9e7e1; font-size: .88rem; font-weight: 680; text-decoration: none; }
 .nav-group a:hover { background: rgba(255,255,255,.06); }
 .nav-group a[aria-current="page"] { border-left-color: var(--gold); background: rgba(255,255,255,.1); color: #fff; }
+.nav-secondary { margin-top: 4px; }
+.nav-secondary summary { padding: 6px 10px; color: #83a69a; font-size: .68rem; font-weight: 800; text-transform: uppercase; cursor: pointer; list-style: none; }
+.nav-secondary summary::-webkit-details-marker { display: none; }
+.nav-secondary summary::after { content: " +"; }
+.nav-secondary[open] summary::after { content: " \2212"; }
+.nav-secondary summary:hover { color: #d9e7e1; }
 .sidebar-footer { display: grid; gap: 4px; margin-top: auto; padding: 14px 10px 6px; border-top: 1px solid rgba(255,255,255,.14); }
 .sidebar-footer span { color: #a9c1b8; font-size: .72rem; }
 .sidebar-footer strong { font-size: .78rem; }
