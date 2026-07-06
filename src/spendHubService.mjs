@@ -231,6 +231,18 @@ export class SpendHubService {
     return receipt;
   }
 
+  async dismissIntent(intentId, dismissedBy = "user") {
+    const intent = this.findIntent(intentId);
+    if (["settled", "approved_preview"].includes(intent.status)) {
+      throw httpError(409, "A settled intent cannot be dismissed");
+    }
+    intent.status = "dismissed";
+    intent.dismissedBy = dismissedBy;
+    intent.dismissedAt = new Date().toISOString();
+    await this.save();
+    return intent;
+  }
+
   async createLinkSpendRequest(intentId, evaluation = null) {
     const intent = this.findIntent(intentId);
     const decision = evaluation || (await this.evaluateIntent(intent));

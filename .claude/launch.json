@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "spend-hub",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev:watch"],
+      "port": 4179
+    }
+  ]
+}

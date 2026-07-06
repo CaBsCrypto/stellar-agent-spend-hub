@@ -14,7 +14,7 @@ export function renderShell(activeRoute) {
         ${groups.map((group) => `<div class="nav-group"><span>${escapeHtml(group)}</span>${primaryRoutes.filter((route) => route.group === group).map(navLink).join("")}</div>`).join("")}
         ${secondaryRoutes.length ? `<details class="nav-secondary" ${secondaryRoutes.some((route) => route.id === activeRoute?.id) ? "open" : ""}><summary>Trust &amp; Builders</summary><div class="nav-group">${secondaryRoutes.map(navLink).join("")}</div></details>` : ""}
       </nav>
-      <div class="sidebar-footer"><span>Stellar testnet | USDC</span><strong>Supervised agent mode</strong></div>
+      <div class="sidebar-footer"><span>Stellar testnet | USDC</span><strong>Supervised agent mode</strong><span class="demo-chip" title="Receipts settle on a simulated rail; on-chain items are labeled VERIFIED.">Demo data</span></div>
     </aside>
     <div class="app-stage">
       <header class="mobile-bar"><a class="mobile-brand" href="/" data-link>Stellar Agent Spend Hub</a><button class="menu-button" data-shell-action="toggle-menu" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><b class="sr-only">Open navigation</b></button></header>

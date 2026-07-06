@@ -83,7 +83,7 @@ export async function handleStatic({ response, url, root }) {
       const body = await readFile(candidate.filePath);
       response.writeHead(200, {
         "Content-Type": contentTypes[extname(candidate.filePath)] || "application/octet-stream",
-        "Cache-Control": extname(candidate.filePath) === ".html" ? "no-cache" : "public, max-age=300",
+        "Cache-Control": process.env.DEV_WATCH || extname(candidate.filePath) === ".html" ? "no-cache" : "public, max-age=300",
       });
       response.end(body);
       return;

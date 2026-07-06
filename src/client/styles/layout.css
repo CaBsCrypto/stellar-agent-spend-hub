@@ -18,6 +18,7 @@
 .nav-secondary summary:hover { color: #d9e7e1; }
 .sidebar-footer { display: grid; gap: 4px; margin-top: auto; padding: 14px 10px 6px; border-top: 1px solid rgba(255,255,255,.14); }
 .sidebar-footer span { color: #a9c1b8; font-size: .72rem; }
+.demo-chip { display: inline-flex; width: fit-content; margin-top: 4px; padding: 2px 8px; border: 1px solid #7ea3c4; border-radius: 3px; background: rgba(39,91,120,.35); color: #cfe3f0; font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; }
 .sidebar-footer strong { font-size: .78rem; }
 .app-stage { min-height: 100vh; margin-left: var(--sidebar-width); }
 .page-content { width: min(100%, var(--content-max)); min-height: 100vh; margin: 0 auto; padding: 42px clamp(24px, 4vw, 60px) 72px; }

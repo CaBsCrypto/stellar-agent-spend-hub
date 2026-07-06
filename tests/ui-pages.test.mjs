@@ -45,11 +45,42 @@ test("spend page renders queue, policy controls and action buttons", () => {
   assert.match(html, /Daily limit/);
 });
 
-test("spend page exposes a single human approval action", () => {
+test("spend page exposes a single human approval action plus dismiss", () => {
   const html = createSpendPage().render(spendData);
   assert.match(html, /Approve payment/);
+  assert.match(html, /data-intent-action="dismiss"/);
   assert.doesNotMatch(html, /data-intent-action="prepare"/);
   assert.doesNotMatch(html, /data-intent-action="proof"/);
+});
+
+test("/api/spend excludes dismissed intents and keeps counts consistent", async () => {
+  const intents = [
+    { id: "a", category: "pay_service", currency: "USDC", status: "created" },
+    { id: "b", category: "pay_service", currency: "USDC", status: "dismissed" },
+  ];
+  const service = { getSpendView: async () => ({ policy: {}, receipts: [], intents, evaluations: { a: { allowed: true }, b: { allowed: true } }, summary: { receipts: 0 } }) };
+  const router = createApiRouter({ service, env: {}, dependencies: { publicEvidence: () => ({ manifest: async () => ({ evidence: [] }) }) } });
+  let payload = "";
+  const response = { writableEnded: false, setHeader() {}, writeHead() {}, end(value = "") { payload = String(value); this.writableEnded = true; } };
+  await router.handle({ request: { method: "GET", headers: {} }, response, url: new URL("/api/spend", "https://example.test") });
+  const body = JSON.parse(payload);
+  assert.deepEqual(body.intents.map((intent) => intent.id), ["a"]);
+  assert.equal(body.summary.ready, 1);
+  assert.equal(body.summary.blocked, 0);
+});
+
+test("POST /api/intents/:id/dismiss routes to the service", async () => {
+  let dismissed = null;
+  const service = { dismissIntent: async (id, by) => { dismissed = { id, by }; return { id, status: "dismissed" }; } };
+  const router = createApiRouter({ service, env: {}, dependencies: { publicEvidence: () => ({ manifest: async () => ({ evidence: [] }) }) } });
+  let status = 0;
+  let payload = "";
+  const response = { writableEnded: false, setHeader() {}, writeHead(code) { status = code; }, end(value = "") { payload = String(value); this.writableEnded = true; } };
+  const request = { method: "POST", headers: {}, [Symbol.asyncIterator]: async function* () { yield Buffer.from("{}"); } };
+  await router.handle({ request, response, url: new URL("/api/intents/intent-1/dismiss", "https://example.test") });
+  const body = JSON.parse(payload);
+  assert.equal(dismissed.id, "intent-1");
+  assert.equal(body.intent.status, "dismissed");
 });
 
 test("activity page highlights the receipt handed off after approval", () => {

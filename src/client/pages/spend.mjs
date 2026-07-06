@@ -55,8 +55,20 @@ export function createPage() {
         const actionButton = event.target.closest("[data-intent-action]");
         if (!actionButton || !data.selected) return;
         actionButton.disabled = true;
-        actionButton.textContent = "Approving...";
         const id = encodeURIComponent(data.selected.id);
+        if (actionButton.dataset.intentAction === "dismiss") {
+          try {
+            await context.api(`/api/intents/${id}/dismiss`, { method: "POST", body: "{}" });
+            context.store.invalidate("spend", "agent-home");
+            context.showToast("Proposal dismissed. No payment was made.");
+            await context.router.navigate("/spend");
+          } catch (error) {
+            context.showToast(error.message);
+            actionButton.disabled = false;
+          }
+          return;
+        }
+        actionButton.textContent = "Approving...";
         try {
           // The agent runs the technical steps; the human performs one approval.
           await context.api(`/api/intents/${id}/prepare`, { method: "POST", body: "{}" });
@@ -118,7 +130,7 @@ function reviewIntent(intent, evaluation = {}, spendRequest) {
     <div class="control-grid"><article><span>Legal context</span><strong>${evaluation.legalDecision?.snapshot ? `Trust level ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "Unavailable"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacy proof</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
     ${spendRequest ? `<div class="notice verified"><strong>Link spend request</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
     <div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div>
-    <div class="button-row"><button class="primary-button" data-intent-action="approve" ${evaluation.allowed ? "" : "disabled"}>Approve payment</button>${evaluation.allowed ? "" : '<small class="blocked-note">Blocked by policy - see the checks above.</small>'}</div>`;
+    <div class="button-row"><button class="primary-button" data-intent-action="approve" ${evaluation.allowed ? "" : "disabled"}>Approve payment</button>${intent.status === "settled" ? "" : '<button class="secondary-button" data-intent-action="dismiss">Dismiss</button>'}${evaluation.allowed ? "" : '<small class="blocked-note">Blocked by policy - see the checks above.</small>'}</div>`;
 }
 
 function policyRow(label, value) {

@@ -79,7 +79,9 @@ export function createRoutes({ service, env, dependencies }) {
   // The Stellar-first product surface shows USDC service payments only; other
   // categories stay in the engine and tests but out of the user journey.
   const PRODUCT_EXCLUDED_CATEGORIES = ["buy_crypto", "defi_allocate", "bill_pay"];
-  const isProductIntent = (intent) => (intent.currency || "USDC") === "USDC" && !PRODUCT_EXCLUDED_CATEGORIES.includes(intent.category);
+  const isProductIntent = (intent) => (intent.currency || "USDC") === "USDC"
+    && !PRODUCT_EXCLUDED_CATEGORIES.includes(intent.category)
+    && intent.status !== "dismissed";
   const isProductProvider = (provider) => !PRODUCT_EXCLUDED_CATEGORIES.includes(provider.category);
 
   return [
@@ -317,7 +319,7 @@ export function createRoutes({ service, env, dependencies }) {
     }),
     dynamic(
       "POST",
-      /^\/api\/intents\/([^/]+)\/(prepare|proof|approve|link-spend-request|link-approve|link-deny)$/,
+      /^\/api\/intents\/([^/]+)\/(prepare|proof|approve|dismiss|link-spend-request|link-approve|link-deny)$/,
       ["intentId", "action"],
       async ({ params, readJson }) => {
         const body = await readJson();
@@ -325,6 +327,7 @@ export function createRoutes({ service, env, dependencies }) {
         if (action === "prepare") return { body: { prepared: await service.prepareIntent(intentId) } };
         if (action === "proof") return { body: await service.generateProof({ intentId, ...body }) };
         if (action === "approve") return { body: { receipt: await service.approveIntent(intentId, body.approvedBy || "user-passkey") } };
+        if (action === "dismiss") return { body: { intent: await service.dismissIntent(intentId, body.dismissedBy || "user") } };
         if (action === "link-spend-request") return { body: { spendRequest: await service.createLinkSpendRequest(intentId) } };
         if (action === "link-approve") return { body: { receipt: await service.approveLinkSpendRequest(intentId, body.approvedBy || "link-biometric-simulated") } };
         return { body: { spendRequest: await service.denyLinkSpendRequest(intentId, body.deniedBy || "user") } };
