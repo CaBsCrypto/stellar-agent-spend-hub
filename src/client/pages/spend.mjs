@@ -55,32 +55,28 @@ export function createPage() {
         const actionButton = event.target.closest("[data-intent-action]");
         if (!actionButton || !data.selected) return;
         actionButton.disabled = true;
-        const action = actionButton.dataset.intentAction;
+        actionButton.textContent = "Approving...";
         const id = encodeURIComponent(data.selected.id);
         try {
-          if (action === "prepare") {
-            await context.api(`/api/intents/${id}/prepare`, { method: "POST", body: "{}" });
-            context.showToast("Intent prepared for confirmation.");
-          }
-          if (action === "proof") {
+          // The agent runs the technical steps; the human performs one approval.
+          await context.api(`/api/intents/${id}/prepare`, { method: "POST", body: "{}" });
+          if (data.selected.proofRequired && data.selected.proofStatus !== "valid") {
             await context.api(`/api/intents/${id}/proof`, {
               method: "POST",
               body: JSON.stringify({ secretRef: `secret:${data.selected.id}`, salt: "demo-salt" }),
             });
-            context.showToast("Privacy proof generated without revealing the customer reference.");
           }
-          if (action === "approve") {
-            await context.api(`/api/intents/${id}/approve`, {
-              method: "POST",
-              body: JSON.stringify({ approvedBy: "user-passkey" }),
-            });
-            context.showToast("Payment confirmed and receipt sanitized.");
-          }
-          context.store.invalidate("spend", "overview:live");
-          await context.router.refresh();
+          const result = await context.api(`/api/intents/${id}/approve`, {
+            method: "POST",
+            body: JSON.stringify({ approvedBy: "user-passkey" }),
+          });
+          context.store.invalidate("spend", "overview:live", "activity", "agent-home");
+          context.showToast("Payment approved. Receipt sanitized and recorded.");
+          await context.router.navigate(`/activity?receipt=${encodeURIComponent(result.receipt?.id || "")}`);
         } catch (error) {
           context.showToast(error.message);
           actionButton.disabled = false;
+          actionButton.textContent = "Approve payment";
         }
       };
       boundOutlet = outlet;
@@ -122,7 +118,7 @@ function reviewIntent(intent, evaluation = {}, spendRequest) {
     <div class="control-grid"><article><span>Legal context</span><strong>${evaluation.legalDecision?.snapshot ? `Trust level ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "Unavailable"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacy proof</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
     ${spendRequest ? `<div class="notice verified"><strong>Link spend request</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
     <div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div>
-    <div class="button-row"><button class="secondary-button" data-intent-action="prepare">Prepare</button><button class="secondary-button" data-intent-action="proof" ${intent.proofRequired ? "" : "disabled"}>Generate proof</button><button class="primary-button" data-intent-action="approve" ${evaluation.allowed ? "" : "disabled"}>Confirm payment</button></div>`;
+    <div class="button-row"><button class="primary-button" data-intent-action="approve" ${evaluation.allowed ? "" : "disabled"}>Approve payment</button>${evaluation.allowed ? "" : '<small class="blocked-note">Blocked by policy - see the checks above.</small>'}</div>`;
 }
 
 function policyRow(label, value) {

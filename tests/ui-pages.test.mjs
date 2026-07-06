@@ -45,6 +45,21 @@ test("spend page renders queue, policy controls and action buttons", () => {
   assert.match(html, /Daily limit/);
 });
 
+test("spend page exposes a single human approval action", () => {
+  const html = createSpendPage().render(spendData);
+  assert.match(html, /Approve payment/);
+  assert.doesNotMatch(html, /data-intent-action="prepare"/);
+  assert.doesNotMatch(html, /data-intent-action="proof"/);
+});
+
+test("activity page highlights the receipt handed off after approval", () => {
+  const items = [{ id: "receipt-9", label: "Merchant", kindLabel: "Agent receipt (simulated)", network: "stellar:testnet", asset: "USDC", amount: "12", status: "simulated", timestamp: "2026-07-02T00:00:00Z" }];
+  const withHighlight = createActivityPage().render({ summary: { verified: 0, receipts: 1 }, items, highlightId: "receipt-9" });
+  const without = createActivityPage().render({ summary: { verified: 0, receipts: 1 }, items, highlightId: "" });
+  assert.match(withHighlight, /ledger-row highlight/);
+  assert.doesNotMatch(without, /ledger-row highlight/);
+});
+
 test("spend page escapes provider-controlled HTML", () => {
   const html = createSpendPage().render(spendData);
   assert.doesNotMatch(html, /<script>alert\(1\)<\/script>/);

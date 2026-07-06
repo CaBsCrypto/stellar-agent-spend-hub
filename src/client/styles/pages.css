@@ -77,6 +77,18 @@
 .prompt-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
 .prompt-suggestions button { padding: 7px 10px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: #dcebe5; font-size: .76rem; cursor: pointer; }
 .agent-boundary-note { margin: 14px 0 0; color: #bad0c7; font-size: .78rem; }
+.agent-steps { display: grid; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.16); }
+.agent-step { display: flex; align-items: baseline; gap: 10px; color: #dcebe5; font-size: .84rem; }
+.agent-step > span { flex: none; width: 9px; height: 9px; border-radius: 50%; background: #83a69a; transform: translateY(1px); }
+.agent-step.active > span { background: var(--gold); animation: agent-step-pulse 1s ease-in-out infinite; }
+.agent-step.done > span { background: var(--mint); }
+.agent-step.ready > span { background: var(--gold); }
+.agent-step.error > span { background: #e2694f; }
+.agent-step.error { color: #f3c4b8; }
+.agent-step .agent-step-cta { display: inline-block; margin-left: 10px; padding: 6px 12px; font-size: .78rem; text-decoration: none; }
+@keyframes agent-step-pulse { 50% { opacity: .35; } }
+.blocked-note { color: var(--muted); font-size: .78rem; }
+.ledger-row.highlight { border-color: var(--gold); background: #fdf7e8; }
 .agent-statusline { margin: 0 0 6px; color: var(--muted); font-size: .82rem; }
 .home-metrics { margin-top: 0; }
 .recommendation-card { display: grid; min-height: 235px; gap: 13px; }
