@@ -44,5 +44,5 @@ export function showToast(root, message) {
   const region = root.querySelector("#toast-region");
   if (!region) return;
   region.innerHTML = `<div class="toast">${escapeHtml(message)}</div>`;
-  window.setTimeout(() => { if (region) region.innerHTML = ""; }, 2600);
+  window.setTimeout(() => { if (region) region.innerHTML = ""; }, 4000);
 }

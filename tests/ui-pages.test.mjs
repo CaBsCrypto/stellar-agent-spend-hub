@@ -95,7 +95,8 @@ test("discover page renders providers and search form", () => {
 test("shared components stay safe and predictable", () => {
   assert.match(statusPill("verified"), /status-pill verified/);
   assert.match(statusPill("blocked"), /status-pill blocked/);
-  assert.match(statusPill("simulated"), /status-pill pending/);
+  assert.match(statusPill("simulated"), /status-pill simulated/);
+  assert.match(statusPill("settled"), /status-pill verified/);
   assert.match(errorState(new Error("<img src=x>")), /&lt;img/);
   assert.match(emptyState("Nothing", "Come back later"), /empty-state/);
 });

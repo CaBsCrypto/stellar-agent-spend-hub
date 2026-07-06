@@ -13,6 +13,7 @@
 .status-pill { display: inline-flex; width: fit-content; align-items: center; min-height: 24px; padding: 3px 8px; border: 1px solid #d8be82; background: var(--gold-soft); color: #795b20; font-size: .68rem; font-weight: 800; text-transform: uppercase; }
 .status-pill.verified { border-color: #9acbb7; background: var(--mint); color: #175a45; }
 .status-pill.blocked { border-color: #dfb1a8; background: var(--red-soft); color: var(--red); }
+.status-pill.simulated { border-color: #a9c6d6; background: var(--blue-soft); color: var(--blue); }
 .evidence-card { display: grid; gap: 10px; border-left: 4px solid var(--gold); }
 .evidence-card.verified { border-left-color: var(--mint-strong); }
 .amount { font-size: 1.45rem; }
@@ -36,13 +37,21 @@
 .definition-list dd { min-width: 0; margin: 0; overflow-wrap: anywhere; }
 .empty-state, .error-state { padding: 28px; border: 1px dashed #aebdb6; background: var(--surface-soft); text-align: center; }
 .error-state { max-width: 620px; margin: 40px auto; border-color: #d7a99f; background: var(--red-soft); }
-.route-loading { display: grid; min-height: 55vh; place-content: center; justify-items: center; color: var(--muted); }
-.route-loading span { width: 34px; height: 34px; border: 3px solid var(--line); border-top-color: var(--brand); border-radius: 50%; animation: spin .8s linear infinite; }
+.route-loading { display: grid; gap: 14px; padding-top: 10px; }
+.skeleton { position: relative; overflow: hidden; border: 1px solid var(--line); background: var(--surface-soft); }
+.skeleton::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, rgba(255,255,255,.8), transparent); animation: skeleton-shimmer 1.3s ease-in-out infinite; }
+.skeleton-title { width: min(420px, 60%); height: 38px; }
+.skeleton-text { width: min(640px, 85%); height: 16px; }
+.skeleton-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; margin-top: 10px; }
+.skeleton-card { height: 86px; }
+.skeleton-block { height: 220px; margin-top: 10px; }
+@keyframes skeleton-shimmer { 100% { transform: translateX(100%); } }
 .toast-region { position: fixed; right: 18px; bottom: 18px; z-index: 60; }
 .toast { max-width: 360px; padding: 12px 15px; box-shadow: var(--shadow); background: var(--brand-strong); color: #fff; font-size: .84rem; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (max-width: 780px) {
   .trust-flow { grid-template-columns: 1fr; }
+  .skeleton-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
   .foundation-row, .receipt-row { grid-template-columns: 1fr; gap: 7px; }
   .definition-list > div { grid-template-columns: 1fr; gap: 4px; }
 }

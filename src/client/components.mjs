@@ -8,8 +8,9 @@ export function pageHeader({ eyebrow, title, summary, actions = "" }) {
 }
 
 export function statusPill(status = "pending") {
-  const normalized = ["verified", "ready", "reachable", "active"].includes(status) ? "verified"
-    : ["blocked", "unavailable", "error"].includes(status) ? "blocked" : "pending";
+  const normalized = ["verified", "ready", "reachable", "active", "settled"].includes(status) ? "verified"
+    : ["blocked", "unavailable", "error", "revoked"].includes(status) ? "blocked"
+    : status === "simulated" ? "simulated" : "pending";
   return `<span class="status-pill ${normalized}">${escapeHtml(status)}</span>`;
 }
 

@@ -28,7 +28,12 @@ const router = createRouter({
     }
 
     const outlet = root.querySelector("#page-content");
-    outlet.innerHTML = `<div class="route-loading" role="status"><span></span><p>Loading ${route?.label || "page"}...</p></div>`;
+    outlet.innerHTML = `<div class="route-loading" role="status" aria-label="Loading ${route?.label || "page"}">
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-text"></div>
+      <div class="skeleton-row">${'<div class="skeleton skeleton-card"></div>'.repeat(4)}</div>
+      <div class="skeleton skeleton-block"></div>
+    </div>`;
 
     try {
       const module = route ? await route.loader() : await import("./pages/notFound.mjs");
