@@ -87,7 +87,7 @@ export const roadmapAccounts = [
     providerName: "Enel Chile",
     country: "CL",
     category: "bill_pay",
-    alias: "Cuenta privada con commitment",
+    alias: "Private account with commitment",
     customerRefCommitment: "0xcommitment_pending_demo",
     verificationStatus: "zk-proof-required",
     nextDueDate: "2026-06-29",
@@ -221,7 +221,7 @@ export const paymentIntents = [
     paymentMethod: "link-agent-wallet-simulated",
     linkPaymentMode: "shared_payment_token",
     publicMetadata: { approval: "required", credential: "tokenized", directory: "link-agent-wallet-pattern" },
-    agentReason: "El agente puede iniciar la compra, pero el usuario aprueba antes de emitir una credencial tokenizada.",
+    agentReason: "The agent can start the purchase, but the user approves before a tokenized credential is issued.",
   },
   {
     id: "intent-browserbase-mcp",
@@ -242,7 +242,7 @@ export const paymentIntents = [
     proofStatus: "not-required",
     autopilotRequested: false,
     publicMetadata: { units: "100 browser sessions", directory: "stripe-directory-pattern" },
-    agentReason: "El agente necesita sesiones de navegador para investigar proveedores y el precio esta bajo el limite.",
+    agentReason: "The agent needs browser sessions to research providers and the price is under the limit.",
   },
   {
     id: "intent-buy-xlm",
@@ -264,7 +264,7 @@ export const paymentIntents = [
     autopilotRequested: false,
     cryptoAction: { asset: "XLM", side: "buy", slippageBps: 45, risk: "medium" },
     publicMetadata: { route: "stellar-dex-simulated", quoteId: "quote_demo_xlm" },
-    agentReason: "Comprar XLM pequeno para fees y pruebas del ecosistema Stellar sin superar slippage ni monto maximo.",
+    agentReason: "Buy a small amount of XLM for fees and Stellar ecosystem testing without exceeding slippage or the maximum amount.",
   },
   {
     id: "intent-defindex-alloc",
@@ -286,7 +286,7 @@ export const paymentIntents = [
     autopilotRequested: false,
     defiAllocation: { protocol: "defindex", strategy: "stable-yield-demo", risk: "medium", slippageBps: 60 },
     publicMetadata: { status: "placeholder-until-contracts-verified" },
-    agentReason: "Preparar una asignacion DeFindex para futuras integraciones, pero no ejecutarla hasta verificar contratos.",
+    agentReason: "Prepare a DeFindex allocation for future integrations, but do not execute it until contracts are verified.",
   },
   {
     id: "intent-enel-private",
@@ -308,7 +308,7 @@ export const paymentIntents = [
     proofStatus: "missing",
     autopilotRequested: false,
     publicMetadata: { account: "hidden-by-commitment", country: "CL" },
-    agentReason: "Pago IRL queda bloqueado hasta probar posesion de identificador privado sin revelar numero de cuenta.",
+    agentReason: "Real-world payment stays blocked until private identifier ownership is proven without revealing the account number.",
   },
 ];
 
@@ -329,8 +329,8 @@ export const receipts = [
     network: "stellar:testnet",
     asset: "USDC",
     finality: "simulated",
-    reason: "API credits aprobados manualmente para el agente.",
-    evidence: ["Proveedor verificado en allowlist", "No hay PII en payload publico del intento", "ATR hash verificado"],
+    reason: "API credits manually approved for the agent.",
+    evidence: ["Provider verified in allowlist", "No PII in the public intent payload", "ATR hash verified"],
     approvedBy: "user-passkey",
     acceptedBy: "user-passkey",
     acceptedAt: "2026-06-25T09:15:00.000Z",

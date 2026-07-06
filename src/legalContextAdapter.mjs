@@ -16,7 +16,7 @@ export class LegalContextAdapter {
       return {
         allowed: !policy.requireLegalContext,
         requiresSignature: false,
-        reasons: policy.requireLegalContext ? ["Proveedor no publica legal context"] : [],
+        reasons: policy.requireLegalContext ? ["Provider does not publish a legal context"] : [],
         evidence: policy.requireLegalContext ? [] : ["Legal context opcional para este pago"],
         snapshot: null,
         termsHash: null,
@@ -35,19 +35,19 @@ export class LegalContextAdapter {
     if (declaredHash && declaredHash !== termsHash) {
       reasons.push("ATR hash no coincide con los terminos");
     } else if (declaredHash) {
-      evidence.push("ATR hash verificado");
+      evidence.push("ATR hash verified");
     } else {
-      evidence.push("Terminos descubiertos sin hash");
+      evidence.push("Terms discovered without a hash");
     }
 
     if (computedTrustLevel < policy.minLegalTrustLevel) {
-      reasons.push(`Nivel LCP ${computedTrustLevel} bajo minimo requerido ${policy.minLegalTrustLevel}`);
+      reasons.push(`LCP level ${computedTrustLevel} below required minimum ${policy.minLegalTrustLevel}`);
     } else {
-      evidence.push(`Nivel LCP ${computedTrustLevel} cumple policy`);
+      evidence.push(`LCP level ${computedTrustLevel} meets policy`);
     }
 
     if (context.acceptanceRequired) {
-      evidence.push("Aceptacion explicita requerida");
+      evidence.push("Explicit acceptance required");
     }
 
     return {

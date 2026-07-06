@@ -1,7 +1,7 @@
 export class CryptoActionAdapter {
   evaluate(intent, policy) {
     if (!intent.cryptoAction) {
-      return { allowed: true, reasons: [], evidence: ["Sin accion crypto adicional"] };
+      return { allowed: true, reasons: [], evidence: ["No additional crypto action"] };
     }
 
     const reasons = [];
@@ -11,13 +11,13 @@ export class CryptoActionAdapter {
     if (!policy.allowedAssets.includes(asset)) {
       reasons.push(`Activo ${asset} no esta allowlisted`);
     } else {
-      evidence.push(`Activo ${asset} permitido`);
+      evidence.push(`Asset ${asset} allowed`);
     }
 
     if (intent.amount > policy.maxPortfolioActionAmount) {
-      reasons.push("Accion crypto supera monto maximo");
+      reasons.push("Crypto action exceeds the maximum amount");
     } else {
-      evidence.push("Monto crypto dentro del limite");
+      evidence.push("Crypto amount within the limit");
     }
 
     if (slippageBps > policy.maxSlippageBps) {

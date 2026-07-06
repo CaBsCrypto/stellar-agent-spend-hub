@@ -76,6 +76,11 @@ export function createApiRouter({ service, env = process.env, dependencies: supp
 export function createRoutes({ service, env, dependencies }) {
   const exact = (method, path, handler) => ({ method, path, handler });
   const dynamic = (method, pattern, keys, handler) => ({ method, pattern, keys, handler });
+  // The Stellar-first product surface shows USDC service payments only; other
+  // categories stay in the engine and tests but out of the user journey.
+  const PRODUCT_EXCLUDED_CATEGORIES = ["buy_crypto", "defi_allocate", "bill_pay"];
+  const isProductIntent = (intent) => (intent.currency || "USDC") === "USDC" && !PRODUCT_EXCLUDED_CATEGORIES.includes(intent.category);
+  const isProductProvider = (provider) => !PRODUCT_EXCLUDED_CATEGORIES.includes(provider.category);
 
   return [
     exact("POST", "/api/admin/testnet-payment", async ({ request }) => ({
@@ -88,7 +93,12 @@ export function createRoutes({ service, env, dependencies }) {
     exact("GET", "/api/rail/diagnostics", async () => ({ body: await service.railDiagnostics() })),
     exact("GET", "/api/link/diagnostics", async () => ({ body: await service.linkDiagnostics() })),
     exact("GET", "/api/state", async () => ({ body: await service.getState() })),
-    exact("GET", "/api/spend", async () => ({ body: await service.getSpendView() })),
+    exact("GET", "/api/spend", async () => {
+      const spend = await service.getSpendView();
+      const intents = (spend.intents || []).filter(isProductIntent);
+      const ready = intents.filter((intent) => spend.evaluations?.[intent.id]?.allowed).length;
+      return { body: { ...spend, intents, summary: { ...spend.summary, ready, blocked: intents.length - ready } } };
+    }),
     exact("GET", "/api/home", async () => {
       const [spend, evidence] = await Promise.all([
         service.getSpendView(),
@@ -98,16 +108,18 @@ export function createRoutes({ service, env, dependencies }) {
         provider.paymentMethod?.includes("stellar") || provider.providerId === "stellar-agent-merchant-lab"
       );
       const verified = (evidence.evidence || []).filter((item) => item.verificationStatus === "verified");
+      const productIntents = (spend.intents || []).filter(isProductIntent);
+      const ready = productIntents.filter((intent) => spend.evaluations?.[intent.id]?.allowed).length;
       return { body: {
         agent: { mode: "Supervised", network: "stellar:testnet", asset: "USDC" },
         policy: spend.policy,
-        summary: { ...spend.summary, verifiedPayments: verified.length },
-        recommendations: providers.filter((provider) => !["defi_allocate", "bill_pay"].includes(provider.category)).slice(0, 3).map((provider) => ({
+        summary: { ...spend.summary, ready, blocked: productIntents.length - ready, verifiedPayments: verified.length },
+        recommendations: providers.filter(isProductProvider).slice(0, 3).map((provider) => ({
           ...provider,
-          categoryLabel: provider.category === "buy_crypto" ? "Portfolio" : "API / MCP",
+          categoryLabel: "API / MCP",
           status: provider.paymentMethod === "stellar-mpp-usdc" ? "pilot-ready" : "sandbox",
         })),
-        proposals: spend.intents.filter((intent) => spend.evaluations[intent.id]?.allowed).slice(0, 3).map((intent) => ({ ...intent, status: "ready" })),
+        proposals: spend.intents.filter((intent) => isProductIntent(intent) && spend.evaluations[intent.id]?.allowed).slice(0, 3).map((intent) => ({ ...intent, status: "ready" })),
         recentActivity: verified.slice(0, 3).map((item) => ({
           id: item.id,
           label: item.label,
@@ -138,18 +150,21 @@ export function createRoutes({ service, env, dependencies }) {
         transactionHash: item.transactionHash,
         explorerUrl: item.explorerUrl,
       }));
-      const receiptItems = spend.receipts.map((receipt) => ({
+      const receiptItems = spend.receipts.map((receipt) => {
+        const simulated = String(receipt.finality || "").includes("simulated");
+        return {
         id: receipt.id,
         label: receipt.providerName || receipt.providerId || "Agent payment",
-        kindLabel: "Agent receipt",
+        kindLabel: simulated ? "Agent receipt (simulated)" : "Agent receipt",
         network: receipt.network || "stellar:testnet",
         asset: receipt.asset || receipt.currency,
         amount: String(receipt.amount || ""),
-        status: receipt.status || "settled",
+        status: simulated ? "simulated" : receipt.status || "settled",
         timestamp: receipt.timestamp,
         transactionHash: receipt.transactionHash,
         explorerUrl: null,
-      }));
+        };
+      });
       const items = [...evidenceItems, ...receiptItems].sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
       return { body: { items, summary: { verified: verified.length, receipts: spend.receipts.length } } };
     }),

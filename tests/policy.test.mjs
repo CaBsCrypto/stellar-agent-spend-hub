@@ -59,7 +59,7 @@ const apiIntent = {
   proofRequired: false,
   autopilotRequested: false,
   publicMetadata: { units: "100 calls" },
-  agentReason: "Comprar creditos MCP bajo limite.",
+  agentReason: "Buy MCP credits under the limit.",
 };
 
 function legalAdapter(overrides = {}) {
@@ -99,9 +99,9 @@ test("pago MCP/API aprobado con provider allowlisted, LCP valido y confirmacion 
 
   assert.equal(evaluation.allowed, true);
   assert.equal(evaluation.requiresConfirmation, true);
-  assert.ok(evaluation.evidence.includes("Proveedor verificado en allowlist"));
-  assert.ok(evaluation.evidence.includes("ATR hash verificado"));
-  assert.ok(evaluation.evidence.includes("No hay PII en payload publico del intento"));
+  assert.ok(evaluation.evidence.includes("Provider verified in allowlist"));
+  assert.ok(evaluation.evidence.includes("ATR hash verified"));
+  assert.ok(evaluation.evidence.includes("No PII in the public intent payload"));
 });
 
 test("bloquea si intenta incluir PII en metadata publica", async () => {
@@ -142,7 +142,7 @@ test("pago de cuenta queda bloqueado si proof requerido no existe", async () => 
   const evaluation = await evaluationFor(billIntent, { proof: null });
 
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("Proof ZK requerido antes de pagar"));
+  assert.ok(evaluation.reasons.includes("ZK proof required before paying"));
 });
 
 test("pago de cuenta puede pasar policy cuando proof valido coincide", async () => {
@@ -162,7 +162,7 @@ test("pago de cuenta puede pasar policy cuando proof valido coincide", async () 
   const evaluation = await evaluationFor(billIntent, { proof });
 
   assert.equal(evaluation.allowed, true);
-  assert.ok(evaluation.evidence.includes("Proof ZK demo verificado"));
+  assert.ok(evaluation.evidence.includes("Demo ZK proof verified"));
 });
 
 test("compra crypto bloqueada si activo no esta allowlisted", async () => {
@@ -193,14 +193,14 @@ test("DeFi allocation bloqueada si supera riesgo permitido v1", async () => {
   const evaluation = await evaluationFor(defiIntent);
 
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("DeFi allocation no-low risk bloqueada en v1"));
+  assert.ok(evaluation.reasons.includes("Non-low-risk DeFi allocation blocked in v1"));
 });
 
 test("autopilot queda bloqueado en v1", async () => {
   const evaluation = await evaluationFor({ ...apiIntent, autopilotRequested: true });
 
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("Autopilot deshabilitado en Training Mode v1"));
+  assert.ok(evaluation.reasons.includes("Autopilot is disabled in Training Mode v1"));
 });
 
 test("recibo final incluye rail, LCP y privacy fields sin PII", async () => {
@@ -264,11 +264,11 @@ test("SpendHubService genera proof para bill pay y desbloquea privacy decision",
   const billIntent = service.state.intents.find((intent) => intent.id === "intent-enel-private");
   let evaluation = await service.evaluateIntent(billIntent);
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("Proof ZK requerido antes de pagar"));
+  assert.ok(evaluation.reasons.includes("ZK proof required before paying"));
 
   await service.generateProof({ intentId: billIntent.id, secretRef: "secret:test-enel", salt: "salt" });
   evaluation = await service.evaluateIntent(billIntent);
-  assert.ok(evaluation.evidence.includes("Proof ZK demo verificado"));
+  assert.ok(evaluation.evidence.includes("Demo ZK proof verified"));
 });
 
 test("SpendHubService aprueba y persiste recibo permitido", async () => {
@@ -284,7 +284,7 @@ test("SpendHubService rechaza aprobacion de DeFindex placeholder bloqueado", asy
   const service = new SpendHubService({ seedState: { intents: [...paymentIntents], receipts: [...receipts], proofs: {}, vaultRecords: {} } });
   const blockedIntent = service.state.intents.find((intent) => intent.id === "intent-defindex-alloc");
 
-  await assert.rejects(() => service.approveIntent(blockedIntent.id, "user-passkey"), /DeFi allocation no-low risk/);
+  await assert.rejects(() => service.approveIntent(blockedIntent.id, "user-passkey"), /Non-low-risk DeFi allocation/);
 });
 
 test("SpendHubService respeta idempotencyKey al crear intents", async () => {

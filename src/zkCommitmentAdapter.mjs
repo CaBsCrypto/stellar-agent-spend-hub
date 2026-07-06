@@ -37,7 +37,7 @@ export class ZkCommitmentAdapter {
     if (!proof || proof.proofStatus !== "valid") {
       return {
         allowed: false,
-        reasons: ["Proof ZK requerido antes de pagar"],
+        reasons: ["ZK proof required before paying"],
         evidence: [],
         proofHash: null,
         commitment: intent.secretRefCommitment || null,
@@ -59,7 +59,7 @@ export class ZkCommitmentAdapter {
     return {
       allowed: true,
       reasons: [],
-      evidence: ["Proof ZK demo verificado", "Identificador privado nunca se revela"],
+      evidence: ["Demo ZK proof verified", "The private identifier is never revealed"],
       proofHash: proof.proofHash,
       commitment: proof.commitment,
       privacyLevel: intent.privacyRequirement || "zk-required",

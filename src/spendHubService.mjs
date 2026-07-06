@@ -441,8 +441,8 @@ function suggestedAmount(category) {
 
 function reasonForProvider(provider, type) {
   if (isLinkProvider(provider)) return `Iniciar compra con ${provider.name}; el usuario aprueba antes de emitir una credencial tokenizada.`;
-  if (type === IntentType.buyCrypto) return `Comprar crypto permitido por policy usando ${provider.name}.`;
-  if (type === IntentType.defiAllocate) return `Preparar allocation DeFi en ${provider.name}, bloqueada si el riesgo no es low.`;
-  if (type === IntentType.billPay) return `Preparar bill pay privacy-first con proof requerido para ${provider.name}.`;
-  return `Comprar servicio ${provider.name} descubierto via directory y confirmar antes de pagar.`;
+  if (type === IntentType.buyCrypto) return `Buy crypto allowed by policy using ${provider.name}.`;
+  if (type === IntentType.defiAllocate) return `Prepare a DeFi allocation on ${provider.name}; blocked unless risk is low.`;
+  if (type === IntentType.billPay) return `Prepare privacy-first bill pay with a required proof for ${provider.name}.`;
+  return `Buy the ${provider.name} service discovered via directory and confirm before paying.`;
 }

@@ -102,7 +102,7 @@ export async function signPasskeyPayload(signaturePayloadHex) {
       timeout: 60_000,
     },
   });
-  if (!credential?.response) throw new Error("No se recibió una assertion WebAuthn.");
+  if (!credential?.response) throw new Error("No WebAuthn assertion was received.");
   return {
     type: "passkey",
     credentialIdHash: toBase64Url(fromHex(stored.credentialIdHash)),

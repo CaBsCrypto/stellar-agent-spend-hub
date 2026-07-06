@@ -57,49 +57,49 @@ export function evaluatePaymentIntent(intent, policy, receipts = [], options = n
   if (!sensitiveScan.allowed) {
     reasons.push(...sensitiveScan.reasons);
   } else {
-    evidence.push("No hay PII en payload publico del intento");
+    evidence.push("No PII in the public intent payload");
   }
 
   if (!policy.allowlistedProviders.includes(intent.providerId)) {
-    reasons.push("Proveedor fuera de la allowlist");
+    reasons.push("Provider is outside the allowlist");
   } else {
-    evidence.push("Proveedor verificado en allowlist");
+    evidence.push("Provider verified in allowlist");
   }
 
   if (intent.amount > policy.perPaymentLimit) {
-    reasons.push("Monto supera limite por pago");
+    reasons.push("Amount exceeds the per-payment limit");
   } else {
-    evidence.push("Monto dentro del limite por pago");
+    evidence.push("Amount within the per-payment limit");
   }
 
   if (spentToday + intent.amount > policy.dailyLimit) {
-    reasons.push("Monto supera limite diario");
+    reasons.push("Amount exceeds the daily limit");
   } else {
-    evidence.push("Queda margen diario suficiente");
+    evidence.push("Sufficient daily budget remaining");
   }
 
   if (spentThisMonth + intent.amount > policy.monthlyLimit) {
-    reasons.push("Monto supera limite mensual");
+    reasons.push("Amount exceeds the monthly limit");
   } else {
-    evidence.push("Queda margen mensual suficiente");
+    evidence.push("Sufficient monthly budget remaining");
   }
 
   if (intent.autopilotRequested || policy.autopilotEnabled) {
-    reasons.push("Autopilot deshabilitado en Training Mode v1");
+    reasons.push("Autopilot is disabled in Training Mode v1");
   } else {
-    evidence.push("Training Mode: usuario confirma antes de mover dinero");
+    evidence.push("Training Mode: the user confirms before money moves");
   }
 
   if (intent.riskLevel === RiskLevel.high) {
-    reasons.push("Riesgo alto requiere revision manual extendida");
+    reasons.push("High risk requires extended manual review");
   }
 
   if (directoryResult) {
-    evidence.push(`Proveedor descubierto via directory: ${directoryResult.name}`);
+    evidence.push(`Provider discovered via directory: ${directoryResult.name}`);
   }
 
   if (policy.requireLegalContext && !legalDecision) {
-    reasons.push("Legal context requerido antes de pagar");
+    reasons.push("Legal context required before paying");
   }
 
   mergeDecision({ decision: legalDecision, reasons, evidence });
@@ -108,7 +108,7 @@ export function evaluatePaymentIntent(intent, policy, receipts = [], options = n
   mergeDecision({ decision: defiDecision, reasons, evidence });
 
   if (intent.proofRequired && !privacyDecision) {
-    reasons.push("Proof ZK requerido antes de pagar");
+    reasons.push("ZK proof required before paying");
   }
 
   const trustFlow = buildTrustFlow({ reasons, legalDecision, privacyDecision, policy });
@@ -208,12 +208,12 @@ export function buildTrustFlow({ reasons, legalDecision, privacyDecision, policy
     {
       stage: TrustStage.discover,
       status: hasLegalFailure || missingLegalContext ? "blocked" : "ready",
-      label: "Directory, proveedor, precio, endpoint y LCP",
+      label: "Directory, provider, price, endpoint and LCP",
     },
     {
       stage: TrustStage.privacyProof,
       status: hasPrivacyFailure ? "blocked" : "ready",
-      label: "Commitments/proofs sin revelar PII",
+      label: "Commitments/proofs without revealing PII",
     },
     {
       stage: TrustStage.policyCheck,
@@ -228,7 +228,7 @@ export function buildTrustFlow({ reasons, legalDecision, privacyDecision, policy
     {
       stage: TrustStage.stellarSettle,
       status: reasons.length === 0 ? "pending" : "blocked",
-      label: "Settlement Stellar y recibo sin PII",
+      label: "Stellar settlement and PII-free receipt",
     },
   ];
 }
