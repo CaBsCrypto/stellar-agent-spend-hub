@@ -1,4 +1,4 @@
-import { pageHeader, metric, statusPill, receiptRow, emptyState } from "../components.mjs";
+import { pageHeader, metric, statusPill, receiptRow, emptyState, guardedAction } from "../components.mjs";
 import { escapeHtml, money, queryValue, shortHash } from "../format.mjs";
 
 export function createPage() {
@@ -20,7 +20,7 @@ export function createPage() {
       if (data.pilotMode) return renderPilotApproval(data.pilot);
       const { selected, evaluation, summary } = data;
       return `<section>
-        ${pageHeader({ eyebrow: "User-controlled spending", title: "Approvals", summary: "Review what the agent prepared, then authorize or reject each payment." })}
+        ${pageHeader({ eyebrow: "User-controlled spending", title: "Approve prepared payments", summary: "The agent prepares each Stellar USDC payment. You review the reason, policy checks, and privacy proof before anything settles." })}
         <div class="metric-grid">${metric("Ready intents", summary.ready, `${summary.blocked} blocked`)}${metric("Receipts", summary.receipts, "Sanitized history")}${metric("Per-payment limit", money(data.policy.perPaymentLimit), "Policy enforced")}${metric("Human approval", data.policy.requireHumanConfirmation ? "Required" : "Disabled", "Training mode")}</div>
         <div class="spend-layout">
           <aside class="panel intent-panel"><div class="section-heading"><div><span class="section-label">Queue</span><h2>Payment intents</h2></div></div><div class="intent-list">${data.intents.length ? data.intents.map((intent) => intentLink(intent, data.evaluations[intent.id], selected?.id)).join("") : emptyState("No intents", "Create one from the Providers route.")}</div></aside>
@@ -130,7 +130,7 @@ function reviewIntent(intent, evaluation = {}, spendRequest) {
     <div class="control-grid"><article><span>Legal context</span><strong>${evaluation.legalDecision?.snapshot ? `Trust level ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "Unavailable"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacy proof</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
     ${spendRequest ? `<div class="notice verified"><strong>Link spend request</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
     <div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div>
-    <div class="button-row"><button class="primary-button" data-intent-action="approve" ${evaluation.allowed ? "" : "disabled"}>Approve payment</button>${intent.status === "settled" ? "" : '<button class="secondary-button" data-intent-action="dismiss">Dismiss</button>'}${evaluation.allowed ? "" : '<small class="blocked-note">Blocked by policy - see the checks above.</small>'}</div>`;
+    <div class="button-row">${guardedAction({ label: "Approve payment", enabled: Boolean(evaluation.allowed), reason: "Blocked by policy checks above.", action: { name: "intent-action", value: "approve" } })}${intent.status === "settled" ? "" : guardedAction({ label: "Dismiss", enabled: true, action: { name: "intent-action", value: "dismiss" }, kind: "secondary" })}</div>`;
 }
 
 function policyRow(label, value) {

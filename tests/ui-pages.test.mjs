@@ -1,9 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createPage as createOverviewPage } from "../src/client/pages/overview.mjs";
 import { createPage as createSpendPage } from "../src/client/pages/spend.mjs";
 import { createPage as createActivityPage } from "../src/client/pages/activity.mjs";
 import { createPage as createDiscoverPage } from "../src/client/pages/discover.mjs";
-import { statusPill, errorState, emptyState } from "../src/client/components.mjs";
+import { createPage as createWalletPage } from "../src/client/pages/wallet.mjs";
+import { statusPill, errorState, emptyState, evidenceRow } from "../src/client/components.mjs";
 import { createApiRouter } from "../src/apiRouter.mjs";
 
 const spendData = {
@@ -107,7 +109,7 @@ test("activity page distinguishes verified evidence from simulated receipts", ()
   });
   assert.match(html, /status-pill verified/);
   assert.match(html, /Agent receipt \(simulated\)/);
-  assert.match(html, />simulated</);
+  assert.match(html, />Simulated</);
 });
 
 test("activity page shows an empty state without items", () => {
@@ -121,6 +123,37 @@ test("discover page renders providers and search form", () => {
   ], query: "search" });
   assert.match(html, /Exa Search API/);
   assert.match(html, /form|input/);
+});
+
+test("home states the user-first Stellar approval promise", () => {
+  const html = createOverviewPage().render({
+    agent: { mode: "Training" },
+    summary: { ready: 1, verifiedPayments: 2 },
+    policy: { perPaymentLimit: 0.01 },
+    proposals: [{ id: "p1", providerName: "Merchant Lab", agentReason: "Analyze a Stellar transaction", amount: 0.01, currency: "USDC", status: "created" }],
+    recentActivity: [],
+  });
+  assert.match(html, /Your agent prepares Stellar USDC payments/);
+  assert.match(html, /You approve every settlement/);
+  assert.match(html, /Human approval stays on/);
+  assert.doesNotMatch(html, /Multichain Lab|Treasury/);
+});
+
+test("wallet keeps the main user flow Stellar-first and hides Treasury", () => {
+  const html = createWalletPage().render({
+    account: { readiness: { status: "disabled", submitEnabled: false }, receipts: [] },
+    overview: { evidence: { coordinatedDemo: { contractAccount: { verificationStatus: "pending" } } } },
+    localPasskey: null,
+  });
+  assert.match(html, /Smart Wallet controls/);
+  assert.match(html, /Submit gate is closed/);
+  assert.doesNotMatch(html, /Open Treasury|Privy embedded wallet|Base and Avalanche/);
+});
+
+test("pending evidence rows do not invent transaction hashes", () => {
+  const html = evidenceRow({ label: "USDC acceptance", verificationStatus: "pending", amount: "0.01", asset: "USDC" });
+  assert.match(html, />Pending</);
+  assert.doesNotMatch(html, /<code/);
 });
 
 test("shell renders a five-tab bottom navigation for mobile", async () => {

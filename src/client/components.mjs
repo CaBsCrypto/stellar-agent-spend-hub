@@ -8,10 +8,69 @@ export function pageHeader({ eyebrow, title, summary, actions = "" }) {
 }
 
 export function statusPill(status = "pending") {
-  const normalized = ["verified", "ready", "reachable", "active", "settled"].includes(status) ? "verified"
-    : ["blocked", "unavailable", "error", "revoked"].includes(status) ? "blocked"
-    : status === "simulated" ? "simulated" : "pending";
-  return `<span class="status-pill ${normalized}">${escapeHtml(status)}</span>`;
+  const label = statusLabel(status);
+  const normalized = ["Verified", "Ready", "Reachable", "Active", "Settled", "Connected"].includes(label) ? "verified"
+    : ["Blocked", "Unavailable", "Error", "Revoked", "Disabled"].includes(label) ? "blocked"
+    : label === "Simulated" ? "simulated" : "pending";
+  return `<span class="status-pill ${normalized}">${escapeHtml(label)}</span>`;
+}
+
+export function statusLabel(status = "pending") {
+  const normalized = String(status || "pending").toLowerCase();
+  const labels = {
+    active: "Active",
+    blocked: "Blocked",
+    connected: "Connected",
+    created: "Needs approval",
+    disabled: "Disabled",
+    error: "Error",
+    guarded: "Disabled",
+    pending: "Pending",
+    prepared: "Needs approval",
+    preview: "Preview",
+    ready: "Ready",
+    reachable: "Reachable",
+    revoked: "Revoked",
+    separate: "Separate",
+    settled: "Settled",
+    simulated: "Simulated",
+    "submit-ready": "Ready",
+    testnet: "Testnet",
+    unavailable: "Unavailable",
+    verified: "Verified",
+  };
+  return labels[normalized] || String(status);
+}
+
+export function actionPanel({ eyebrow, title, body, actions = "", status = "" }) {
+  return `<section class="action-panel">
+    <div><span class="section-label">${escapeHtml(eyebrow)}</span><h2>${escapeHtml(title)}</h2><p>${escapeHtml(body)}</p></div>
+    ${status ? statusPill(status) : ""}
+    ${actions ? `<div class="button-row">${actions}</div>` : ""}
+  </section>`;
+}
+
+export function guardedAction({ label, enabled, reason, action, kind = "primary" }) {
+  const className = kind === "danger" ? "danger-button" : kind === "secondary" ? "secondary-button" : "primary-button";
+  const actionAttr = action ? `data-${escapeHtml(action.name)}="${escapeHtml(action.value)}"` : "";
+  return `<span class="guarded-action"><button class="${className}" ${actionAttr} ${enabled ? "" : "disabled"}>${escapeHtml(label)}</button>${enabled ? "" : `<small>${escapeHtml(reason || "Disabled until the safety gate is open.")}</small>`}</span>`;
+}
+
+export function approvalCard({ title, amount, detail, status = "Needs approval", href = "", action = "" }) {
+  const content = `<div><strong>${escapeHtml(title)}</strong><small>${escapeHtml(detail)}</small></div><span><strong>${escapeHtml(amount)}</strong>${statusPill(status)}</span>`;
+  if (href) return `<a class="approval-card" href="${escapeHtml(href)}" data-link>${content}</a>`;
+  return `<article class="approval-card">${content}${action}</article>`;
+}
+
+export function evidenceRow(item = {}) {
+  const status = item.verificationStatus || item.status || "pending";
+  const hash = item.transactionHash || "";
+  return `<article class="evidence-row">
+    <div><strong>${escapeHtml(item.label || item.providerName || "Evidence")}</strong><small>${escapeHtml(item.network || "stellar:testnet")} | ${escapeHtml(item.asset || "USDC")}</small></div>
+    <strong>${escapeHtml(item.amount || "-")} ${escapeHtml(item.amount ? item.asset || "" : "")}</strong>
+    ${hash ? `<code title="${escapeHtml(hash)}">${escapeHtml(shortHash(hash))}</code>` : statusPill(status)}
+    ${item.explorerUrl ? `<a class="text-link" href="${escapeHtml(item.explorerUrl)}" target="_blank" rel="noreferrer">Verify</a>` : ""}
+  </article>`;
 }
 
 export function evidenceCard(title, evidence = {}) {
