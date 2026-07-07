@@ -1,4 +1,4 @@
-# Sprint 10: Contract Account + Passkey
+﻿# Sprint 10: Contract Account + Passkey
 
 ## Status
 
@@ -26,7 +26,7 @@ Implemented and verified:
 | Field | Value |
 | --- | --- |
 | Contract tests | `6/6` |
-| App tests | `131/131` total |
+| App tests | `176/176` total |
 | All Rust tests | `31/31` |
 | Wasm hash | `6230e90601a82fd1afd8ae3dd59da55a4bc66d5e1fd4603996b1466f88c3c800` |
 | Wasm upload | [`e03bcebf...8d80`](https://stellar.expert/explorer/testnet/tx/e03bcebf3ba684d4cff805cd2f990722e92c07881e159a13d93f6204b8aa8d80) |

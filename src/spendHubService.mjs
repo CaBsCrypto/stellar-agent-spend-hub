@@ -3,15 +3,13 @@ import { dirname } from "node:path";
 import { connectorReadiness } from "./connectorReadiness.mjs";
 import { CryptoActionAdapter } from "./cryptoActionAdapter.mjs";
 import { DeFindexAdapter } from "./defindexAdapter.mjs";
-import { evaluatePaymentIntent, IntentType, RiskLevel } from "./domain.mjs";
+import { evaluatePaymentIntent } from "./domain.mjs";
 import { LegalContextAdapter } from "./legalContextAdapter.mjs";
 import { LinkAgentWalletAdapter } from "./linkAgentWalletAdapter.mjs";
 import { MachinePaymentAdapter } from "./machinePaymentAdapter.mjs";
 import {
   legalContextRegistry,
-  paymentIntents,
   providerDirectory,
-  receipts,
   roadmapAccounts,
   spendingPolicy,
 } from "./mockData.mjs";
@@ -22,23 +20,15 @@ import { PaymentExecutionMode, resolvePaymentExecutionMode } from "./paymentRunt
 import { PrivacyVaultAdapter } from "./privacyVaultAdapter.mjs";
 import { ProviderDirectoryAdapter } from "./providerDirectoryAdapter.mjs";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
+import { buildSpendIntent, httpError, isLinkIntent } from "./spendHubIntentFactory.mjs";
+import { defaultSpendHubState, normalizeSpendHubState } from "./spendHubState.mjs";
 import { ZkCommitmentAdapter } from "./zkCommitmentAdapter.mjs";
 
-const defaultState = () => ({
-  intents: paymentIntents.map((intent) => ({ ...intent, status: intent.status || "created" })),
-  receipts,
-  proofs: {},
-  vaultRecords: {},
-  spendRequests: {},
-  machineChallenges: {},
-  idempotencyKeys: {},
-  sorobanExecutions: {},
-});
 
 export class SpendHubService {
   constructor({ statePath = null, seedState = null, env = {} } = {}) {
     this.statePath = statePath;
-    this.state = normalizeState(seedState || defaultState());
+    this.state = normalizeSpendHubState(seedState || defaultSpendHubState());
     this.env = env;
     this.policy = spendingPolicy;
     this.legalAdapter = new LegalContextAdapter({ registry: legalContextRegistry });
@@ -57,7 +47,7 @@ export class SpendHubService {
   async load() {
     if (!this.statePath) return this;
     try {
-      this.state = normalizeState(JSON.parse(await readFile(this.statePath, "utf8")));
+      this.state = normalizeSpendHubState(JSON.parse(await readFile(this.statePath, "utf8")));
     } catch (error) {
       if (error.code !== "ENOENT") throw error;
       await this.save();
@@ -121,46 +111,7 @@ export class SpendHubService {
     const provider = this.directoryAdapter.get(providerId);
     if (!provider) throw httpError(404, "Provider not found");
 
-    const numericAmount = Number(amount || suggestedAmount(provider.category));
-    const type = intentType || provider.category;
-    const isLink = isLinkProvider(provider);
-    const intent = {
-      id: `intent-${providerId}-${Date.now().toString(36)}`,
-      idempotencyKey,
-      status: "created",
-      intentType: type,
-      providerId: provider.providerId,
-      providerName: provider.name,
-      category: provider.category,
-      amount: numericAmount,
-      currency: isLink ? "USD" : "USDC",
-      dueDate: new Date().toISOString().slice(0, 10),
-      sourceOfFunds: isLink ? "link-agent-wallet" : "stellar-smart-wallet-usdc",
-      riskLevel: type === IntentType.buyCrypto || type === IntentType.defiAllocate ? RiskLevel.medium : RiskLevel.low,
-      destinationAddress: isLink ? `link://merchant/${provider.providerId}` : `GCL${provider.providerId.replace(/[^a-z0-9]/gi, "").toUpperCase()}SIMULATED`,
-      legalContextUrl: provider.legalContextUrl,
-      termsUrl: null,
-      privacyRequirement: provider.privacyRequirement,
-      proofRequired: provider.privacyRequirement === "zk-required",
-      proofStatus: provider.privacyRequirement === "zk-required" ? "missing" : "not-required",
-      autopilotRequested: false,
-      paymentMethod: provider.paymentMethod,
-      linkPaymentMode: isLink ? "shared_payment_token" : undefined,
-      publicMetadata: { endpoint: provider.endpoint, directory: isLink ? "link-agent-wallet-pattern" : "provider-directory" },
-      agentReason: reasonForProvider(provider, type),
-    };
-
-    if (type === IntentType.buyCrypto) {
-      intent.cryptoAction = { asset, side: "buy", slippageBps: 45, risk: "medium" };
-    }
-
-    if (type === IntentType.defiAllocate) {
-      intent.defiAllocation = { protocol: "defindex", strategy: "stable-yield-demo", risk: "medium", slippageBps: 60 };
-    }
-
-    const scan = assertNoSensitiveData(intent, "intent");
-    if (!scan.allowed) throw httpError(400, scan.reasons.join("; "));
-
+    const intent = buildSpendIntent({ provider, amount, intentType, asset, idempotencyKey });
     this.state.intents = [intent, ...this.state.intents];
     if (idempotencyKey) this.state.idempotencyKeys[idempotencyKey] = intent.id;
     await this.save();
@@ -415,46 +366,3 @@ export class SpendHubService {
   }
 }
 
-function normalizeState(state) {
-  const normalized = {
-    intents: state.intents || [],
-    receipts: state.receipts || [],
-    proofs: state.proofs || {},
-    vaultRecords: state.vaultRecords || {},
-    spendRequests: state.spendRequests || {},
-    machineChallenges: state.machineChallenges || {},
-    idempotencyKeys: state.idempotencyKeys || {},
-    sorobanExecutions: state.sorobanExecutions || {},
-  };
-  normalized.intents = normalized.intents.map((intent) => ({ ...intent, status: intent.status || "created" }));
-  return normalized;
-}
-
-export function httpError(status, message) {
-  const error = new Error(message);
-  error.status = status;
-  return error;
-}
-
-function isLinkProvider(provider) {
-  return provider.paymentMethod === "link-agent-wallet-simulated";
-}
-
-function isLinkIntent(intent) {
-  return intent.paymentMethod === "link-agent-wallet-simulated" || intent.sourceOfFunds === "link-agent-wallet";
-}
-
-function suggestedAmount(category) {
-  if (category === IntentType.buyCrypto) return 25;
-  if (category === IntentType.defiAllocate) return 35;
-  if (category === IntentType.billPay) return 40;
-  return 12;
-}
-
-function reasonForProvider(provider, type) {
-  if (isLinkProvider(provider)) return `Iniciar compra con ${provider.name}; el usuario aprueba antes de emitir una credencial tokenizada.`;
-  if (type === IntentType.buyCrypto) return `Buy crypto allowed by policy using ${provider.name}.`;
-  if (type === IntentType.defiAllocate) return `Prepare a DeFi allocation on ${provider.name}; blocked unless risk is low.`;
-  if (type === IntentType.billPay) return `Prepare privacy-first bill pay with a required proof for ${provider.name}.`;
-  return `Buy the ${provider.name} service discovered via directory and confirm before paying.`;
-}

@@ -22,7 +22,7 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Merchant balance after payment: `0.03 USDC`.
 - Session policy spent: `0.01` of `0.02 USDC`.
 - Submit and deploy gates are closed outside supervised acceptance windows.
-- JavaScript tests: `174/174` passing, including UI render/contract suites (`npm run test:ui`).
+- JavaScript tests: `176/176` passing, including UI render/contract suites (`npm run test:ui`).
 - Rust tests: `31/31` passing.
 - Sprint 26 agent UX hardening is in progress: English-only product language, simulated receipts labeled distinctly, five-route agent navigation with a collapsed Trust & Builders group, agent timeline on Home, one-step approval with dismiss, loading skeletons, a visible Demo data chip, and `npm run dev:watch` for fast client iteration.
 - Official MCP server and independent Merchant Lab remain available.

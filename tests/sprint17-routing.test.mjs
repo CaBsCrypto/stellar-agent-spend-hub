@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { ROUTES, normalizePath, resolveRoute } from "../src/client/routes.mjs";
 import { createResourceStore } from "../src/client/store.mjs";
 import { createApiRouter, matchRoute } from "../src/apiRouter.mjs";
+import { normalizeApiPath } from "../src/apiHttp.mjs";
 import { createSpendHubServer } from "../scripts/serve.mjs";
 
 const mockService = {
@@ -118,6 +119,12 @@ test("dynamic route matcher decodes path parameters", () => {
   assert.equal(matchRoute(route, "/api/other/1"), null);
 });
 
+test("api rewrite normalization accepts Vercel routes and rejects unsafe paths", () => {
+  assert.equal(normalizeApiPath(new URL("https://example.test/api/router?routePath=mpp/receipts")), "/api/mpp/receipts");
+  assert.equal(normalizeApiPath(new URL("https://example.test/api/pilot?pilotPath=requests/demo")), "/api/pilot/requests/demo");
+  assert.equal(normalizeApiPath(new URL("https://example.test/api/router?routePath=../secrets")), "/api/router");
+});
+
 test("local server supports deep links and blocks server source files", async () => {
   const vercelConfig = JSON.parse(readFileSync("vercel.json", "utf8"));
   assert.equal(vercelConfig.cleanUrls, false);
@@ -146,6 +153,12 @@ test("local server supports deep links and blocks server source files", async ()
     assert.equal(activity.status, 200);
     const clientAsset = await fetch(`http://localhost:${port}/src/client/app.mjs`);
     assert.equal(clientAsset.status, 200);
+    const manifest = await fetch(`http://localhost:${port}/manifest.webmanifest`);
+    assert.equal(manifest.status, 200);
+    const serviceWorker = await fetch(`http://localhost:${port}/sw.js`);
+    assert.equal(serviceWorker.status, 200);
+    const rawPageModule = await fetch(`http://localhost:${port}/src/client/pages/overview.mjs`);
+    assert.equal(rawPageModule.status, 404);
     const serverSource = await fetch(`http://localhost:${port}/src/spendHubService.mjs`);
     assert.equal(serverSource.status, 404);
     const traversal = await fetch(`http://localhost:${port}/src/client/%2e%2e/spendHubService.mjs`);

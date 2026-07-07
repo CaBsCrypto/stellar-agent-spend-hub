@@ -46,7 +46,7 @@ for (const token of [
   "$18,000",
   "$25,000",
   "$20,000",
-  "131/131",
+  "176/176",
   "31/31",
   "8290da7e4da419d824f49da6a8ad21fb7e5117cccf861c923dc21e299e985836",
   "b37ab9217c108b023abcb3905d4fee98d32999b23d800c9471f82aeb646af094",
@@ -94,8 +94,11 @@ if (!dashboard.includes('["Discover", "Authorize", "Policy", "Settle", "Verify"]
   throw new Error("Dashboard trust flow is not the five-step SCF narrative");
 }
 const buildScript = read("scripts/build-static.mjs");
-if (!buildScript.includes('cp("src/client", "public/src/client"') || buildScript.includes('cp("src", "public/src"')) {
-  throw new Error("Static build must publish client modules only");
+if (buildScript.includes('cp("src/client", "public/src/client"') || buildScript.includes('cp("src", "public/src"')) {
+  throw new Error("Static build must not publish raw source trees");
+}
+for (const token of ["manifest.webmanifest", "sw.js", "src/client/styles", "src/client/icons"]) {
+  if (!buildScript.includes(token)) throw new Error(`Static build missing required asset copy: ${token}`);
 }
 if (existsSync(resolve(root, "src/app.mjs")) || existsSync(resolve(root, "src/styles.css"))) {
   throw new Error("Legacy monolithic frontend files still exist");

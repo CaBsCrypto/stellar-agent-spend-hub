@@ -1,4 +1,4 @@
-import { createHash, createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { Address, xdr } from "@stellar/stellar-sdk";
 import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
 import { PILOT_TENANT_ID } from "./pilotAuth.mjs";
@@ -9,11 +9,20 @@ import {
   createPilotProviderRegistry,
   publicPilotProvider,
 } from "./pilotProvider.mjs";
+import { pilotBuyerRequest, publicPilotEvidence, publicPilotRequest } from "./pilotPresentation.mjs";
 import { PilotRepository } from "./pilotRepository.mjs";
+import {
+  digest,
+  httpError,
+  pilotApprovalToken,
+  safeDigestEqual,
+  validatePilotAmount,
+  validatePilotIdempotencyKey,
+  validatePilotResourceId,
+} from "./pilotValidation.mjs";
 
 const APPROVAL_TTL_MS = 10 * 60 * 1000;
 const CLAIM_TTL_MS = 2 * 60 * 1000;
-const EXPLORER = "https://stellar.expert/explorer/testnet/tx";
 
 export class PilotService {
   constructor({
@@ -38,9 +47,9 @@ export class PilotService {
     const provider = this.requireProvider(providerId);
     const normalized = {
       providerId: provider.providerId,
-      resourceId: validateResourceId(resourceId),
-      amount: validateAmount(amount),
-      idempotencyKey: validateIdempotencyKey(idempotencyKey),
+      resourceId: validatePilotResourceId(resourceId),
+      amount: validatePilotAmount(amount),
+      idempotencyKey: validatePilotIdempotencyKey(idempotencyKey),
     };
     const payloadHash = digest(JSON.stringify(normalized));
     const idempotencyDigest = digest(`${tenantId}:${normalized.idempotencyKey}`);
@@ -75,7 +84,7 @@ export class PilotService {
     };
     const saved = await this.repository.create(record);
     if (saved.payloadHash !== payloadHash) throw httpError(409, "Idempotency key conflicts with another request");
-    return publicRequest(saved);
+    return publicPilotRequest(saved);
   }
 
   async prepare(requestId, tenantId = PILOT_TENANT_ID) {
@@ -86,7 +95,7 @@ export class PilotService {
     const expiresAt = existing.approvalExpiresAt && Date.parse(existing.approvalExpiresAt) > this.now().getTime()
       ? existing.approvalExpiresAt
       : new Date(this.now().getTime() + APPROVAL_TTL_MS).toISOString();
-    const token = approvalToken(this.secret(), requestId, expiresAt);
+    const token = pilotApprovalToken(this.secret(), requestId, expiresAt);
     const updated = await this.repository.update(requestId, tenantId, (record) => {
       if (!["created", "prepared"].includes(record.status)) {
         throw httpError(409, `Pilot request cannot be prepared from ${record.status}`);
@@ -98,7 +107,7 @@ export class PilotService {
     });
     const baseUrl = String(this.env.MCP_APP_BASE_URL || "https://agente-pagos-stellar.vercel.app").replace(/\/+$/, "");
     return {
-      request: publicRequest(updated),
+      request: publicPilotRequest(updated),
       approvalUrl: `${baseUrl}/spend?pilot=${encodeURIComponent(requestId)}#approval=${encodeURIComponent(token)}`,
       expiresAt,
       requiresHumanConfirmation: true,
@@ -107,7 +116,7 @@ export class PilotService {
 
   async getPublicRequest(requestId) {
     const record = await this.requireRequest(requestId, PILOT_TENANT_ID);
-    return publicRequest(record);
+    return publicPilotRequest(record);
   }
 
   async approve(requestId, token) {
@@ -127,7 +136,7 @@ export class PilotService {
       record.approvalTokenHash = null;
       return record;
     });
-    return publicRequest(updated);
+    return publicPilotRequest(updated);
   }
 
   async claim(requestId, tenantId = PILOT_TENANT_ID) {
@@ -147,7 +156,7 @@ export class PilotService {
     return {
       claimId,
       claimExpiresAt,
-      request: buyerRequest(updated),
+      request: pilotBuyerRequest(updated),
     };
   }
 
@@ -171,11 +180,11 @@ export class PilotService {
       record.claimIdHash = null;
       return record;
     });
-    return publicRequest(updated);
+    return publicPilotRequest(updated);
   }
 
   async getStatus(requestId, tenantId = PILOT_TENANT_ID) {
-    return publicRequest(await this.requireRequest(requestId, tenantId));
+    return publicPilotRequest(await this.requireRequest(requestId, tenantId));
   }
 
   async getReceipt(requestId, tenantId = PILOT_TENANT_ID) {
@@ -191,7 +200,7 @@ export class PilotService {
       generatedAt: this.now().toISOString(),
       network: PILOT_NETWORK,
       executionAllowed: false,
-      evidence: records.filter((record) => record.status === "settled").map(publicEvidence),
+      evidence: records.filter((record) => record.status === "settled").map(publicPilotEvidence),
     };
   }
 
@@ -299,87 +308,3 @@ function decimalToBaseUnits(value) {
   return BigInt(whole) * 10_000_000n + BigInt(fraction.padEnd(7, "0"));
 }
 
-function publicRequest(record) {
-  return {
-    requestId: record.requestId,
-    providerId: record.providerId,
-    providerName: record.providerName,
-    resourceId: record.resourceId,
-    amount: record.amount,
-    amountBaseUnits: record.amountBaseUnits,
-    asset: record.asset,
-    assetContractId: record.assetContractId,
-    network: record.network,
-    recipient: record.recipient,
-    status: record.status,
-    requiresHumanConfirmation: !["approved", "settling", "settled"].includes(record.status),
-    approvalExpiresAt: record.approvalExpiresAt,
-    approvedAt: record.approvedAt,
-    transactionHash: record.transactionHash,
-    explorerUrl: record.transactionHash ? `${EXPLORER}/${record.transactionHash}` : null,
-    createdAt: record.createdAt,
-    settledAt: record.settledAt,
-  };
-}
-
-function buyerRequest(record) {
-  return {
-    ...publicRequest(record),
-    resourceUrl: record.resourceUrl,
-  };
-}
-
-function publicEvidence(record) {
-  return {
-    evidenceType: "provider-pilot",
-    verificationStatus: "verified",
-    providerId: record.providerId,
-    resourceId: record.resourceId,
-    amount: record.amount,
-    amountBaseUnits: record.amountBaseUnits,
-    asset: record.asset,
-    assetContractId: record.assetContractId,
-    network: record.network,
-    recipient: record.recipient,
-    transactionHash: record.transactionHash,
-    explorerUrl: `${EXPLORER}/${record.transactionHash}`,
-    verifiedAt: record.settledAt,
-  };
-}
-
-function approvalToken(secret, requestId, expiresAt) {
-  return createHmac("sha256", secret).update(`${requestId}.${expiresAt}`).digest("base64url");
-}
-
-function validateResourceId(value) {
-  const id = String(value || "").trim();
-  if (!/^[a-z0-9][a-z0-9-]{2,79}$/.test(id)) throw httpError(400, "Invalid pilot resourceId");
-  if (id !== "stellar-risk-snapshot") throw httpError(403, "Pilot resource is not allowlisted");
-  return id;
-}
-
-function validateAmount(value) {
-  if (String(value) !== PILOT_AMOUNT_USDC && Number(value) !== Number(PILOT_AMOUNT_USDC)) {
-    throw httpError(409, "Pilot amount must be exactly 0.01 USDC");
-  }
-  return PILOT_AMOUNT_USDC;
-}
-
-function validateIdempotencyKey(value) {
-  const key = String(value || "");
-  if (!/^[A-Za-z0-9:_-]{8,120}$/.test(key)) throw httpError(400, "Invalid idempotencyKey");
-  return key;
-}
-
-function digest(value) {
-  return createHash("sha256").update(String(value)).digest("hex");
-}
-
-function safeDigestEqual(expected, actual) {
-  if (!/^[a-f0-9]{64}$/.test(String(expected || "")) || !/^[a-f0-9]{64}$/.test(String(actual || ""))) return false;
-  return timingSafeEqual(Buffer.from(expected, "hex"), Buffer.from(actual, "hex"));
-}
-
-function httpError(status, message) {
-  return Object.assign(new Error(message), { status });
-}

@@ -70,13 +70,12 @@ export async function handleStatic({ response, url, root }) {
 
   const normalized = normalize(requested).replace(/^([/\\])+/, "");
   const rootPath = resolve(root);
-  const sourceAllowedRoot = requested === "/index.html" ? rootPath : resolve(rootPath, "src", "client");
   const publicAllowedRoot = requested === "/index.html"
     ? resolve(rootPath, "public")
     : resolve(rootPath, "public", "src", "client");
   const candidates = [
     { filePath: resolve(rootPath, "public", normalized), allowedRoot: publicAllowedRoot },
-    { filePath: resolve(rootPath, normalized), allowedRoot: sourceAllowedRoot },
+    ...(requested === "/index.html" ? [{ filePath: resolve(rootPath, normalized), allowedRoot: rootPath }] : []),
   ];
   for (const candidate of candidates) {
     const insideAllowedRoot = candidate.filePath === candidate.allowedRoot

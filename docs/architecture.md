@@ -45,8 +45,8 @@ The paths intentionally remain separate. The current MPP buyer uses a classic G-
 - `ProviderKit`: validates machine-readable provider definitions and the paid-resource lifecycle.
 - `MppChargeService`: official Stellar MPP seller for the Horizon-backed risk report.
 - `SpendAccountV1`: contract account implementing passkey owner and bounded session authorization.
-- `ContractAccountRelayer`: reconstructs canonical allowlisted calls and rejects arbitrary XDR.
-- `PublicEvidenceService`: publishes verified and explicitly pending evidence.
+- `ContractAccountRelayer`: reconstructs canonical allowlisted calls and rejects arbitrary XDR. Runtime readiness, limits, network constants, and env validation live in `contractAccountConfig.mjs`.
+- `PublicEvidenceService`: publishes verified and explicitly pending evidence. Multichain public serialization for gates, bridges, and settlement receipts lives in `multichainPublicViews.mjs`; Base/Circle/Stellar verification helpers live in `multichainVerification.mjs`.
 - `SensitiveDataGuard`: blocks PII, secrets, signatures, XDR, and credential identifiers.
 - `Upstash`: atomic replay protection, request state, idempotency, and sanitized receipts.
 - `Horizon` and `Soroban RPC`: transaction lookup, simulation, submission, and verification.
@@ -72,13 +72,17 @@ flowchart TB
 
 The browser receives only `src/client`. Pages are loaded dynamically, share a short-lived resource cache, and cancel stale navigation work. WebAuthn code is loaded only on the Smart Wallet route.
 
-The API registry preserves existing endpoints and adds three optimized read models:
+The API boundary is split by responsibility: `apiRouter.mjs` dispatches requests, `apiHttp.mjs` owns route matching, rewrites, JSON parsing and sanitized responses, `apiRoutes.mjs` composes domain route groups, and `productReadModels.mjs` builds UI-specific read models. Domain routes now live under `src/routes/*Routes.mjs` for admin, product, MPP/evidence, MCP pilot, Contract Account, spend intents, and multichain labs. The registry preserves existing endpoints and adds three optimized read models:
 
 - `GET /api/overview`: evidence plus dependency diagnostics.
 - `GET /api/spend`: intents, evaluations, policy, receipts, summary, and readiness.
 - `GET /api/providers`: provider directory only.
 
 `GET /api/state` remains available for compatibility. Known routes with an invalid method return `405`; malformed JSON returns `400`.
+
+Provider Pilot is also split by boundary: `pilotService.mjs` owns request lifecycle transitions, `pilotValidation.mjs` owns idempotency, approval-token and allowlist validation, and `pilotPresentation.mjs` owns public request/evidence serialization. Settlement verification stays inside the pilot service boundary so receipt checks remain close to the claim/complete flow.
+
+Static demo data keeps mockData.mjs as the compatibility facade while fixtures live in mockProviders.mjs, mockPolicy.mjs, and mockPayments.mjs. This keeps route and service imports stable while making provider, policy, and payment scenarios easier to review independently.
 
 ## MCP boundary
 

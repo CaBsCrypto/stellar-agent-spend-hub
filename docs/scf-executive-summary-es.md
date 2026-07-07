@@ -18,7 +18,7 @@ El segundo submit identico fue rechazado con `409` y no movio fondos. La evidenc
 - Aplicacion y Evidence API publicas en Vercel.
 - Contract Account humana desplegada, fondeada y limitada a un merchant y USDC testnet.
 - Upstash, Horizon y Soroban RPC operativos.
-- `131/131` pruebas JavaScript antes de Sprint 19 y `31/31` pruebas Rust.
+- `176/176` pruebas JavaScript y `31/31` pruebas Rust.
 - Mainnet, autopilot y pagos LatAm permanecen fuera de alcance.
 
 ## Solicitud
