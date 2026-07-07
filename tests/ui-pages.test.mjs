@@ -123,6 +123,17 @@ test("discover page renders providers and search form", () => {
   assert.match(html, /form|input/);
 });
 
+test("shell renders a five-tab bottom navigation for mobile", async () => {
+  const { renderShell } = await import("../src/client/shell.mjs");
+  const { ROUTES } = await import("../src/client/routes.mjs");
+  const html = renderShell(ROUTES[0]);
+  const tabs = html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0] || "";
+  assert.equal((tabs.match(/<a /g) || []).length, 5);
+  assert.match(tabs, />Home</);
+  assert.match(tabs, />Approve</);
+  assert.match(tabs, /aria-current="page"/);
+});
+
 test("shared components stay safe and predictable", () => {
   assert.match(statusPill("verified"), /status-pill verified/);
   assert.match(statusPill("blocked"), /status-pill blocked/);

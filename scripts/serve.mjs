@@ -5,6 +5,7 @@ import { SpendHubService } from "../src/spendHubService.mjs";
 import { createApiRouter } from "../src/apiRouter.mjs";
 
 const SPA_ROUTES = new Set(["/", "/discover", "/spend", "/activity", "/providers", "/mpp", "/wallet", "/treasury", "/evidence", "/security"]);
+const ROOT_ASSETS = { "/manifest.webmanifest": "/src/client/manifest.webmanifest", "/sw.js": "/src/client/sw.js" };
 const routerCache = new WeakMap();
 const contentTypes = {
   ".html": "text/html; charset=utf-8",
@@ -12,6 +13,7 @@ const contentTypes = {
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".webmanifest": "application/manifest+json; charset=utf-8",
   ".png": "image/png",
   ".svg": "image/svg+xml",
 };
@@ -62,6 +64,7 @@ export async function handleStatic({ response, url, root }) {
   const pathname = url.pathname;
   let requested;
   if (SPA_ROUTES.has(pathname)) requested = "/index.html";
+  else if (ROOT_ASSETS[pathname]) requested = ROOT_ASSETS[pathname];
   else if (pathname.startsWith("/src/client/")) requested = pathname;
   else throw Object.assign(new Error("Not found"), { status: 404 });
 

@@ -20,6 +20,9 @@ export function renderShell(activeRoute) {
       <header class="mobile-bar"><a class="mobile-brand" href="/" data-link>Stellar Agent Spend Hub</a><button class="menu-button" data-shell-action="toggle-menu" aria-controls="sidebar" aria-expanded="false"><span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span><b class="sr-only">Open navigation</b></button></header>
       <main id="page-content" class="page-content" tabindex="-1"></main>
     </div>
+    <nav class="bottom-nav" aria-label="Primary">
+      ${primaryRoutes.map((route) => `<a href="${route.path}" data-link ${activeRoute?.id === route.id ? 'aria-current="page"' : ""}>${escapeHtml(route.short || route.label)}</a>`).join("")}
+    </nav>
     <div class="sidebar-scrim" data-shell-action="close-menu"></div>
     <div id="toast-region" class="toast-region" aria-live="polite"></div>
   </div>`;

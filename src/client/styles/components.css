@@ -52,6 +52,8 @@
 @media (max-width: 780px) {
   .trust-flow { grid-template-columns: 1fr; }
   .skeleton-row { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .toast-region { right: 12px; bottom: calc(72px + env(safe-area-inset-bottom)); left: 12px; }
+  .toast { max-width: none; }
   .foundation-row, .receipt-row { grid-template-columns: 1fr; gap: 7px; }
   .definition-list > div { grid-template-columns: 1fr; gap: 4px; }
 }

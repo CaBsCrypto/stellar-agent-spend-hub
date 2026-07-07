@@ -16,6 +16,14 @@
       "destination": "/api/router?routePath=:segment1/:segment2"
     },
     {
+      "source": "/manifest.webmanifest",
+      "destination": "/src/client/manifest.webmanifest"
+    },
+    {
+      "source": "/sw.js",
+      "destination": "/src/client/sw.js"
+    },
+    {
       "source": "/discover",
       "destination": "/index.html"
     },

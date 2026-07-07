@@ -65,6 +65,10 @@ const router = createRouter({
 
 await router.start();
 
+if ("serviceWorker" in navigator && window.location.hostname !== "localhost") {
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
+
 function updateActiveNavigation(route) {
   root.querySelectorAll("nav a[data-link]").forEach((link) => {
     if (link.getAttribute("href") === route?.path) link.setAttribute("aria-current", "page");
