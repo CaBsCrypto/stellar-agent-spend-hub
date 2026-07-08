@@ -24,6 +24,17 @@
 .provider-card { display: grid; gap: 10px; min-height: 210px; }
 .provider-card button { align-self: end; }
 .provider-card p { margin: 0; color: var(--muted); }
+
+.service-card-facts { display: grid; gap: 7px; margin: 0; }
+.service-card-facts div { display: grid; gap: 2px; padding: 8px 0; border-top: 1px solid var(--line); }
+.service-card-facts dt { color: var(--muted); font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.service-card-facts dd { margin: 0; color: var(--ink); font-size: .8rem; line-height: 1.35; }
+.decision-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 14px 0; }
+.decision-grid article { min-width: 0; padding: 12px; border: 1px solid var(--line); background: var(--surface-soft); }
+.decision-grid span { display: block; margin-bottom: 5px; color: var(--muted); font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.decision-grid strong { display: block; margin-bottom: 4px; }
+.decision-grid p { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.4; }
+
 .search-bar { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; margin-bottom: 18px; }
 .search-bar input { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #aebdb6; background: var(--surface); }
 .vertical-flow { display: grid; gap: 12px; margin: 16px 0 0; padding: 0; list-style: none; }
@@ -169,7 +180,7 @@
 }
 @media (max-width: 780px) {
   .agent-command-row, .discover-search > div, .service-options { grid-template-columns: 1fr; }
-  .pilot-tasks, .home-snapshot, .feedback-grid, .pilot-learning, .learning-facts { grid-template-columns: 1fr; }
+  .pilot-tasks, .home-snapshot, .feedback-grid, .pilot-learning, .learning-facts, .decision-grid { grid-template-columns: 1fr; }
 
   .activity-row, .proposal-row { grid-template-columns: 1fr; }
   .proposal-row > span { justify-items: start; }

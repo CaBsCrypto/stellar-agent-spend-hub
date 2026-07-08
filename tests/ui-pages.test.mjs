@@ -1,4 +1,4 @@
-import test from "node:test";
+﻿import test from "node:test";
 import assert from "node:assert/strict";
 import { createPage as createOverviewPage } from "../src/client/pages/overview.mjs";
 import { createPage as createSpendPage } from "../src/client/pages/spend.mjs";
@@ -41,15 +41,15 @@ spendData.evaluation = spendData.evaluations["intent-1"];
 
 test("spend page renders queue, policy controls and action buttons", () => {
   const html = createSpendPage().render(spendData);
-  assert.match(html, /Payment intents/);
+  assert.match(html, /Propuestas/);
   assert.match(html, /data-intent-action="approve"/);
   assert.match(html, /Provider verified in allowlist/);
-  assert.match(html, /Daily limit/);
+  assert.match(html, /Limite diario/);
 });
 
 test("spend page exposes a single human approval action plus dismiss", () => {
   const html = createSpendPage().render(spendData);
-  assert.match(html, /Approve payment/);
+  assert.match(html, /Aprobar pago de prueba/);
   assert.match(html, /data-intent-action="dismiss"/);
   assert.doesNotMatch(html, /data-intent-action="prepare"/);
   assert.doesNotMatch(html, /data-intent-action="proof"/);
@@ -114,7 +114,7 @@ test("activity page distinguishes verified evidence from simulated receipts", ()
 
 test("activity page shows an empty state without items", () => {
   const html = createActivityPage().render({ summary: { verified: 0, receipts: 0 }, items: [] });
-  assert.match(html, /No activity yet/);
+  assert.match(html, /Sin actividad aun/);
 });
 
 test("activity page shows safe pilot learning aggregates", () => {
@@ -123,7 +123,7 @@ test("activity page shows safe pilot learning aggregates", () => {
     items: [],
     feedback: { feedback: { status: "memory-local", count: 2, needsMoreFeedback: true, clarity: { clear: 1 }, trust: { "somewhat-clear": 2 }, themes: [{ theme: "wallet", count: 2 }] } },
   });
-  assert.match(html, /Pilot learning/);
+  assert.match(html, /Aprendizaje/);
   assert.match(html, /wallet/);
   assert.doesNotMatch(html, /private tester note/i);
 });
@@ -134,8 +134,8 @@ test("discover page renders providers, search form and example service options",
   ], query: "search" });
   assert.match(html, /Exa Search API/);
   assert.match(html, /form|input/);
-  assert.match(html, /Transaction risk/);
-  assert.match(html, /Cloud credits/);
+  assert.match(html, /Analizar transaccion/);
+  assert.match(html, /Creditos API/);
 });
 
 test("home states the user-first Stellar approval promise", () => {
@@ -146,13 +146,13 @@ test("home states the user-first Stellar approval promise", () => {
     proposals: [{ id: "p1", providerName: "Merchant Lab", agentReason: "Analyze a Stellar transaction", amount: 0.01, currency: "USDC", status: "created" }],
     recentActivity: [],
   });
-  assert.match(html, /Your agent prepares Stellar USDC payments/);
-  assert.match(html, /You approve every settlement/);
-  assert.match(html, /Human approval stays on/);
-  assert.match(html, /Try three things in two minutes/);
-  assert.match(html, /What should we fix before pilots/);
-  assert.match(html, /Start a temporary MCP sandbox/);
-  assert.match(html, /Generate a short voice preview/);
+  assert.match(html, /Dile que necesitas/);
+  assert.match(html, /tu apruebas/);
+  assert.match(html, /Tu apruebas siempre/);
+  assert.match(html, /Tres pasos, sin configurar nada/);
+  assert.match(html, /Que deberiamos simplificar/);
+  assert.match(html, /Preparar un sandbox MCP/);
+  assert.match(html, /Generar un audio corto/);
   assert.doesNotMatch(html, /Multichain Lab|Treasury/);
 });
 
@@ -162,8 +162,8 @@ test("wallet keeps the main user flow Stellar-first and hides Treasury", () => {
     overview: { evidence: { coordinatedDemo: { contractAccount: { verificationStatus: "pending" } } } },
     localPasskey: null,
   });
-  assert.match(html, /Smart Wallet controls/);
-  assert.match(html, /Submit gate is closed/);
+  assert.match(html, /Define que puede hacer el agente/);
+  assert.match(html, /compuerta de envio esta cerrada/);
   assert.doesNotMatch(html, /Open Treasury|Privy embedded wallet|Base and Avalanche/);
 });
 
@@ -211,7 +211,7 @@ test("shell renders a five-tab bottom navigation for mobile", async () => {
   const tabs = html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0] || "";
   assert.equal((tabs.match(/<a /g) || []).length, 5);
   assert.match(tabs, />Home</);
-  assert.match(tabs, />Approve</);
+  assert.match(tabs, />Review</);
   assert.match(tabs, /aria-current="page"/);
 });
 
@@ -283,3 +283,4 @@ async function invokePost(router, path, body) {
   await router.handle({ request, response, url: new URL(path, "https://example.test") });
   return { status, body: JSON.parse(payload) };
 }
+

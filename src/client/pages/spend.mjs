@@ -20,14 +20,14 @@ export function createPage() {
       if (data.pilotMode) return renderPilotApproval(data.pilot);
       const { selected, evaluation, summary } = data;
       return `<section>
-        ${pageHeader({ eyebrow: "User-controlled spending", title: "Approve prepared payments", summary: "The agent prepares each Stellar USDC payment. You review the reason, policy checks, and privacy proof before anything settles." })}
-        <div class="metric-grid">${metric("Ready intents", summary.ready, `${summary.blocked} blocked`)}${metric("Receipts", summary.receipts, "Sanitized history")}${metric("Per-payment limit", money(data.policy.perPaymentLimit), "Policy enforced")}${metric("Human approval", data.policy.requireHumanConfirmation ? "Required" : "Disabled", "Training mode")}</div>
+        ${pageHeader({ eyebrow: "Decision final", title: "Revisar propuesta", summary: "El agente ya hizo el trabajo preliminar. Revisa que va a comprar, cuanto cuesta y decide si aprobar o descartar." })}
+        <div class="metric-grid">${metric("Propuestas listas", summary.ready, `${summary.blocked} bloqueadas`)}${metric("Comprobantes", summary.receipts, "Sin datos privados")}${metric("Limite por pago", money(data.policy.perPaymentLimit), "Control activo")}${metric("Decision humana", data.policy.requireHumanConfirmation ? "Siempre" : "Desactivada", "Modo demo")}</div>
         <div class="spend-layout">
-          <aside class="panel intent-panel"><div class="section-heading"><div><span class="section-label">Queue</span><h2>Payment intents</h2></div></div><div class="intent-list">${data.intents.length ? data.intents.map((intent) => intentLink(intent, data.evaluations[intent.id], selected?.id)).join("") : emptyState("No intents", "Create one from the Providers route.")}</div></aside>
-          <section class="panel review-panel">${selected ? reviewIntent(selected, evaluation, data.spendRequests?.[selected.id]) : emptyState("Select an intent", "Choose a proposed payment to inspect its controls.")}</section>
-          <aside class="panel policy-panel"><div class="section-heading"><div><span class="section-label">Policy</span><h2>Active controls</h2></div></div>${policyRow("Daily limit", money(data.policy.dailyLimit))}${policyRow("Monthly limit", money(data.policy.monthlyLimit))}${policyRow("Assets", data.policy.allowedAssets.join(", "))}${policyRow("Slippage", `${data.policy.maxSlippageBps} bps`)}${policyRow("Autopilot", data.policy.autopilotEnabled ? "Enabled" : "Blocked")}<div class="security-callout"><strong>PII firewall</strong><p>Personal identifiers, credentials, and customer references are forbidden in public payment data.</p></div></aside>
+          <aside class="panel intent-panel"><div class="section-heading"><div><span class="section-label">Pendientes</span><h2>Propuestas</h2></div></div><div class="intent-list">${data.intents.length ? data.intents.map((intent) => intentLink(intent, data.evaluations[intent.id], selected?.id)).join("") : emptyState("No hay propuestas", "Pide un servicio desde Home o Discover.")}</div></aside>
+          <section class="panel review-panel">${selected ? reviewIntent(selected, evaluation, data.spendRequests?.[selected.id]) : emptyState("Elige una propuesta", "Selecciona una compra preparada para revisarla.")}</section>
+          <aside class="panel policy-panel"><div class="section-heading"><div><span class="section-label">Tus reglas</span><h2>Controles activos</h2></div></div>${policyRow("Limite diario", money(data.policy.dailyLimit))}${policyRow("Limite mensual", money(data.policy.monthlyLimit))}${policyRow("Monedas permitidas", data.policy.allowedAssets.join(", "))}${policyRow("Variacion maxima", `${data.policy.maxSlippageBps} bps`)}${policyRow("Pago automatico", data.policy.autopilotEnabled ? "Activo" : "Bloqueado")}<div class="security-callout"><strong>Datos privados protegidos</strong><p>No se publican identificadores personales, credenciales ni referencias de cliente.</p></div></aside>
         </div>
-        <section class="section-block"><div class="section-heading"><div><span class="section-label">Audit trail</span><h2>Payment receipts</h2></div></div><div class="receipt-list">${data.receipts.length ? data.receipts.map(receiptRow).join("") : emptyState("No receipts", "Confirmed payments will appear here without private data.")}</div></section>
+        <section class="section-block"><div class="section-heading"><div><span class="section-label">Historial</span><h2>Comprobantes</h2></div></div><div class="receipt-list">${data.receipts.length ? data.receipts.map(receiptRow).join("") : emptyState("Sin comprobantes", "Las aprobaciones apareceran aqui sin datos privados.")}</div></section>
       </section>`;
     },
     bind(outlet, data, context) {
@@ -60,7 +60,7 @@ export function createPage() {
           try {
             await context.api(`/api/intents/${id}/dismiss`, { method: "POST", body: "{}" });
             context.store.invalidate("spend", "agent-home");
-            context.showToast("Proposal dismissed. No payment was made.");
+            context.showToast("Propuesta descartada. No se hizo ningun pago.");
             await context.router.navigate("/spend");
           } catch (error) {
             context.showToast(error.message);
@@ -68,7 +68,7 @@ export function createPage() {
           }
           return;
         }
-        actionButton.textContent = "Approving...";
+        actionButton.textContent = "Aprobando...";
         try {
           // The agent runs the technical steps; the human performs one approval.
           await context.api(`/api/intents/${id}/prepare`, { method: "POST", body: "{}" });
@@ -83,12 +83,12 @@ export function createPage() {
             body: JSON.stringify({ approvedBy: "user-passkey" }),
           });
           context.store.invalidate("spend", "overview:live", "activity", "agent-home");
-          context.showToast("Payment approved. Receipt sanitized and recorded.");
+          context.showToast("Pago de prueba aprobado. Comprobante registrado sin datos privados.");
           await context.router.navigate(`/activity?receipt=${encodeURIComponent(result.receipt?.id || "")}`);
         } catch (error) {
           context.showToast(error.message);
           actionButton.disabled = false;
-          actionButton.textContent = "Approve payment";
+          actionButton.textContent = "Aprobar pago de prueba";
         }
       };
       boundOutlet = outlet;
@@ -103,34 +103,34 @@ export function createPage() {
 function renderPilotApproval(request) {
   const canApprove = request.status === "prepared";
   return `<section>
-    ${pageHeader({ eyebrow: "Remote MCP Provider Pilot", title: "Human Approval", summary: "Review the immutable Merchant Lab payment proposal before the local buyer can claim it." })}
-    <div class="metric-grid">${metric("Amount", `${escapeHtml(request.amount)} ${escapeHtml(request.asset)}`, "Exact pilot price")}${metric("Network", request.network, "Testnet only")}${metric("Status", request.status, "One-time approval")}${metric("Provider", request.providerName, "Allowlisted")}</div>
+    ${pageHeader({ eyebrow: "Remote MCP Provider Pilot", title: "Aprobacion humana", summary: "Revisa esta propuesta antes de permitir que el comprador local la reclame." })}
+    <div class="metric-grid">${metric("Monto", `${escapeHtml(request.amount)} ${escapeHtml(request.asset)}`, "Precio exacto")}${metric("Red", request.network, "Solo prueba")}${metric("Estado", request.status, "Un solo uso")}${metric("Proveedor", request.providerName, "Permitido")}</div>
     <section class="panel review-panel">
-      <div class="section-heading"><div><span class="section-label">Payment proposal</span><h2>${escapeHtml(request.resourceId)}</h2></div>${statusPill(request.status)}</div>
+      <div class="section-heading"><div><span class="section-label">Propuesta</span><h2>${escapeHtml(request.resourceId)}</h2></div>${statusPill(request.status)}</div>
       <dl class="definition-list">
         <div><dt>Recipient</dt><dd><code>${escapeHtml(request.recipient)}</code></dd></div>
         <div><dt>Asset contract</dt><dd><code>${escapeHtml(request.assetContractId)}</code></dd></div>
         <div><dt>Request</dt><dd><code>${escapeHtml(request.requestId)}</code></dd></div>
       </dl>
-      <div class="security-callout"><strong>Human boundary</strong><p>Approval changes only the request state. The browser never receives the buyer secret and cannot settle funds.</p></div>
-      <div class="button-row"><button class="primary-button" data-pilot-approve ${canApprove ? "" : "disabled"}>Approve 0.01 USDC</button></div>
+      <div class="security-callout"><strong>Limite de seguridad</strong><p>Aprobar solo cambia el estado de la solicitud. El navegador no recibe secretos ni puede mover fondos.</p></div>
+      <div class="button-row"><button class="primary-button" data-pilot-approve ${canApprove ? "" : "disabled"}>Aprobar pago de prueba</button></div>
     </section>
   </section>`;
 }
 
 function intentLink(intent, evaluation = {}, selectedId) {
-  return `<a class="intent-item ${intent.id === selectedId ? "selected" : ""}" href="/spend?intent=${encodeURIComponent(intent.id)}" data-link><div><strong>${escapeHtml(intent.providerName)}</strong>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div><span>${escapeHtml(intent.intentType)} | ${money(intent.amount, intent.currency)}</span><small>Proof ${escapeHtml(intent.proofStatus || "not-required")} | ${escapeHtml(intent.status || "created")}</small></a>`;
+  return `<a class="intent-item ${intent.id === selectedId ? "selected" : ""}" href="/spend?intent=${encodeURIComponent(intent.id)}" data-link><div><strong>${escapeHtml(intent.providerName)}</strong>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div><span>${escapeHtml(intent.intentType)} | ${money(intent.amount, intent.currency)}</span><small>Privacidad ${escapeHtml(intent.proofStatus || "ok")} | ${escapeHtml(intent.status || "creada")}</small></a>`;
 }
 
 function reviewIntent(intent, evaluation = {}, spendRequest) {
   const reasons = evaluation.allowed ? evaluation.evidence || [] : evaluation.reasons || [];
-  return `<div class="section-heading"><div><span class="section-label">Selected intent</span><h2>${escapeHtml(intent.providerName)}</h2></div>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div>
-    <div class="review-amount"><strong>${money(intent.amount, intent.currency)}</strong><span>${escapeHtml(intent.intentType)} | ${escapeHtml(intent.status || "created")}</span></div>
-    <div class="detail-block"><span>Agent rationale</span><p>${escapeHtml(intent.agentReason)}</p></div>
-    <div class="control-grid"><article><span>Legal context</span><strong>${evaluation.legalDecision?.snapshot ? `Trust level ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "Unavailable"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacy proof</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
-    ${spendRequest ? `<div class="notice verified"><strong>Link spend request</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
+  return `<div class="section-heading"><div><span class="section-label">Propuesta seleccionada</span><h2>${escapeHtml(intent.providerName)}</h2></div>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div>
+    <div class="review-amount"><strong>${money(intent.amount, intent.currency)}</strong><span>Pago de prueba | ${escapeHtml(intent.status || "creada")}</span></div>
+    <div class="decision-grid"><article><span>Que va a comprar</span><strong>${escapeHtml(intent.providerName)}</strong><p>${escapeHtml(intent.intentType)}</p></article><article><span>Cuanto cuesta</span><strong>${money(intent.amount, intent.currency)}</strong><p>Dentro de tus limites</p></article><article><span>Por que lo recomienda</span><p>${escapeHtml(intent.agentReason)}</p></article><article><span>Datos que NO se comparten</span><p>Sin llaves privadas, credenciales, RUT, telefono, email ni identificadores de cliente.</p></article></div>
+    <div class="control-grid"><article><span>Terminos y proveedor</span><strong>${evaluation.legalDecision?.snapshot ? `Confianza ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "No disponible"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacidad</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
+    ${spendRequest ? `<div class="notice verified"><strong>Solicitud preparada</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
     <div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div>
-    <div class="button-row">${guardedAction({ label: "Approve payment", enabled: Boolean(evaluation.allowed), reason: "Blocked by policy checks above.", action: { name: "intent-action", value: "approve" } })}${intent.status === "settled" ? "" : guardedAction({ label: "Dismiss", enabled: true, action: { name: "intent-action", value: "dismiss" }, kind: "secondary" })}</div>`;
+    <div class="button-row">${guardedAction({ label: "Aprobar pago de prueba", enabled: Boolean(evaluation.allowed), reason: "Bloqueado por los controles anteriores.", action: { name: "intent-action", value: "approve" } })}${intent.status === "settled" ? "" : guardedAction({ label: "Descartar", enabled: true, action: { name: "intent-action", value: "dismiss" }, kind: "secondary" })}</div>`;
 }
 
 function policyRow(label, value) {

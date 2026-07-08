@@ -8,7 +8,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-mpp-usdc",
     legalContextUrl: "https://stellar-agent-merchant-lab.vercel.app/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["mcp", "mpp", "merchant sandbox", "testnet usdc"],
+    tags: ["mcp", "mpp", "merchant sandbox", "testnet usdc", "analizar", "transaccion", "riesgo", "pago"],
   },
   {
     providerId: "browserbase-mcp",
@@ -19,7 +19,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://browserbase.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["mcp", "web browsing api", "agent tools"],
+    tags: ["mcp", "web browsing api", "agent tools", "navegador", "sesiones", "web", "comprar"],
   },
   {
     providerId: "exa-api",
@@ -30,7 +30,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://exa.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["api", "search", "mcp"],
+    tags: ["api", "search", "mcp", "buscar", "informacion", "investigar", "web"],
   },
   {
     providerId: "link-commerce-demo",
@@ -52,7 +52,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://firecrawl.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["mcp", "scrape", "website", "crawl", "extract", "markdown", "json"],
+    tags: ["mcp", "scrape", "website", "crawl", "extract", "markdown", "json", "extraer", "informacion", "web"],
   },
   {
     providerId: "dataset-snapshot-api",
@@ -63,7 +63,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://dataset.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["api", "dataset", "data", "market", "research", "snapshot", "enrichment"],
+    tags: ["api", "dataset", "data", "market", "research", "snapshot", "enrichment", "datos", "muestra", "investigar", "json"],
   },
   {
     providerId: "mcp-sandbox-hosting",
@@ -74,7 +74,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://mcp-sandbox.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["mcp", "sandbox", "hosting", "tool", "server", "agent", "experiment"],
+    tags: ["mcp", "sandbox", "hosting", "tool", "server", "agent", "experiment", "preparar", "herramienta"],
   },
   {
     providerId: "cloud-credits-api",
@@ -85,7 +85,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://cloud-credits.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["cloud", "credits", "api", "compute", "storage", "developer", "google", "aws", "vercel"],
+    tags: ["cloud", "credits", "api", "compute", "storage", "developer", "google", "aws", "vercel", "creditos", "comprar"],
   },
   {
     providerId: "voice-preview-api",
@@ -96,7 +96,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://voice-preview.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["audio", "voice", "tts", "preview", "media", "generation"],
+    tags: ["audio", "voice", "tts", "preview", "media", "generation", "generar", "corto", "voz"],
   },
   {
     providerId: "image-render-api",
@@ -107,7 +107,7 @@ export const providerDirectory = [
     paymentMethod: "stellar-usdc-simulated",
     legalContextUrl: "https://image-render.example/.well-known/legal-context.json",
     privacyRequirement: "no-pii",
-    tags: ["image", "render", "social", "card", "media", "artifact", "generation"],
+    tags: ["image", "render", "social", "card", "media", "artifact", "generation", "imagen", "demo", "crear"],
   },
   {
     providerId: "stellar-swap",

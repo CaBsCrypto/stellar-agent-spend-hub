@@ -1,4 +1,4 @@
-import test from "node:test";
+﻿import test from "node:test";
 import assert from "node:assert/strict";
 import { evaluatePaymentIntent, IntentType, ReceiptStatus, RiskLevel } from "../src/domain.mjs";
 import { CircleX402Adapter } from "../src/circleX402Adapter.mjs";
@@ -62,6 +62,17 @@ const apiIntent = {
   agentReason: "Buy MCP credits under the limit.",
 };
 
+test("sensitive guard allows public blockchain artifacts while blocking private data", () => {
+  const publicPayload = {
+    account: "G" + "A".repeat(55),
+    contract: "C" + "B".repeat(55),
+    transactionHash: "ab".repeat(32),
+    auth: { unsignedEntryXdr: Buffer.alloc(96, 1).toString("base64") },
+  };
+  assert.equal(assertNoSensitiveData(publicPayload, "publicBlockchainPayload").allowed, true);
+  assert.equal(assertNoSensitiveData({ card: "4242 4242 4242 4242" }, "payment").allowed, false);
+  assert.equal(assertNoSensitiveData({ token: "sk_test_1234567890abcdef" }, "secret").allowed, false);
+});
 function legalAdapter(overrides = {}) {
   return new LegalContextAdapter({
     registry: {
@@ -1338,3 +1349,5 @@ function sorobanAdminService() {
     },
   });
 }
+
+

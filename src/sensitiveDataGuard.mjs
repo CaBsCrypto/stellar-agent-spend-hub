@@ -1,4 +1,4 @@
-export const SensitiveField = Object.freeze({
+﻿export const SensitiveField = Object.freeze({
   rut: "rut",
   email: "email",
   phone: "phone",
@@ -31,10 +31,19 @@ export function assertNoSensitiveData(value, path = "root") {
   };
 }
 
+function isPublicBlockchainArtifact(value, path) {
+  const normalized = value.trim();
+  const lowerPath = path.toLowerCase();
+  if (/^[CG][A-Z2-7]{55}$/.test(normalized)) return true;
+  if (/^[0-9a-f]{64}$/i.test(normalized)) return true;
+  if (/\bxdr\b/i.test(lowerPath) && normalized.length >= 64 && normalized.length <= 16_384 && /^[A-Za-z0-9+/=]+$/.test(normalized)) return true;
+  return false;
+}
 function scanValue(value, path, findings) {
   if (value == null) return;
 
   if (typeof value === "string") {
+    if (isPublicBlockchainArtifact(value, path)) return;
     for (const rule of sensitivePatterns) {
       if (rule.pattern.test(value)) {
         findings.push({ type: rule.type, path });
