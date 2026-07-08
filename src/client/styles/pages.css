@@ -62,6 +62,22 @@
 }
 
 
+
+.pilot-tasks { display: grid; grid-template-columns: minmax(220px,.8fr) repeat(3,minmax(0,1fr)); gap: 12px; align-items: stretch; margin: 22px 0; }
+.pilot-tasks > div, .pilot-tasks article { min-width: 0; padding: 15px; border: 1px solid var(--line); background: var(--surface); }
+.pilot-tasks h2 { margin: 4px 0 0; font-size: 1.15rem; }
+.pilot-tasks article { display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 10px; }
+.pilot-tasks article > span { display: grid; width: 26px; height: 26px; place-items: center; background: var(--brand); color: #fff; font-weight: 850; }
+.pilot-tasks strong { display: block; }
+.pilot-tasks p { margin: 4px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.4; }
+.home-snapshot { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 10px; }
+.feedback-panel form { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--line); background: var(--surface); }
+.feedback-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.feedback-panel label { display: grid; gap: 6px; color: var(--muted); font-size: .78rem; font-weight: 800; }
+.feedback-panel select, .feedback-panel textarea { width: 100%; min-width: 0; padding: 10px 12px; border: 1px solid #aebdb6; background: var(--surface); color: var(--ink); font: inherit; }
+.feedback-panel textarea { min-height: 74px; resize: vertical; }
+.feedback-note { margin: 0; color: var(--muted); font-size: .78rem; }
+
 /* Sprint 25: Stellar-first agent experience */
 .agent-home .page-header { align-items: center; }
 .agent-command { margin-bottom: 24px; padding: 22px; border: 1px solid #2d6655; background: var(--brand-strong); color: #fff; }
@@ -133,6 +149,8 @@
 }
 @media (max-width: 780px) {
   .agent-command-row, .discover-search > div { grid-template-columns: 1fr; }
+  .pilot-tasks, .home-snapshot, .feedback-grid { grid-template-columns: 1fr; }
+
   .activity-row, .proposal-row { grid-template-columns: 1fr; }
   .proposal-row > span { justify-items: start; }
   .activity-row code { max-width: 100%; }

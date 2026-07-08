@@ -4,7 +4,7 @@
 
 Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a payment intent, evaluate legal/privacy/policy rules, ask the user to confirm, settle through a Stellar-first rail, and leave an auditable receipt without exposing PII or secrets.
 
-[Live demo](https://agente-pagos-stellar.vercel.app) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
+[Live demo](https://agente-pagos-stellar.vercel.app) | [Pilot test guide](./docs/pilot-test-guide.md) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
 ![Tests](https://img.shields.io/badge/js%20tests-176%2F176%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
@@ -19,6 +19,10 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 Agents are starting to buy things: MCP tools, APIs, browser sessions, cloud credits, data, software, reservations, and later real-world bills. The hard part is not only moving money. It is controlling what the agent can do, proving why a payment happened, and keeping private identifiers out of receipts, memos, logs, and metadata.
 
 The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-PII, and aligned with HTTP 402, x402, MPP, and agentic commerce. LatAm bill pay remains a major roadmap wedge, but only after stronger privacy/ZK and partner integrations.
+
+## Pilot Feedback Loop
+
+The public deployment is ready for first feedback sessions. Use the [Pilot Test Guide](./docs/pilot-test-guide.md) to run a two-minute product test and the [First Outreach Pack](./docs/first-outreach-pack.md) for Stellar, SCF, provider, and builder conversations. The in-app feedback form is anonymous, privacy-filtered, and never enables payment submit gates.
 
 ## What Works Now
 
@@ -336,6 +340,8 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 - [Provider Kit](./docs/provider-kit.md)
 - [MCP agent interface](./docs/mcp-server.md)
 - [Current state](./docs/current-state.md)
+- [Pilot test guide](./docs/pilot-test-guide.md)
+- [First outreach pack](./docs/first-outreach-pack.md)
 - [Architecture](./docs/architecture.md)
 - [Historical documentation index](./docs/README.md)
 

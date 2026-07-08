@@ -24,16 +24,24 @@ export function createPage() {
           <p class="agent-boundary-note">The agent discovers and prepares. You stay in control of every payment.</p>
           <div class="agent-steps" data-agent-steps hidden aria-live="polite"></div>
         </section>
+        <section class="pilot-tasks" aria-labelledby="pilot-tasks-title"><div><span class="section-label">Pilot test</span><h2 id="pilot-tasks-title">Try three things in two minutes</h2></div>${pilotTask("1", "Ask the agent for a digital service", "Use one suggested prompt or describe a paid API task.")}${pilotTask("2", "Review the prepared payment", "Open Approve and check policy, reason, amount and privacy proof.")}${pilotTask("3", "Verify evidence, then leave feedback", "Open Activity or Evidence, then tell us what was clear or confusing.")}</section>
         <div class="home-snapshot">
           ${actionPanel({ eyebrow: "Mode", title: `${data.agent.mode} supervision`, body: `${data.summary.ready} ${data.summary.ready === 1 ? "proposal" : "proposals"} ready, ${data.summary.verifiedPayments} verified payments, ${money(data.policy.perPaymentLimit)} per payment.`, actions: '<a class="text-link" href="/discover" data-link>Browse services</a>', status: "ready" })}
           ${actionPanel({ eyebrow: "Control", title: "Human approval stays on", body: "Autopilot is blocked in this demo. The browser cannot move funds without a supervised approval path.", actions: '<a class="text-link" href="/security" data-link>Review safeguards</a>', status: "disabled" })}
         </div>
         <section class="section-block"><div class="section-heading"><div><span class="section-label">Awaiting you</span><h2>Payment proposals</h2></div><a class="text-link" href="/spend" data-link>Open queue</a></div><div class="proposal-list">${data.proposals.length ? data.proposals.map(proposalRow).join("") : emptyState("Queue clear", "Ask for a service above and the agent will prepare a proposal for your approval.")}</div></section>
         <section class="section-block"><div class="section-heading"><div><span class="section-label">Recent activity</span><h2>Verifiable, privacy-safe receipts</h2></div><a class="text-link" href="/activity" data-link>View activity</a></div><div class="activity-preview">${data.recentActivity.length ? data.recentActivity.map(evidenceRow).join("") : emptyState("No verified activity", "Settled payments will appear here with public hashes only.")}</div></section>
+        <section class="section-block feedback-panel"><div class="section-heading"><div><span class="section-label">Feedback loop</span><h2>What should we fix before pilots?</h2></div></div><form data-feedback-form><div class="feedback-grid"><label>Role<select name="role"><option value="builder">Builder</option><option value="founder">Founder</option><option value="provider">Provider</option><option value="investor">Investor</option><option value="stellar">Stellar ecosystem</option><option value="other">Other</option></select></label><label>Was it clear?<select name="clarity"><option value="clear">Clear</option><option value="somewhat-clear">Somewhat clear</option><option value="confusing">Confusing</option></select></label><label>Would you trust this flow?<select name="trust"><option value="somewhat-clear">Maybe, with polish</option><option value="clear">Yes</option><option value="confusing">Not yet</option></select></label></div><label>Most confusing part<textarea name="confusing" maxlength="700" placeholder="No emails, phone numbers, account IDs or secrets."></textarea></label><label>Most useful next improvement<textarea name="next" maxlength="700" placeholder="Example: clearer wallet status, better demo script, provider onboarding..."></textarea></label><button class="primary-button" type="submit">Send feedback</button><p class="feedback-note">Anonymous and privacy-filtered. Please do not include personal data or secrets.</p></form></section>
       </section>`;
     },
     bind(outlet, data, context) {
-      submitHandler = (event) => {
+      submitHandler = async (event) => {
+        const feedbackForm = event.target.closest("[data-feedback-form]");
+        if (feedbackForm) {
+          event.preventDefault();
+          await sendFeedback(feedbackForm, context);
+          return;
+        }
         const form = event.target.closest("[data-agent-command]");
         if (!form) return;
         event.preventDefault();
@@ -85,6 +93,26 @@ async function runAgent(request, outlet, context) {
   } catch (error) {
     setLast("error", escapeHtml(error.message || "The agent could not complete this request."));
   }
+}
+
+async function sendFeedback(form, context) {
+  const button = form.querySelector("button[type='submit']");
+  if (button) button.disabled = true;
+  try {
+    const body = Object.fromEntries(new FormData(form).entries());
+    body.page = window.location.pathname;
+    await context.api("/api/feedback", { method: "POST", body: JSON.stringify(body) });
+    form.reset();
+    context.showToast("Feedback received. Thank you - no payment was made.");
+  } catch (error) {
+    context.showToast(error.message || "Feedback could not be sent.");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+function pilotTask(number, title, detail) {
+  return `<article><span>${escapeHtml(number)}</span><div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(detail)}</p></div></article>`;
 }
 
 function proposalRow(proposal) {

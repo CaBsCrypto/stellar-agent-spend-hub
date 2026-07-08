@@ -136,6 +136,8 @@ test("home states the user-first Stellar approval promise", () => {
   assert.match(html, /Your agent prepares Stellar USDC payments/);
   assert.match(html, /You approve every settlement/);
   assert.match(html, /Human approval stays on/);
+  assert.match(html, /Try three things in two minutes/);
+  assert.match(html, /What should we fix before pilots/);
   assert.doesNotMatch(html, /Multichain Lab|Treasury/);
 });
 
@@ -154,6 +156,29 @@ test("pending evidence rows do not invent transaction hashes", () => {
   const html = evidenceRow({ label: "USDC acceptance", verificationStatus: "pending", amount: "0.01", asset: "USDC" });
   assert.match(html, />Pending</);
   assert.doesNotMatch(html, /<code/);
+});
+
+
+test("feedback endpoint stores anonymous pilot feedback and rejects PII", async () => {
+  const service = { getSpendView: async () => ({ receipts: [], intents: [], evaluations: {}, summary: { receipts: 0 } }) };
+  const dependencies = { publicEvidence: () => ({ manifest: async () => ({ evidence: [] }), diagnostics: async () => ({}) }) };
+  const router = createApiRouter({ service, env: {}, dependencies });
+  const accepted = await invokePost(router, "/api/feedback", {
+    role: "builder",
+    clarity: "clear",
+    trust: "somewhat-clear",
+    confusing: "Wallet status needs one simpler label.",
+    next: "Show a two-minute pilot path.",
+  });
+  assert.equal(accepted.status, 201);
+  assert.equal(accepted.body.feedback.status, "received");
+
+  const rejected = await invokePost(router, "/api/feedback", {
+    role: "builder",
+    confusing: "email me at person@example.com",
+  });
+  assert.equal(rejected.status, 400);
+  assert.match(rejected.body.error, /remove personal data/i);
 });
 
 test("shell renders a five-tab bottom navigation for mobile", async () => {
@@ -203,3 +228,21 @@ test("/api/activity marks simulated receipts distinctly", async () => {
   assert.equal(real.status, "settled");
   assert.equal(real.kindLabel, "Agent receipt");
 });
+
+async function invokePost(router, path, body) {
+  let status = 200;
+  let payload = "";
+  const response = {
+    writableEnded: false,
+    setHeader() {},
+    writeHead(code) { status = code; },
+    end(value = "") { payload = String(value); this.writableEnded = true; },
+  };
+  const request = {
+    method: "POST",
+    headers: { "user-agent": "test-agent", "x-forwarded-for": "127.0.0.1" },
+    [Symbol.asyncIterator]: async function* () { yield Buffer.from(JSON.stringify(body)); },
+  };
+  await router.handle({ request, response, url: new URL(path, "https://example.test") });
+  return { status, body: JSON.parse(payload) };
+}
