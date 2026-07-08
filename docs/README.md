@@ -20,6 +20,8 @@
 16. [Sprint 21-23 multichain](./sprint-21-23-multichain.md): Stellar-first routing, Privy, Base x402 and CCTP runbook.
 17. [Sprint 24 Base acceptance](./sprint-24-base-x402-acceptance.md): encrypted merchant identity, readiness doctor and supervised payment runbook.
 18. [Sprint 25 Stellar product experience](./sprint-25-stellar-product-experience.md): Agent Home, Discover, Activity and focused provider onboarding.
+19. [Non-expert user test guide](./non-expert-user-test-guide.md): five-session feedback script for curious users.
+20. [Release checklist](./release-checklist.md): local gates, deploy steps, smoke checks and log review.
 
 ## Product and distribution
 
@@ -53,5 +55,5 @@ The following files preserve earlier testnet and contract experiments. They are 
 - No PII, secrets, signatures, XDR, credential IDs, or customer references in public logs or receipts.
 - LatAm bill pay remains deferred until privacy and partner requirements are production-ready.
 
-19. [Human passkey acceptance](./contract-account-human-acceptance.md): deploy, funding, grant, payment, replay, and revoke lifecycle.
-20. [Frozen SCF evidence](./scf-evidence-snapshot.json): sanitized submission snapshot generated from production.
+21. [Human passkey acceptance](./contract-account-human-acceptance.md): deploy, funding, grant, payment, replay, and revoke lifecycle.
+22. [Frozen SCF evidence](./scf-evidence-snapshot.json): sanitized submission snapshot generated from production.

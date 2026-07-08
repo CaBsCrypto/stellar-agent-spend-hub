@@ -6,7 +6,7 @@ Stellar Agent Spend Hub lets an AI agent discover paid resources, prepare a paym
 
 [Live demo](https://agente-pagos-stellar.vercel.app) | [Pilot test guide](./docs/pilot-test-guide.md) | [Public evidence](https://agente-pagos-stellar.vercel.app/api/evidence) | [First testnet transaction](https://horizon-testnet.stellar.org/transactions/4ebf30f6a9492f09739cbb5dd2710766f5a520097f2100e14e2918dd633d97bb) | [Docs](./docs/README.md)
 
-![Tests](https://img.shields.io/badge/js%20tests-176%2F176%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/js%20tests-178%2F178%20passing-brightgreen)
 ![Contract](https://img.shields.io/badge/soroban%20tests-31%2F31%20passing-brightgreen)
 ![Stellar](https://img.shields.io/badge/Stellar-testnet%20settled-blue)
 ![Privacy](https://img.shields.io/badge/privacy-no%20PII%20receipts-purple)
@@ -53,9 +53,9 @@ The public deployment is ready for first feedback sessions. Use the [Pilot Test 
 | --- | --- | --- |
 | `/` | Agent command center, recommendations and proposals | `GET /api/home` |
 | `/discover` | Stellar API/MCP service discovery | `GET /api/providers` |
-| `/spend` | Approvals: policy review, one-step human authorization, dismiss | `GET /api/spend` |
+| `/spend` | Review prepared proposals, approve a demo payment or discard | `GET /api/spend` |
 | `/activity` | Verified Stellar evidence and sanitized history | `GET /api/activity` |
-| `/wallet` | Passkey owner and bounded Contract Account session | Contract Account endpoints |
+| `/wallet` | Permissions: passkey owner and bounded Contract Account session | Contract Account endpoints |
 | `/mpp` | Stellar MPP seller, resource and receipts | MPP endpoints |
 | `/providers` | Provider Kit and Merchant Lab integration | Provider Kit endpoints |
 | `/evidence` | Live/Replay public evidence | `GET /api/overview` |

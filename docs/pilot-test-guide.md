@@ -1,4 +1,4 @@
-﻿# Pilot Test Guide
+# Pilot Test Guide
 
 Use this guide for the first 5-10 feedback sessions. The goal is learning, not moving funds.
 
@@ -9,8 +9,8 @@ https://agente-pagos-stellar.vercel.app
 ## What to ask testers to do
 
 1. Open the Home page and say what the product does in their own words after 20 seconds.
-2. Ask the agent for a digital service, for example: `Analyze a Stellar transaction`.
-3. Open `Approve` and inspect the amount, policy checks, privacy proof and human approval boundary.
+2. Ask the agent for a digital service, for example: `Analizar una transaccion`, `Extraer informacion de una web` or `Comprar creditos de API`.
+3. Open `Review` and inspect what the agent wants to buy, the amount, policy checks, privacy proof and human approval boundary.
 4. Open `Activity` or `Evidence` and verify what is public vs private.
 5. Submit the anonymous feedback form on Home.
 

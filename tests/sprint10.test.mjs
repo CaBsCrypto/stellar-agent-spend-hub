@@ -13,6 +13,8 @@ import {
   sanitizeContractAccountReceipt,
 } from "../src/contractAccountRepository.mjs";
 import { USDC_SAC_TESTNET } from "@stellar/mpp";
+import { createPreparedRequestRecord } from "../src/contractAccountRequestStore.mjs";
+import { validateSubmitPayload } from "../src/contractAccountSubmitGuards.mjs";
 
 const contractId = StrKey.encodeContract(Buffer.alloc(32, 8));
 const merchant = Keypair.random().publicKey();
@@ -63,6 +65,26 @@ function executor() {
     },
   };
 }
+
+test("request lifecycle y submit guards quedan separados del relayer", () => {
+  const request = validateCanonicalRequest({ action: "transfer", amount: "100000" }, config(), new Date("2026-06-26T20:00:00.000Z"));
+  const record = createPreparedRequestRecord({
+    request,
+    prepared: {
+      authAddress: contractId,
+      unsignedAuthEntryXdr: Buffer.alloc(96, 1).toString("base64"),
+      signaturePayloadHex: "ab".repeat(32),
+    },
+    requestId: "00000000-0000-4000-8000-000000000001",
+    now: () => new Date("2026-06-26T20:00:00.000Z"),
+  });
+  assert.equal(record.status, "prepared");
+  assert.equal(record.canonical.amount, "100000");
+  assert.equal(record.expiresAt, "2026-06-26T20:10:00.000Z");
+  assert.match(record.actionDigest, /^[a-f0-9]{64}$/);
+  assert.doesNotThrow(() => validateSubmitPayload({ requestId: record.requestId, assertion: { type: "session" } }));
+  assert.throws(() => validateSubmitPayload({ requestId: "bad", assertion: { type: "session" } }), /Invalid requestId/);
+});
 
 test("grant fija merchant, USDC, 0.01 por pago, 0.02 total y 24 horas", () => {
   const now = new Date("2026-06-26T20:00:00.000Z");

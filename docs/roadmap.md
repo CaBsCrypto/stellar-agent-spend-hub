@@ -55,7 +55,7 @@ npm run dev:watch     # http://localhost:4179, rebuild al guardar
 
 ### Horizonte 2 - Corto plazo, 1 a 2 semanas
 
-5. **E2E browser automatizado**: un spec del recorrido `Home -> Discover -> Approvals -> Activity -> Evidence`, con emulacion movil.
+5. **E2E browser automatizado**: un spec del recorrido `Home -> Discover -> Review -> Activity -> Evidence`, con emulacion movil.
 6. **Ventana supervisada Provider Pilot**: primer proveedor MCP remoto real con aprobacion humana. El runbook base esta en [sprint-20-provider-pilot.md](./sprint-20-provider-pilot.md).
 7. **Mejor NLU de busqueda**: sinonimos de recursos API/MCP y stub `AGENT_NLU_ENDPOINT` para un interprete LLM futuro.
 

@@ -31,7 +31,7 @@ Completed ahead of this sprint (uncommitted sprint 25.5 work, now on `main`):
 
 ### 3. Reject and clear proposals (M)
 
-- "Dismiss" action on proposals in Home and Approvals so the queue can be emptied without paying.
+- "Descartar" action on proposals in Home and Review so the queue can be emptied without paying.
 - Server: `POST /api/intents/:id/dismiss` marking the intent rejected; excluded from ready counts.
 - Acceptance: UI test covers dismiss; queue metrics stay consistent after dismissal.
 

@@ -1,4 +1,3 @@
-import { createHash, randomUUID } from "node:crypto";
 import {
   Address,
   BASE_FEE,
@@ -24,8 +23,15 @@ import {
 import { Redis } from "@upstash/redis";
 import { Ratelimit } from "@upstash/ratelimit";
 import { ContractAccountRepository } from "./contractAccountRepository.mjs";
-import { assertNoSensitiveData } from "./sensitiveDataGuard.mjs";
 import { readUpstashConfig } from "./upstashConfig.mjs";
+import { createPreparedRequestRecord } from "./contractAccountRequestStore.mjs";
+import { humanSummary, safeContractAccountPublic as safePublic } from "./contractAccountReceipt.mjs";
+import {
+  assertFeeWithinLimit,
+  ensureContractAccountSubmitEnabled,
+  isSafeXdr,
+  validateSubmitPayload,
+} from "./contractAccountSubmitGuards.mjs";
 
 
 export class ContractAccountRelayer {
@@ -46,17 +52,7 @@ export class ContractAccountRelayer {
   async prepare(body = {}) {
     const request = validateCanonicalRequest(body, this.config, this.now());
     const prepared = await this.executor.prepare(request);
-    const record = {
-      requestId: randomUUID(),
-      status: "prepared",
-      createdAt: this.now().toISOString(),
-      expiresAt: new Date(this.now().getTime() + 600_000).toISOString(),
-      canonical: request,
-      actionDigest: digestCanonical(request),
-      unsignedAuthEntryXdr: prepared.unsignedAuthEntryXdr,
-      signaturePayloadHex: prepared.signaturePayloadHex,
-      authAddress: prepared.authAddress,
-    };
+    const record = createPreparedRequestRecord({ request, prepared, now: this.now });
     await this.repository.saveRequest(record);
     return safePublic({
       requestId: record.requestId,
@@ -74,13 +70,8 @@ export class ContractAccountRelayer {
 
   async submit({ requestId, signedAuthEntryXdr, assertion } = {}, { ip = "local" } = {}) {
     await this.enforceRateLimit(ip);
-    if (String(this.env.CONTRACT_ACCOUNT_SUBMIT_ENABLED || "").toLowerCase() !== "true") {
-      throw httpError(503, "Contract account submit gate is closed");
-    }
-    if (!/^[0-9a-f-]{36}$/i.test(requestId || "")) throw httpError(400, "Invalid requestId");
-    if (!isSafeXdr(signedAuthEntryXdr) && !isStructuredAssertion(assertion)) {
-      throw httpError(400, "A signed auth entry XDR or structured assertion is required");
-    }
+    ensureContractAccountSubmitEnabled(this.env);
+    validateSubmitPayload({ requestId, signedAuthEntryXdr, assertion });
     const record = await this.repository.consumeRequest(requestId, this.now());
     try {
       const signedEntry = isSafeXdr(signedAuthEntryXdr)
@@ -204,12 +195,6 @@ export function validateCanonicalRequest(body, config, now = new Date()) {
   };
 }
 
-function isStructuredAssertion(assertion) {
-  return assertion != null
-    && typeof assertion === "object"
-    && ["passkey", "session"].includes(assertion.type);
-}
-
 export function attachContractSignature(record, assertion) {
   if (!assertion || typeof assertion !== "object") throw httpError(400, "A passkey or session assertion is required");
   const expectedType = record.canonical.signerType === "owner-passkey" ? "passkey" : "session";
@@ -306,10 +291,6 @@ function validateSignedEntry(record, signedEntry) {
   if (payload !== record.signaturePayloadHex) throw httpError(409, "Authorization payload mismatch");
 }
 
-function assertFeeWithinLimit(fee) {
-  if (BigInt(fee) > CONTRACT_ACCOUNT_MAX_FEE) throw httpError(409, "Relayer fee exceeds 1 XLM");
-}
-
 async function pollTransaction(server, transactionHash) {
   for (let attempt = 0; attempt < 30; attempt += 1) {
     const result = await server.getTransaction(transactionHash);
@@ -330,40 +311,6 @@ function createContractAccountRateLimiter(env) {
     analytics: false,
   });
 }
-function digestCanonical(value) {
-  return createHash("sha256").update(JSON.stringify(value)).digest("hex");
-}
-
-function humanSummary(request) {
-  if (request.action === "grant") {
-    return {
-      action: "Grant agent session",
-      destination: request.destination,
-      asset: "USDC",
-      perPaymentLimit: "0.01",
-      totalLimit: "0.02",
-      expiresAt: request.expiresAt,
-    };
-  }
-  if (request.action === "revoke") return { action: "Revoke agent session" };
-  return {
-    action: "Agent pays merchant",
-    destination: request.destination,
-    asset: "USDC",
-    amount: (Number(request.amount) / 10_000_000).toFixed(7),
-  };
-}
-
-function safePublic(value) {
-  const scan = assertNoSensitiveData(value, "contractAccountPublicResponse");
-  if (!scan.allowed) throw httpError(500, "Sensitive contract account output blocked");
-  return value;
-}
-
-function isSafeXdr(value) {
-  return typeof value === "string" && value.length >= 64 && value.length <= 16_384 && /^[A-Za-z0-9+/=]+$/.test(value);
-}
-
 function enumScVal(variant, value) {
   return xdr.ScVal.scvVec([xdr.ScVal.scvSymbol(variant), value]);
 }

@@ -61,7 +61,7 @@ flowchart TB
   Router --> Spend["Agent Spend"]
   Router --> Providers["Providers"]
   Router --> MPPPage["Machine Payments"]
-  Router --> Wallet["Smart Wallet"]
+  Router --> Wallet["Permissions"]
   Router --> EvidencePage["Evidence"]
   Router --> Security["Security and Labs"]
   Router --> Store["Resource cache and request deduplication"]
@@ -70,7 +70,7 @@ flowchart TB
   ApiRouter --> Services["Payment and policy services"]
 ```
 
-The browser receives only `src/client`. Pages are loaded dynamically, share a short-lived resource cache, and cancel stale navigation work. WebAuthn code is loaded only on the Smart Wallet route.
+The browser receives only `src/client`. Pages are loaded dynamically, share a short-lived resource cache, and cancel stale navigation work. WebAuthn code is loaded only on the Permissions route.
 
 The API boundary is split by responsibility: `apiRouter.mjs` dispatches requests, `apiHttp.mjs` owns route matching, rewrites, JSON parsing and sanitized responses, `apiRoutes.mjs` composes domain route groups, and `productReadModels.mjs` builds UI-specific read models. Domain routes now live under `src/routes/*Routes.mjs` for admin, product, MPP/evidence, MCP pilot, Contract Account, spend intents, and multichain labs. The registry preserves existing endpoints and adds three optimized read models:
 
