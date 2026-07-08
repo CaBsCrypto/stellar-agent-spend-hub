@@ -1,5 +1,6 @@
 import { pageHeader, emptyState, actionPanel, approvalCard, evidenceRow } from "../components.mjs";
 import { escapeHtml, money } from "../format.mjs";
+import { fallbackPromptLinks, servicePromptGrid } from "../serviceCards.mjs";
 
 export function createPage() {
   let boundOutlet;
@@ -19,8 +20,8 @@ export function createPage() {
         })}
         <section class="agent-command" aria-labelledby="agent-command-title">
           <div class="agent-presence"><span class="agent-status-dot" aria-hidden="true"></span><div><strong id="agent-command-title">Agente de compras</strong><small>Modo demo | Pago de prueba | Tu apruebas</small></div></div>
-          <form data-agent-command><label for="agent-request">Que necesitas resolver?</label><div class="agent-command-row"><input id="agent-request" name="request" autocomplete="off" maxlength="120" placeholder="Ej: analizar una transaccion o extraer datos de una web" required /><button class="primary-button" type="submit">Buscar opciones</button></div></form>
-          <div class="service-options" aria-label="Opciones de servicios">${SERVICE_GROUPS.map(serviceGroup).join("")}</div>
+          <form data-agent-command><p class="agent-command-help">Describe lo que quieres resolver y el agente preparara una propuesta de pago de prueba.</p><label for="agent-request">Que necesitas resolver?</label><div class="agent-command-row"><input id="agent-request" name="request" autocomplete="off" maxlength="120" placeholder="Ej: analizar una transaccion o extraer datos de una web" required /><button class="primary-button" type="submit">Buscar opciones</button></div></form>
+          <div class="service-options" aria-label="Opciones de servicios">${servicePromptGrid()}</div>
           <p class="agent-boundary-note">Elige una opcion o escribe la tuya. El agente hace la busqueda y prepara la propuesta; tu mantienes el control.</p>
           <div class="agent-steps" data-agent-steps hidden aria-live="polite"></div>
         </section>
@@ -31,7 +32,7 @@ export function createPage() {
         </div>
         <section class="section-block"><div class="section-heading"><div><span class="section-label">Propuestas listas</span><h2>Lo que el agente preparo para ti</h2></div><a class="text-link" href="/spend" data-link>Revisar</a></div><div class="proposal-list">${data.proposals.length ? data.proposals.map(proposalRow).join("") : emptyState("Sin propuestas pendientes", "Pide un servicio arriba y el agente preparara una opcion para revisar.")}</div></section>
         <section class="section-block"><div class="section-heading"><div><span class="section-label">Historial</span><h2>Pagos de prueba y evidencia</h2></div><a class="text-link" href="/activity" data-link>Ver historial</a></div><div class="activity-preview">${data.recentActivity.length ? data.recentActivity.map(evidenceRow).join("") : emptyState("Sin actividad verificada", "Las aprobaciones y comprobantes apareceran aqui sin datos privados.")}</div></section>
-        <section class="section-block feedback-panel"><div class="section-heading"><div><span class="section-label">Feedback</span><h2>Que deberiamos simplificar?</h2></div></div><form data-feedback-form><div class="feedback-grid"><label>Rol<select name="role"><option value="builder">Builder</option><option value="founder">Founder</option><option value="provider">Proveedor</option><option value="investor">Inversionista</option><option value="stellar">Ecosistema Stellar</option><option value="other">Otro</option></select></label><label>Se entendio?<select name="clarity"><option value="clear">Claro</option><option value="somewhat-clear">Mas o menos</option><option value="confusing">Confuso</option></select></label><label>Confiarias en este flujo?<select name="trust"><option value="somewhat-clear">Quizas, con mejoras</option><option value="clear">Si</option><option value="confusing">Todavia no</option></select></label></div><label>Parte mas confusa<textarea name="confusing" maxlength="700" placeholder="Sin emails, telefonos, IDs de cuenta ni secretos."></textarea></label><label>Mejora mas util<textarea name="next" maxlength="700" placeholder="Ej: estado mas claro, mejor guia, mas opciones de servicios..."></textarea></label><button class="primary-button" type="submit">Enviar feedback</button><p class="feedback-note">Anonimo y filtrado por privacidad. No incluyas datos personales ni secretos.</p></form></section>
+        <section class="section-block feedback-panel" id="feedback"><div class="section-heading"><div><span class="section-label">Feedback</span><h2>Que deberiamos simplificar?</h2></div></div><form data-feedback-form><div class="feedback-grid"><label>Rol<select name="role"><option value="builder">Builder</option><option value="founder">Founder</option><option value="provider">Proveedor</option><option value="investor">Inversionista</option><option value="stellar">Ecosistema Stellar</option><option value="other">Otro</option></select></label><label>Se entendio?<select name="clarity"><option value="clear">Claro</option><option value="somewhat-clear">Mas o menos</option><option value="confusing">Confuso</option></select></label><label>Confiarias en este flujo?<select name="trust"><option value="somewhat-clear">Quizas, con mejoras</option><option value="clear">Si</option><option value="confusing">Todavia no</option></select></label></div><label>Parte mas confusa<textarea name="confusing" maxlength="700" placeholder="Sin emails, telefonos, IDs de cuenta ni secretos."></textarea></label><label>Mejora mas util<textarea name="next" maxlength="700" placeholder="Ej: estado mas claro, mejor guia, mas opciones de servicios..."></textarea></label><button class="primary-button" type="submit">Enviar feedback</button><p class="feedback-note">Anonimo y filtrado por privacidad. No incluyas datos personales ni secretos.</p></form></section>
       </section>`;
     },
     bind(outlet, data, context) {
@@ -65,52 +66,13 @@ export function createPage() {
   };
 }
 
-const SERVICE_GROUPS = [
-  {
-    label: "Investigar",
-    prompts: [
-      "Analizar una transaccion",
-      "Comprar una muestra de datos",
-      "Buscar informacion en la web",
-    ],
-  },
-  {
-    label: "Web y datos",
-    prompts: [
-      "Extraer informacion de una web",
-      "Comprar sesiones de navegador",
-      "Enriquecer datos en JSON",
-    ],
-  },
-  {
-    label: "APIs y herramientas",
-    prompts: [
-      "Preparar un sandbox MCP",
-      "Comprar creditos de API",
-      "Preparar una llamada API pagada",
-    ],
-  },
-  {
-    label: "Media",
-    prompts: [
-      "Generar un audio corto",
-      "Crear una imagen para demo",
-      "Crear un recurso de demo",
-    ],
-  },
-];
-
-function serviceGroup(group) {
-  return `<article><span>${escapeHtml(group.label)}</span><div>${group.prompts.map((prompt) => `<button type="button" data-agent-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>`).join("")}</div></article>`;
-}
-
 async function runAgent(request, outlet, context) {
   const stepsEl = outlet.querySelector("[data-agent-steps]");
   if (!stepsEl) return;
   const steps = [];
   const paint = () => { stepsEl.hidden = false; stepsEl.innerHTML = steps.map((step) => `<div class="agent-step ${step.state}"><span aria-hidden="true"></span><div>${step.html}</div></div>`).join(""); };
   const setLast = (state, html) => { steps[steps.length - 1] = { state, html }; paint(); };
-  steps.push({ state: "active", html: `Buscando servicios para "${escapeHtml(request)}"...` });
+  steps.push({ state: "active", html: `Buscando: servicios para "${escapeHtml(request)}"...` });
   paint();
   try {
     const payload = await context.api(`/api/providers?q=${encodeURIComponent(request)}`);
@@ -118,16 +80,16 @@ async function runAgent(request, outlet, context) {
       (item.paymentMethod?.includes("stellar") || item.providerId === "stellar-agent-merchant-lab")
       && !["buy_crypto", "defi_allocate", "bill_pay"].includes(item.category));
     if (!provider) {
-      setLast("error", `No encontre un servicio para esa solicitud. <a class="text-link" href="/discover" data-link>Ver opciones</a> o intenta describir el resultado que necesitas.`);
+      setLast("error", `No encontre un servicio para esa solicitud. Prueba una de estas opciones: <span class="agent-fallback-links">${fallbackPromptLinks()}</span>`);
       return;
     }
-    setLast("done", `Encontre <strong>${escapeHtml(provider.name)}</strong> - ${escapeHtml(provider.description || "servicio con pago de prueba")}`);
+    setLast("done", `Servicio encontrado: <strong>${escapeHtml(provider.name)}</strong> - ${escapeHtml(provider.description || "servicio con pago de prueba")}`);
     steps.push({ state: "active", html: "Revisando controles y preparando una propuesta de pago de prueba..." });
     paint();
     const result = await context.api("/api/intents", { method: "POST", body: JSON.stringify({ providerId: provider.providerId, intentType: provider.category }) });
     context.store.invalidate("spend", "agent-home");
-    setLast("done", "Controles listos. Propuesta preparada.");
-    steps.push({ state: "ready", html: `Esperando tu aprobacion: <strong>${escapeHtml(money(result.intent.amount, result.intent.currency))}</strong> para ${escapeHtml(provider.name)} <a class="primary-button agent-step-cta" href="/spend?intent=${encodeURIComponent(result.intent.id)}" data-link>Revisar propuesta</a>` });
+    setLast("done", "Propuesta lista: controles revisados y pago de prueba preparado.");
+    steps.push({ state: "ready", html: `Esperando tu revision: <strong>${escapeHtml(money(result.intent.amount, result.intent.currency))}</strong> para ${escapeHtml(provider.name)} <a class="primary-button agent-step-cta" href="/spend?intent=${encodeURIComponent(result.intent.id)}" data-link>Revisar propuesta</a>` });
     paint();
   } catch (error) {
     setLast("error", escapeHtml(error.message || "El agente no pudo completar esta solicitud."));

@@ -43,6 +43,7 @@ test("spend page renders queue, policy controls and action buttons", () => {
   const html = createSpendPage().render(spendData);
   assert.match(html, /Propuestas/);
   assert.match(html, /data-intent-action="approve"/);
+  assert.match(html, /Detalles tecnicos/);
   assert.match(html, /Provider verified in allowlist/);
   assert.match(html, /Limite diario/);
 });
@@ -87,9 +88,10 @@ test("POST /api/intents/:id/dismiss routes to the service", async () => {
 
 test("activity page highlights the receipt handed off after approval", () => {
   const items = [{ id: "receipt-9", label: "Merchant", kindLabel: "Agent receipt (simulated)", network: "stellar:testnet", asset: "USDC", amount: "12", status: "simulated", timestamp: "2026-07-02T00:00:00Z" }];
-  const withHighlight = createActivityPage().render({ summary: { verified: 0, receipts: 1 }, items, highlightId: "receipt-9" });
+  const withHighlight = createActivityPage().render({ summary: { verified: 0, receipts: 1 }, items, highlightId: "receipt-9", feedbackContext: "approved" });
   const without = createActivityPage().render({ summary: { verified: 0, receipts: 1 }, items, highlightId: "" });
   assert.match(withHighlight, /ledger-row highlight/);
+  assert.match(withHighlight, /Te dio confianza este flujo/);
   assert.doesNotMatch(without, /ledger-row highlight/);
 });
 
@@ -134,8 +136,9 @@ test("discover page renders providers, search form and example service options",
   ], query: "search" });
   assert.match(html, /Exa Search API/);
   assert.match(html, /form|input/);
-  assert.match(html, /Analizar transaccion/);
-  assert.match(html, /Creditos API/);
+  assert.match(html, /Analizar una transaccion/);
+  assert.match(html, /Comprar creditos de API/);
+  assert.match(html, /Prepara un paquete pequeno de creditos/);
 });
 
 test("home states the user-first Stellar approval promise", () => {
@@ -151,8 +154,10 @@ test("home states the user-first Stellar approval promise", () => {
   assert.match(html, /Tu apruebas siempre/);
   assert.match(html, /Tres pasos, sin configurar nada/);
   assert.match(html, /Que deberiamos simplificar/);
+  assert.match(html, /Describe lo que quieres resolver/);
   assert.match(html, /Preparar un sandbox MCP/);
   assert.match(html, /Generar un audio corto/);
+  assert.match(html, /Crear una imagen para demo/);
   assert.doesNotMatch(html, /Multichain Lab|Treasury/);
 });
 
@@ -202,6 +207,12 @@ test("feedback endpoint stores anonymous pilot feedback and exposes only safe ag
   });
   assert.equal(rejected.status, 400);
   assert.match(rejected.body.error, /remove personal data/i);
+
+  const rejectedRut = await invokePost(router, "/api/feedback", {
+    role: "builder",
+    next: "mi rut es 12345678-9",
+  });
+  assert.equal(rejectedRut.status, 400);
 });
 
 test("shell renders a five-tab bottom navigation for mobile", async () => {

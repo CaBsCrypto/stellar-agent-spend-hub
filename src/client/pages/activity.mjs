@@ -8,16 +8,21 @@ export function createPage() {
         store.load("activity", "/api/activity", { signal }),
         store.load("feedback-summary", "/api/feedback", { signal, maxAgeMs: 5000 }).catch(() => ({ feedback: { status: "unavailable", count: 0, needsMoreFeedback: true, themes: [] } })),
       ]);
-      return { ...data, feedback, highlightId: queryValue(url, "receipt", "") };
+      return { ...data, feedback, highlightId: queryValue(url, "receipt", ""), feedbackContext: queryValue(url, "feedback", "") };
     },
     render(data) {
-      return `<section>${pageHeader({ eyebrow: "Historial claro", title: "Actividad", summary: "Revisa propuestas, pagos de prueba, evidencia verificada y feedback sin exponer datos privados." })}<div class="metric-grid">${metric("Evidencia verificada", data.summary.verified, "Transacciones publicas")}${metric("Pagos de prueba", data.summary.receipts, "Comprobantes seguros")}${metric("Feedback", data.feedback?.feedback?.count || 0, feedbackStatus(data.feedback?.feedback))}${metric("Pago automatico", "Apagado", "Tu apruebas")}</div>${feedbackPanel(data.feedback?.feedback)}<div class="activity-ledger">${data.items.length ? data.items.map((item) => ledgerRow(item, data.highlightId)).join("") : emptyState("Sin actividad aun", "Las propuestas aprobadas y la evidencia apareceran aqui.")}</div></section>`;
+      return `<section>${pageHeader({ eyebrow: "Historial claro", title: "Actividad", summary: "Revisa propuestas, pagos de prueba, evidencia verificada y feedback sin exponer datos privados." })}<div class="metric-grid">${metric("Evidencia verificada", data.summary.verified, "Transacciones publicas")}${metric("Pagos de prueba", data.summary.receipts, "Comprobantes seguros")}${metric("Feedback", data.feedback?.feedback?.count || 0, feedbackStatus(data.feedback?.feedback))}${metric("Pago automatico", "Apagado", "Tu apruebas")}</div>${feedbackPrompt(data.feedbackContext)}${feedbackPanel(data.feedback?.feedback)}<div class="activity-ledger">${data.items.length ? data.items.map((item) => ledgerRow(item, data.highlightId)).join("") : emptyState("Sin actividad aun", "Las propuestas aprobadas y la evidencia apareceran aqui.")}</div></section>`;
     },
     bind(outlet) {
       outlet.querySelector(".ledger-row.highlight")?.scrollIntoView({ block: "center" });
     },
     destroy() {},
   };
+}
+function feedbackPrompt(context = "") {
+  if (context === "approved") return `<section class="feedback-context"><strong>Te dio confianza este flujo?</strong><p>Cuentanos si aprobar el pago de prueba fue claro o que deberiamos simplificar antes de pagos reales pequenos.</p><a class="text-link" href="/#feedback" data-link>Dejar feedback</a></section>`;
+  if (context === "dismissed") return `<section class="feedback-context"><strong>Que falto para que lo aprobaras?</strong><p>Tu duda nos ayuda a mejorar la propuesta, los controles y el lenguaje del agente.</p><a class="text-link" href="/#feedback" data-link>Dejar feedback</a></section>`;
+  return "";
 }
 function feedbackPanel(feedback = {}) {
   const themes = Array.isArray(feedback.themes) ? feedback.themes : [];

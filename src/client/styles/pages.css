@@ -188,3 +188,18 @@
   .ledger-row { grid-template-columns: 14px minmax(0,1fr) auto; align-items: start; }
   .ledger-row > div:nth-child(3), .ledger-row .status-pill, .ledger-row code, .ledger-row .text-link { grid-column: 2 / -1; }
 }
+
+/* Sprint 32: guided request and feedback pilot */
+.agent-command-help { margin: 0 0 10px; color: #e7f4ef; font-size: .92rem; line-height: 1.45; }
+.service-options a, .service-options button { display: grid; gap: 3px; }
+.service-options strong, .service-options small { display: block; min-width: 0; }
+.service-options small { color: #bad0c7; font-size: .68rem; font-weight: 500; line-height: 1.28; }
+.service-options a { min-height: 54px; padding: 9px; border: 1px solid rgba(255,255,255,.24); color: #dcebe5; text-decoration: none; }
+.service-options a:hover, .service-options a:focus-visible { border-color: var(--gold); color: #fff; }
+.discover-options { margin: 14px 0 18px; padding: 14px; background: var(--brand-strong); }
+.agent-fallback-links { display: inline-flex; flex-wrap: wrap; gap: 8px; margin-left: 4px; }
+.agent-fallback-links a { color: #fff; text-decoration: underline; }
+.technical-details { margin: 14px 0; padding: 12px; border: 1px solid var(--line); background: var(--surface-soft); }
+.technical-details summary { cursor: pointer; color: var(--brand); font-weight: 850; }
+.feedback-context { display: grid; gap: 5px; margin: 0 0 14px; padding: 14px; border-left: 3px solid var(--gold); background: var(--gold-soft); }
+.feedback-context p { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.4; }

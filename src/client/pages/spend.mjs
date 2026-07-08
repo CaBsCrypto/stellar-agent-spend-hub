@@ -61,7 +61,7 @@ export function createPage() {
             await context.api(`/api/intents/${id}/dismiss`, { method: "POST", body: "{}" });
             context.store.invalidate("spend", "agent-home");
             context.showToast("Propuesta descartada. No se hizo ningun pago.");
-            await context.router.navigate("/spend");
+            await context.router.navigate("/activity?feedback=dismissed");
           } catch (error) {
             context.showToast(error.message);
             actionButton.disabled = false;
@@ -84,7 +84,7 @@ export function createPage() {
           });
           context.store.invalidate("spend", "overview:live", "activity", "agent-home");
           context.showToast("Pago de prueba aprobado. Comprobante registrado sin datos privados.");
-          await context.router.navigate(`/activity?receipt=${encodeURIComponent(result.receipt?.id || "")}`);
+          await context.router.navigate(`/activity?receipt=${encodeURIComponent(result.receipt?.id || "")}&feedback=approved`);
         } catch (error) {
           context.showToast(error.message);
           actionButton.disabled = false;
@@ -127,9 +127,7 @@ function reviewIntent(intent, evaluation = {}, spendRequest) {
   return `<div class="section-heading"><div><span class="section-label">Propuesta seleccionada</span><h2>${escapeHtml(intent.providerName)}</h2></div>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div>
     <div class="review-amount"><strong>${money(intent.amount, intent.currency)}</strong><span>Pago de prueba | ${escapeHtml(intent.status || "creada")}</span></div>
     <div class="decision-grid"><article><span>Que va a comprar</span><strong>${escapeHtml(intent.providerName)}</strong><p>${escapeHtml(intent.intentType)}</p></article><article><span>Cuanto cuesta</span><strong>${money(intent.amount, intent.currency)}</strong><p>Dentro de tus limites</p></article><article><span>Por que lo recomienda</span><p>${escapeHtml(intent.agentReason)}</p></article><article><span>Datos que NO se comparten</span><p>Sin llaves privadas, credenciales, RUT, telefono, email ni identificadores de cliente.</p></article></div>
-    <div class="control-grid"><article><span>Terminos y proveedor</span><strong>${evaluation.legalDecision?.snapshot ? `Confianza ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "No disponible"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacidad</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>
-    ${spendRequest ? `<div class="notice verified"><strong>Solicitud preparada</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}
-    <div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div>
+    <details class="technical-details"><summary>Detalles tecnicos</summary><div class="control-grid"><article><span>Terminos y proveedor</span><strong>${evaluation.legalDecision?.snapshot ? `Confianza ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "No disponible"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacidad</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>${spendRequest ? `<div class="notice verified"><strong>Solicitud preparada</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}<div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div></details>
     <div class="button-row">${guardedAction({ label: "Aprobar pago de prueba", enabled: Boolean(evaluation.allowed), reason: "Bloqueado por los controles anteriores.", action: { name: "intent-action", value: "approve" } })}${intent.status === "settled" ? "" : guardedAction({ label: "Descartar", enabled: true, action: { name: "intent-action", value: "dismiss" }, kind: "secondary" })}</div>`;
 }
 
