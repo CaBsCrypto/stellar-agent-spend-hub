@@ -22,7 +22,7 @@ The v1 wedge is **MCP/API payments** because it is universal, fast to demo, low-
 
 ## Pilot Feedback Loop
 
-The public deployment is ready for first feedback sessions. Use the [Pilot Test Guide](./docs/pilot-test-guide.md) to run a two-minute product test and the [First Outreach Pack](./docs/first-outreach-pack.md) for Stellar, SCF, provider, and builder conversations. The in-app feedback form is anonymous, privacy-filtered, and never enables payment submit gates.
+The public deployment is ready for first feedback sessions. Use the [Pilot Test Guide](./docs/pilot-test-guide.md) to run a two-minute product test and the [First Outreach Pack](./docs/first-outreach-pack.md) for Stellar, SCF, provider, and builder conversations. The in-app feedback form is anonymous, privacy-filtered, and now feeds a safe aggregate learning panel in Activity. It never enables payment submit gates.
 
 ## What Works Now
 
@@ -342,6 +342,7 @@ Secrets are stored only as sensitive Vercel environment variables. Submit gates 
 - [Current state](./docs/current-state.md)
 - [Pilot test guide](./docs/pilot-test-guide.md)
 - [First outreach pack](./docs/first-outreach-pack.md)
+- [Feedback review loop](./docs/sprint-28-feedback-review-loop.md)
 - [Architecture](./docs/architecture.md)
 - [Historical documentation index](./docs/README.md)
 

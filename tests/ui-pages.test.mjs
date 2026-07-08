@@ -117,6 +117,17 @@ test("activity page shows an empty state without items", () => {
   assert.match(html, /No activity yet/);
 });
 
+test("activity page shows safe pilot learning aggregates", () => {
+  const html = createActivityPage().render({
+    summary: { verified: 0, receipts: 0 },
+    items: [],
+    feedback: { feedback: { status: "memory-local", count: 2, needsMoreFeedback: true, clarity: { clear: 1 }, trust: { "somewhat-clear": 2 }, themes: [{ theme: "wallet", count: 2 }] } },
+  });
+  assert.match(html, /Pilot learning/);
+  assert.match(html, /wallet/);
+  assert.doesNotMatch(html, /private tester note/i);
+});
+
 test("discover page renders providers and search form", () => {
   const html = createDiscoverPage().render({ providers: [
     { providerId: "p1", name: "Exa Search API", description: "Search credits.", category: "pay_service", paymentMethod: "stellar-usdc-simulated", tags: ["api"] },
@@ -159,7 +170,7 @@ test("pending evidence rows do not invent transaction hashes", () => {
 });
 
 
-test("feedback endpoint stores anonymous pilot feedback and rejects PII", async () => {
+test("feedback endpoint stores anonymous pilot feedback and exposes only safe aggregates", async () => {
   const service = { getSpendView: async () => ({ receipts: [], intents: [], evaluations: {}, summary: { receipts: 0 } }) };
   const dependencies = { publicEvidence: () => ({ manifest: async () => ({ evidence: [] }), diagnostics: async () => ({}) }) };
   const router = createApiRouter({ service, env: {}, dependencies });
@@ -168,10 +179,18 @@ test("feedback endpoint stores anonymous pilot feedback and rejects PII", async 
     clarity: "clear",
     trust: "somewhat-clear",
     confusing: "Wallet status needs one simpler label.",
-    next: "Show a two-minute pilot path.",
+    next: "Show a two-minute pilot path for providers.",
   });
   assert.equal(accepted.status, 201);
   assert.equal(accepted.body.feedback.status, "received");
+
+  const summary = await invokeGet(router, "/api/feedback");
+  assert.equal(summary.status, 200);
+  assert.equal(summary.body.feedback.count, 1);
+  assert.equal(summary.body.feedback.clarity.clear, 1);
+  assert.equal(summary.body.feedback.roles.builder, 1);
+  assert.deepEqual(summary.body.feedback.themes.slice(0, 2).map((item) => item.theme), ["clarity", "provider"]);
+  assert.doesNotMatch(JSON.stringify(summary.body), /Wallet status needs one simpler label/);
 
   const rejected = await invokePost(router, "/api/feedback", {
     role: "builder",
@@ -228,6 +247,20 @@ test("/api/activity marks simulated receipts distinctly", async () => {
   assert.equal(real.status, "settled");
   assert.equal(real.kindLabel, "Agent receipt");
 });
+
+async function invokeGet(router, path) {
+  let status = 200;
+  let payload = "";
+  const response = {
+    writableEnded: false,
+    setHeader() {},
+    writeHead(code) { status = code; },
+    end(value = "") { payload = String(value); this.writableEnded = true; },
+  };
+  const request = { method: "GET", headers: {} };
+  await router.handle({ request, response, url: new URL(path, "https://example.test") });
+  return { status, body: JSON.parse(payload) };
+}
 
 async function invokePost(router, path, body) {
   let status = 200;

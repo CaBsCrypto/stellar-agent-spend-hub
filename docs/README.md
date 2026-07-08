@@ -29,6 +29,7 @@
 - [Partner shortlist](./partner-shortlist.md)
 - [Roadmap](./roadmap.md)
 - [Sprint 20 Remote MCP Provider Pilot](./sprint-20-provider-pilot.md)
+- [Sprint 28 Feedback Review Loop](./sprint-28-feedback-review-loop.md)
 - [Vercel deployment](./deploy-vercel.md)
 
 ## Historical implementation record

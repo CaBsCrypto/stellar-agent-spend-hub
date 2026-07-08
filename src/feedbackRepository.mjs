@@ -31,9 +31,17 @@ export class FeedbackRepository {
   }
 
   async summary() {
-    if (!this.redis) return { status: "memory-local", count: this.memory.length };
-    const count = await this.redis.llen(LIST_KEY).catch(() => 0);
-    return { status: "upstash", count: Number(count || 0) };
+    const records = await this.recentRecords();
+    const status = this.redis ? "upstash" : "memory-local";
+    return summarizeFeedback({ status, records });
+  }
+
+  async recentRecords(limit = 50) {
+    if (!this.redis) return this.memory.slice(0, limit);
+    const ids = await this.redis.lrange(LIST_KEY, 0, limit - 1).catch(() => []);
+    if (!ids.length) return [];
+    const rows = await Promise.all(ids.map((id) => this.redis.get(itemKey(id)).catch(() => null)));
+    return rows.map(parseRecord).filter(Boolean);
   }
 }
 
@@ -68,12 +76,73 @@ export function sanitizeFeedback(input = {}, { ip = "local", userAgent = "" } = 
   };
 }
 
+export function summarizeFeedback({ status = "memory-local", records = [] } = {}) {
+  const safeRecords = records.filter(Boolean);
+  const clarity = countBy(safeRecords, "clarity");
+  const trust = countBy(safeRecords, "trust");
+  const roles = countBy(safeRecords, "role");
+  const themes = topThemes(safeRecords);
+  const latestAt = safeRecords.map((record) => record.createdAt).filter(Boolean).sort().at(-1) || null;
+  return {
+    status,
+    count: safeRecords.length,
+    latestAt,
+    clarity,
+    trust,
+    roles,
+    themes,
+    needsMoreFeedback: safeRecords.length < 10,
+  };
+}
+
 function cleanText(value, max = MAX_TEXT) {
   return String(value || "").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 function publicReceipt(record, store) {
   return { id: record.id, status: "received", storedIn: store, createdAt: record.createdAt };
+}
+
+function parseRecord(row) {
+  if (!row) return null;
+  if (typeof row === "object") return row;
+  try {
+    return JSON.parse(row);
+  } catch {
+    return null;
+  }
+}
+
+function countBy(records, key) {
+  return records.reduce((counts, record) => {
+    const value = String(record?.[key] || "other");
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+}
+
+function topThemes(records) {
+  const buckets = [
+    ["wallet", ["wallet", "passkey", "session", "grant", "revoke"]],
+    ["clarity", ["clear", "confusing", "understand", "copy", "label", "status"]],
+    ["trust", ["trust", "safe", "security", "privacy", "control", "approve"]],
+    ["evidence", ["evidence", "receipt", "hash", "verify", "activity"]],
+    ["provider", ["provider", "api", "mcp", "merchant", "partner"]],
+    ["mobile", ["mobile", "phone", "responsive"]],
+    ["pricing", ["price", "pricing", "fee", "cost"]],
+  ];
+  const scores = Object.fromEntries(buckets.map(([name]) => [name, 0]));
+  for (const record of records) {
+    const text = `${record.confusing || ""} ${record.next || ""} ${record.useful || ""}`.toLowerCase();
+    for (const [name, keywords] of buckets) {
+      if (keywords.some((keyword) => text.includes(keyword))) scores[name] += 1;
+    }
+  }
+  return Object.entries(scores)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 5)
+    .map(([theme, count]) => ({ theme, count }));
 }
 
 function createRedis(env) {
