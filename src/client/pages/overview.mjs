@@ -20,8 +20,8 @@ export function createPage() {
         <section class="agent-command" aria-labelledby="agent-command-title">
           <div class="agent-presence"><span class="agent-status-dot" aria-hidden="true"></span><div><strong id="agent-command-title">Spend Agent</strong><small>Supervised | Stellar testnet | USDC</small></div></div>
           <form data-agent-command><label for="agent-request">Ask for a service</label><div class="agent-command-row"><input id="agent-request" name="request" autocomplete="off" maxlength="120" placeholder="Find an API to research a Stellar transaction" required /><button class="primary-button" type="submit">Find services</button></div></form>
-          <div class="prompt-suggestions" aria-label="Suggested requests">${["Search the web for my agent", "Analyze a Stellar transaction", "Buy browser sessions"].map((prompt) => `<button type="button" data-agent-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>`).join("")}</div>
-          <p class="agent-boundary-note">The agent discovers and prepares. You stay in control of every payment.</p>
+          <div class="service-options" aria-label="Suggested service requests">${SERVICE_GROUPS.map(serviceGroup).join("")}</div>
+          <p class="agent-boundary-note">Pick an option or write your own request. The agent discovers and prepares; you stay in control of every payment.</p>
           <div class="agent-steps" data-agent-steps hidden aria-live="polite"></div>
         </section>
         <section class="pilot-tasks" aria-labelledby="pilot-tasks-title"><div><span class="section-label">Pilot test</span><h2 id="pilot-tasks-title">Try three things in two minutes</h2></div>${pilotTask("1", "Ask the agent for a digital service", "Use one suggested prompt or describe a paid API task.")}${pilotTask("2", "Review the prepared payment", "Open Approve and check policy, reason, amount and privacy proof.")}${pilotTask("3", "Verify evidence, then leave feedback", "Open Activity or Evidence, then tell us what was clear or confusing.")}</section>
@@ -63,6 +63,45 @@ export function createPage() {
       if (boundOutlet && clickHandler) boundOutlet.removeEventListener("click", clickHandler);
     },
   };
+}
+
+const SERVICE_GROUPS = [
+  {
+    label: "Research",
+    prompts: [
+      "Analyze a Stellar transaction",
+      "Buy a market dataset snapshot",
+      "Search the web for my agent",
+    ],
+  },
+  {
+    label: "Web and data",
+    prompts: [
+      "Extract a website into clean markdown",
+      "Buy browser sessions",
+      "Get a JSON data enrichment sample",
+    ],
+  },
+  {
+    label: "MCP and devtools",
+    prompts: [
+      "Start a temporary MCP sandbox",
+      "Buy cloud API credits",
+      "Prepare a paid developer API call",
+    ],
+  },
+  {
+    label: "Media",
+    prompts: [
+      "Generate a short voice preview",
+      "Render a social image card",
+      "Create a demo asset preview",
+    ],
+  },
+];
+
+function serviceGroup(group) {
+  return `<article><span>${escapeHtml(group.label)}</span><div>${group.prompts.map((prompt) => `<button type="button" data-agent-prompt="${escapeHtml(prompt)}">${escapeHtml(prompt)}</button>`).join("")}</div></article>`;
 }
 
 async function runAgent(request, outlet, context) {

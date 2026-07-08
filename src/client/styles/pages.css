@@ -103,8 +103,12 @@
 .agent-command-row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
 .agent-command input, .discover-search input { width: 100%; min-width: 0; min-height: 46px; padding: 10px 13px; border: 1px solid #9db5ac; background: #fff; color: var(--ink); }
 .agent-command .primary-button { border-color: #d9efe5; background: var(--mint); color: var(--brand-strong); }
-.prompt-suggestions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
-.prompt-suggestions button { padding: 7px 10px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: #dcebe5; font-size: .76rem; cursor: pointer; }
+.service-options { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 9px; margin-top: 14px; }
+.service-options article { min-width: 0; padding: 11px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.05); }
+.service-options article > span { display: block; margin-bottom: 8px; color: var(--gold); font-size: .68rem; font-weight: 850; text-transform: uppercase; }
+.service-options article > div { display: grid; gap: 6px; }
+.service-options button { width: 100%; min-height: 34px; padding: 7px 9px; border: 1px solid rgba(255,255,255,.24); background: transparent; color: #dcebe5; font-size: .74rem; line-height: 1.25; text-align: left; cursor: pointer; }
+.service-options button:hover, .service-options button:focus-visible { border-color: var(--gold); color: #fff; }
 .agent-boundary-note { margin: 14px 0 0; color: #bad0c7; font-size: .78rem; }
 .agent-steps { display: grid; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.16); }
 .agent-step { display: flex; align-items: baseline; gap: 10px; color: #dcebe5; font-size: .84rem; }
@@ -146,6 +150,9 @@
 .discover-search { display: grid; gap: 7px; padding: 18px; border: 1px solid var(--line); background: var(--surface); }
 .discover-search label { font-size: .78rem; font-weight: 800; }
 .discover-search > div { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+.discover-prompts { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0 12px; }
+.discover-prompts a { padding: 7px 10px; border: 1px solid var(--line); background: var(--surface); color: var(--brand); font-size: .76rem; font-weight: 750; text-decoration: none; }
+.discover-prompts a:hover, .discover-prompts a:focus-visible { border-color: var(--mint-strong); background: var(--mint); }
 .discovery-context { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 20px; }
 .discovery-context span, .provider-facts span { padding: 5px 8px; border: 1px solid var(--line); background: var(--surface-soft); color: var(--muted); font-size: .7rem; font-weight: 700; }
 .discover-card { min-height: 250px; }
@@ -161,7 +168,7 @@
   .ledger-row code, .ledger-row .text-link { grid-column: 2 / -1; }
 }
 @media (max-width: 780px) {
-  .agent-command-row, .discover-search > div { grid-template-columns: 1fr; }
+  .agent-command-row, .discover-search > div, .service-options { grid-template-columns: 1fr; }
   .pilot-tasks, .home-snapshot, .feedback-grid, .pilot-learning, .learning-facts { grid-template-columns: 1fr; }
 
   .activity-row, .proposal-row { grid-template-columns: 1fr; }

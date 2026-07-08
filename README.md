@@ -42,7 +42,7 @@ The public deployment is ready for first feedback sessions. Use the [Pilot Test 
 - Privacy guard blocking RUTs, phone numbers, emails, account data, card data, secrets, signatures, full XDR, and credential IDs from public receipts.
 - Vercel production, Upstash atomic storage, Horizon, and Soroban RPC diagnostics.
 - Human confirmation remains mandatory and every submit gate is closed by default.
-- Stellar-first Agent Home, service discovery, supervised spend queue, wallet controls, activity, evidence, and provider onboarding.
+- Stellar-first Agent Home with service request options, discovery, supervised spend queue, wallet controls, activity, evidence, and provider onboarding.
 - Natural-language provider search and one-click proposal creation without granting the browser payment authority.
 - Experimental multichain adapters remain isolated in a hidden lab and do not compete with the Stellar product journey.
 - Client-only static builds; server modules and payment adapters are no longer published as browser assets.

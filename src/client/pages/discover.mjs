@@ -12,7 +12,7 @@ export function createPage() {
       return { query, providers: (payload.providers || []).filter(isStellarProvider) };
     },
     render({ query, providers }) {
-      return `<section>${pageHeader({ eyebrow: "Stellar service directory", title: "Discover services", summary: "Find APIs and agent tools that can be prepared for supervised payment in USDC on Stellar." })}<form class="discover-search" data-discover-search><label for="discover-query">What does your agent need?</label><div><input id="discover-query" name="q" value="${escapeHtml(query)}" placeholder="Search, browser sessions, transaction analysis..." /><button class="primary-button" type="submit">Search</button></div></form><div class="discovery-context"><span>Stellar testnet</span><span>USDC</span><span>Human approval</span><span>No PII in receipts</span></div><div class="provider-grid discover-grid">${providers.length ? providers.map(providerCard).join("") : emptyState("No Stellar service found", "Try describing the outcome rather than a provider name.")}</div></section>`;
+      return `<section>${pageHeader({ eyebrow: "Stellar service directory", title: "Discover services", summary: "Find APIs and agent tools that can be prepared for supervised payment in USDC on Stellar." })}<form class="discover-search" data-discover-search><label for="discover-query">What does your agent need?</label><div><input id="discover-query" name="q" value="${escapeHtml(query)}" placeholder="Search, browser sessions, transaction analysis..." /><button class="primary-button" type="submit">Search</button></div></form><div class="discover-prompts" aria-label="Example searches">${DISCOVER_PROMPTS.map((prompt) => `<a href="/discover?q=${encodeURIComponent(prompt.query)}" data-link>${escapeHtml(prompt.label)}</a>`).join("")}</div><div class="discovery-context"><span>Stellar testnet</span><span>USDC</span><span>Human approval</span><span>No PII in receipts</span></div><div class="provider-grid discover-grid">${providers.length ? providers.map(providerCard).join("") : emptyState("No Stellar service found", "Try describing the outcome rather than a provider name.")}</div></section>`;
     },
     bind(outlet, data, context) {
       submitHandler = (event) => {
@@ -44,6 +44,15 @@ export function createPage() {
     },
   };
 }
+const DISCOVER_PROMPTS = [
+  { label: "Transaction risk", query: "analyze stellar transaction" },
+  { label: "Web extraction", query: "extract website markdown" },
+  { label: "Market dataset", query: "dataset snapshot" },
+  { label: "MCP sandbox", query: "temporary MCP sandbox" },
+  { label: "Cloud credits", query: "cloud API credits" },
+  { label: "Media preview", query: "voice preview" },
+];
+
 function isStellarProvider(provider) {
   const stellar = provider.paymentMethod?.includes("stellar") || provider.providerId === "stellar-agent-merchant-lab";
   return stellar && !["buy_crypto", "defi_allocate", "bill_pay"].includes(provider.category);

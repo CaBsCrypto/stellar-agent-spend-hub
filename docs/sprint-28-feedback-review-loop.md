@@ -28,3 +28,16 @@ Goal: turn the public pilot feedback form into a safe learning surface before ad
 - Do not expose raw feedback in public endpoints.
 - Keep Stellar submit gates closed during feedback sessions.
 - Keep multichain out of the public narrative for this round.
+
+## Service request menu
+
+The public Home and Discover routes now give testers more concrete things to ask the agent for:
+
+- Transaction risk and Stellar payment analysis.
+- Web extraction, browser sessions and JSON data enrichment.
+- Dataset snapshots for research or market workflows.
+- Temporary MCP sandboxes and paid developer API calls.
+- Cloud/API credit packs for supervised agent tasks.
+- Voice previews and lightweight image/social-card renders.
+
+These are still supervised Stellar USDC demo flows. The browser can prepare proposals, but financial submit gates remain closed unless a separate supervised acceptance session opens them.

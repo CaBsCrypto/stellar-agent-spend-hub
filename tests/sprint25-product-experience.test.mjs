@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { ROUTES } from "../src/client/routes.mjs";
 import { renderShell } from "../src/client/shell.mjs";
 import { ProviderDirectoryAdapter } from "../src/providerDirectoryAdapter.mjs";
+import { providerDirectory } from "../src/mockProviders.mjs";
 import { createApiRouter } from "../src/apiRouter.mjs";
 
 const providers = [
@@ -42,6 +43,14 @@ test("provider discovery understands natural requests by relevant terms", () => 
   const directory = new ProviderDirectoryAdapter({ providers });
   assert.equal(directory.search({ query: "analyze my Stellar payment" })[0]?.providerId, "merchant");
   assert.equal(directory.search({ query: "I need an agent service" })[0]?.providerId, "merchant");
+});
+
+test("provider directory includes broader agent service options", () => {
+  const directory = new ProviderDirectoryAdapter({ providers: providerDirectory });
+  assert.equal(directory.search({ query: "extract website markdown" })[0]?.providerId, "firecrawl-mcp");
+  assert.equal(directory.search({ query: "temporary MCP sandbox" })[0]?.providerId, "mcp-sandbox-hosting");
+  assert.equal(directory.search({ query: "cloud API credits" })[0]?.providerId, "cloud-credits-api");
+  assert.equal(directory.search({ query: "voice preview" })[0]?.providerId, "voice-preview-api");
 });
 
 test("agent home aggregates only Stellar recommendations and public evidence", async () => {

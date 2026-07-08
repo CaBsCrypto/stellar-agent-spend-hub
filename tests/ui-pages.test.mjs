@@ -128,12 +128,14 @@ test("activity page shows safe pilot learning aggregates", () => {
   assert.doesNotMatch(html, /private tester note/i);
 });
 
-test("discover page renders providers and search form", () => {
+test("discover page renders providers, search form and example service options", () => {
   const html = createDiscoverPage().render({ providers: [
     { providerId: "p1", name: "Exa Search API", description: "Search credits.", category: "pay_service", paymentMethod: "stellar-usdc-simulated", tags: ["api"] },
   ], query: "search" });
   assert.match(html, /Exa Search API/);
   assert.match(html, /form|input/);
+  assert.match(html, /Transaction risk/);
+  assert.match(html, /Cloud credits/);
 });
 
 test("home states the user-first Stellar approval promise", () => {
@@ -149,6 +151,8 @@ test("home states the user-first Stellar approval promise", () => {
   assert.match(html, /Human approval stays on/);
   assert.match(html, /Try three things in two minutes/);
   assert.match(html, /What should we fix before pilots/);
+  assert.match(html, /Start a temporary MCP sandbox/);
+  assert.match(html, /Generate a short voice preview/);
   assert.doesNotMatch(html, /Multichain Lab|Treasury/);
 });
 
