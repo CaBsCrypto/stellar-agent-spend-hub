@@ -1,4 +1,4 @@
-﻿import { pageHeader, emptyState, actionPanel, approvalCard, evidenceRow } from "../components.mjs";
+import { pageHeader, emptyState, actionPanel, approvalCard, evidenceRow } from "../components.mjs";
 import { escapeHtml, money } from "../format.mjs";
 
 export function createPage() {

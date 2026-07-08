@@ -30,7 +30,7 @@ export function createPage() {
           const provider = data.providers.find((item) => item.providerId === button.dataset.createIntent);
           const result = await context.api("/api/intents", { method: "POST", body: JSON.stringify({ providerId: provider.providerId, intentType: provider.category }) });
           context.store.invalidate("spend", "agent-home");
-          context.showToast("Proposal created for human review.");
+          context.showToast("Propuesta creada para revision humana.");
           await context.router.navigate(`/spend?intent=${encodeURIComponent(result.intent.id)}`);
         } catch (error) { context.showToast(error.message); button.disabled = false; }
       };

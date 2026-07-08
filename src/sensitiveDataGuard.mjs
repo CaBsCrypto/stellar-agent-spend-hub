@@ -1,4 +1,4 @@
-﻿export const SensitiveField = Object.freeze({
+export const SensitiveField = Object.freeze({
   rut: "rut",
   email: "email",
   phone: "phone",

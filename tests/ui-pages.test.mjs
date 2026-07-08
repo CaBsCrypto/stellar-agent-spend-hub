@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import { createPage as createOverviewPage } from "../src/client/pages/overview.mjs";
 import { createPage as createSpendPage } from "../src/client/pages/spend.mjs";

@@ -1,4 +1,4 @@
-﻿import test from "node:test";
+import test from "node:test";
 import assert from "node:assert/strict";
 import { evaluatePaymentIntent, IntentType, ReceiptStatus, RiskLevel } from "../src/domain.mjs";
 import { CircleX402Adapter } from "../src/circleX402Adapter.mjs";
