@@ -15,9 +15,9 @@ export class CryptoActionAdapter {
     }
 
     if (intent.amount > policy.maxPortfolioActionAmount) {
-      reasons.push("Crypto action exceeds the maximum amount");
+      reasons.push("La accion crypto supera el monto maximo");
     } else {
-      evidence.push("Crypto amount within the limit");
+      evidence.push("El monto crypto esta dentro del limite");
     }
 
     if (slippageBps > policy.maxSlippageBps) {

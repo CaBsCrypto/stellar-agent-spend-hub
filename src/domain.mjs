@@ -57,49 +57,49 @@ export function evaluatePaymentIntent(intent, policy, receipts = [], options = n
   if (!sensitiveScan.allowed) {
     reasons.push(...sensitiveScan.reasons);
   } else {
-    evidence.push("No PII in the public intent payload");
+    evidence.push("Sin datos personales en la propuesta publica");
   }
 
   if (!policy.allowlistedProviders.includes(intent.providerId)) {
-    reasons.push("Provider is outside the allowlist");
+    reasons.push("El proveedor no esta en la lista permitida");
   } else {
-    evidence.push("Provider verified in allowlist");
+    evidence.push("Proveedor verificado en la lista permitida");
   }
 
   if (intent.amount > policy.perPaymentLimit) {
-    reasons.push("Amount exceeds the per-payment limit");
+    reasons.push("El monto supera el limite por pago");
   } else {
-    evidence.push("Amount within the per-payment limit");
+    evidence.push("El monto esta dentro del limite por pago");
   }
 
   if (spentToday + intent.amount > policy.dailyLimit) {
-    reasons.push("Amount exceeds the daily limit");
+    reasons.push("El monto supera el limite diario");
   } else {
-    evidence.push("Sufficient daily budget remaining");
+    evidence.push("Queda presupuesto diario suficiente");
   }
 
   if (spentThisMonth + intent.amount > policy.monthlyLimit) {
-    reasons.push("Amount exceeds the monthly limit");
+    reasons.push("El monto supera el limite mensual");
   } else {
-    evidence.push("Sufficient monthly budget remaining");
+    evidence.push("Queda presupuesto mensual suficiente");
   }
 
   if (intent.autopilotRequested || policy.autopilotEnabled) {
-    reasons.push("Autopilot is disabled in Training Mode v1");
+    reasons.push("El pago automatico esta desactivado en modo demo");
   } else {
-    evidence.push("Training Mode: the user confirms before money moves");
+    evidence.push("Modo demo: tu confirmas antes de mover dinero");
   }
 
   if (intent.riskLevel === RiskLevel.high) {
-    reasons.push("High risk requires extended manual review");
+    reasons.push("El riesgo alto requiere una revision manual mas larga");
   }
 
   if (directoryResult) {
-    evidence.push(`Provider discovered via directory: ${directoryResult.name}`);
+    evidence.push(`Proveedor encontrado en el directorio: ${directoryResult.name}`);
   }
 
   if (policy.requireLegalContext && !legalDecision) {
-    reasons.push("Legal context required before paying");
+    reasons.push("Se requieren terminos legales antes de pagar");
   }
 
   mergeDecision({ decision: legalDecision, reasons, evidence });
@@ -108,7 +108,7 @@ export function evaluatePaymentIntent(intent, policy, receipts = [], options = n
   mergeDecision({ decision: defiDecision, reasons, evidence });
 
   if (intent.proofRequired && !privacyDecision) {
-    reasons.push("ZK proof required before paying");
+    reasons.push("Se requiere una prueba de privacidad antes de pagar");
   }
 
   const trustFlow = buildTrustFlow({ reasons, legalDecision, privacyDecision, policy });

@@ -22,9 +22,9 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Merchant balance after payment: `0.03 USDC`.
 - Session policy spent: `0.01` of `0.02 USDC`.
 - Submit and deploy gates are closed outside supervised acceptance windows.
-- JavaScript tests: `176/176` passing, including UI render/contract suites (`npm run test:ui`).
+- JavaScript tests: `185/185` passing, including UI render/contract suites (`npm run test:ui`) and a language-consistency guard (`tests/ui-language.test.mjs`) covering both static fixtures and dynamically-generated agent reasons.
 - Rust tests: `31/31` passing.
-- Sprint 26 agent UX hardening is in progress: English-only product language, simulated receipts labeled distinctly, five-route agent navigation with a collapsed Trust & Builders group, agent timeline on Home, one-step approval with dismiss, loading skeletons, a visible Demo data chip, and `npm run dev:watch` for fast client iteration.
+- Sprints 25.5-29 shipped the agent-first, mobile-first product experience: five-route primary navigation (Inicio, Descubrir, Revisar, Actividad, Permisos) with a collapsed Trust & Builders group, an inline agent timeline on Home, one-step approval with dismiss, simulated receipts labeled distinctly from verified on-chain evidence, loading skeletons, a visible Demo data chip, an installable PWA with a mobile bottom nav, and `npm run dev:watch` for fast client iteration.
 - Official MCP server and independent Merchant Lab remain available.
 - Sprint 20 Remote MCP Provider Pilot is implemented with its production gate closed pending supervised acceptance.
 - Sprint 25 Stellar product experience is implemented: Agent Home, Discover, Activity, supervised proposals and provider onboarding.
@@ -32,6 +32,17 @@ The Contract Account lifecycle also records deploy, funding, grant, payment, and
 - Sprint 22 Base Sepolia x402 seller/buyer paths are implemented; real `0.01 USDC` evidence remains pending Privy configuration and testnet funding.
 - Sprint 23 CCTP Base-to-Stellar prepare/monitor paths are implemented; real `1 USDC` evidence remains pending the forwarding contract, destination trustline and funding.
 - Avalanche Fuji is visible for readiness and Privy network switching but submit is hard-disabled.
+
+## Language convention
+
+The five primary agent routes (`/`, `/discover`, `/spend`, `/activity`, `/wallet`) are Spanish, aimed at a non-expert end user. Trust & Builders routes (`/mpp`, `/evidence`, `/security`, `/providers`) and the hidden `/treasury` lab stay English on purpose: a technical/builder audience. `tests/ui-language.test.mjs` renders the five primary pages with realistic data and fails if common English words appear outside an explicit allow-list, so this split does not silently regress.
+
+Known, accepted gaps (2026-07-07 audit, deliberately left in English rather than risking a rushed shared-component change):
+
+- Status-pill badge text (`READY`, `BLOCKED`, `VERIFIED`, `SIMULATED`, `SETTLED`, `DISABLED`) comes from `statusLabel()` in `src/client/components.mjs`, shared verbatim by the Spanish pages and the English `/mpp` and `/security` pages.
+- `evidenceCard`'s `"Pending supervised settlement"` default (`src/client/components.mjs`) is shared between the Spanish `/wallet` page and the English `/evidence` page.
+
+Both are candidates for a follow-up sprint that threads a language parameter through the shared components; translating them today without that refactor would either duplicate the components or leak Spanish text into the intentionally-English pages.
 
 ## Multichain safety state
 

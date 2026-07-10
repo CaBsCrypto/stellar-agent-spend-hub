@@ -19,13 +19,13 @@ export class DeFindexAdapter {
     }
 
     if (intent.amount > policy.maxPortfolioActionAmount) {
-      reasons.push("DeFi allocation exceeds the maximum amount");
+      reasons.push("La asignacion DeFi supera el monto maximo");
     } else {
-      evidence.push("DeFi amount within the limit");
+      evidence.push("El monto DeFi esta dentro del limite");
     }
 
     if ((allocation.risk || "medium") !== "low") {
-      reasons.push("Non-low-risk DeFi allocation blocked in v1");
+      reasons.push("Asignacion DeFi de riesgo no bajo bloqueada en v1");
     }
 
     return {

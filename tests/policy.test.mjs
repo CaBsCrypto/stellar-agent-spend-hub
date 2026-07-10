@@ -110,9 +110,9 @@ test("pago MCP/API aprobado con provider allowlisted, LCP valido y confirmacion 
 
   assert.equal(evaluation.allowed, true);
   assert.equal(evaluation.requiresConfirmation, true);
-  assert.ok(evaluation.evidence.includes("Provider verified in allowlist"));
-  assert.ok(evaluation.evidence.includes("ATR hash verified"));
-  assert.ok(evaluation.evidence.includes("No PII in the public intent payload"));
+  assert.ok(evaluation.evidence.includes("Proveedor verificado en la lista permitida"));
+  assert.ok(evaluation.evidence.includes("Hash de terminos verificado"));
+  assert.ok(evaluation.evidence.includes("Sin datos personales en la propuesta publica"));
 });
 
 test("bloquea si intenta incluir PII en metadata publica", async () => {
@@ -204,14 +204,14 @@ test("DeFi allocation bloqueada si supera riesgo permitido v1", async () => {
   const evaluation = await evaluationFor(defiIntent);
 
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("Non-low-risk DeFi allocation blocked in v1"));
+  assert.ok(evaluation.reasons.includes("Asignacion DeFi de riesgo no bajo bloqueada en v1"));
 });
 
 test("autopilot queda bloqueado en v1", async () => {
   const evaluation = await evaluationFor({ ...apiIntent, autopilotRequested: true });
 
   assert.equal(evaluation.allowed, false);
-  assert.ok(evaluation.reasons.includes("Autopilot is disabled in Training Mode v1"));
+  assert.ok(evaluation.reasons.includes("El pago automatico esta desactivado en modo demo"));
 });
 
 test("recibo final incluye rail, LCP y privacy fields sin PII", async () => {
@@ -295,7 +295,7 @@ test("SpendHubService rechaza aprobacion de DeFindex placeholder bloqueado", asy
   const service = new SpendHubService({ seedState: { intents: [...paymentIntents], receipts: [...receipts], proofs: {}, vaultRecords: {} } });
   const blockedIntent = service.state.intents.find((intent) => intent.id === "intent-defindex-alloc");
 
-  await assert.rejects(() => service.approveIntent(blockedIntent.id, "user-passkey"), /Non-low-risk DeFi allocation/);
+  await assert.rejects(() => service.approveIntent(blockedIntent.id, "user-passkey"), /Asignacion DeFi de riesgo no bajo/);
 });
 
 test("SpendHubService respeta idempotencyKey al crear intents", async () => {

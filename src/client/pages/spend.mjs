@@ -37,14 +37,14 @@ export function createPage() {
           pilotButton.disabled = true;
           try {
             const approvalToken = new URLSearchParams(window.location.hash.slice(1)).get("approval");
-            if (!approvalToken) throw new Error("This approval link is missing its one-time token.");
+            if (!approvalToken) throw new Error("A este link de aprobacion le falta el token de un solo uso.");
             await context.api(`/api/pilot/requests/${encodeURIComponent(data.pilot.requestId)}/approve`, {
               method: "POST",
               body: JSON.stringify({ approvalToken }),
             });
             history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
             context.store.invalidate(`pilot:${data.pilot.requestId}`);
-            context.showToast("Pilot payment approved. The local buyer may now claim it.");
+            context.showToast("Pago del piloto aprobado. El comprador local ya puede reclamarlo.");
             await context.router.refresh();
           } catch (error) {
             context.showToast(error.message);
@@ -108,9 +108,9 @@ function renderPilotApproval(request) {
     <section class="panel review-panel">
       <div class="section-heading"><div><span class="section-label">Propuesta</span><h2>${escapeHtml(request.resourceId)}</h2></div>${statusPill(request.status)}</div>
       <dl class="definition-list">
-        <div><dt>Recipient</dt><dd><code>${escapeHtml(request.recipient)}</code></dd></div>
-        <div><dt>Asset contract</dt><dd><code>${escapeHtml(request.assetContractId)}</code></dd></div>
-        <div><dt>Request</dt><dd><code>${escapeHtml(request.requestId)}</code></dd></div>
+        <div><dt>Destinatario</dt><dd><code>${escapeHtml(request.recipient)}</code></dd></div>
+        <div><dt>Contrato del activo</dt><dd><code>${escapeHtml(request.assetContractId)}</code></dd></div>
+        <div><dt>Solicitud</dt><dd><code>${escapeHtml(request.requestId)}</code></dd></div>
       </dl>
       <div class="security-callout"><strong>Limite de seguridad</strong><p>Aprobar solo cambia el estado de la solicitud. El navegador no recibe secretos ni puede mover fondos.</p></div>
       <div class="button-row"><button class="primary-button" data-pilot-approve ${canApprove ? "" : "disabled"}>Aprobar pago de prueba</button></div>
@@ -127,7 +127,7 @@ function reviewIntent(intent, evaluation = {}, spendRequest) {
   return `<div class="section-heading"><div><span class="section-label">Propuesta seleccionada</span><h2>${escapeHtml(intent.providerName)}</h2></div>${statusPill(evaluation.allowed ? "ready" : "blocked")}</div>
     <div class="review-amount"><strong>${money(intent.amount, intent.currency)}</strong><span>Pago de prueba | ${escapeHtml(intent.status || "creada")}</span></div>
     <div class="decision-grid"><article><span>Que va a comprar</span><strong>${escapeHtml(intent.providerName)}</strong><p>${escapeHtml(intent.intentType)}</p></article><article><span>Cuanto cuesta</span><strong>${money(intent.amount, intent.currency)}</strong><p>Dentro de tus limites</p></article><article><span>Por que lo recomienda</span><p>${escapeHtml(intent.agentReason)}</p></article><article><span>Datos que NO se comparten</span><p>Sin llaves privadas, credenciales, RUT, telefono, email ni identificadores de cliente.</p></article></div>
-    <details class="technical-details"><summary>Detalles tecnicos</summary><div class="control-grid"><article><span>Terminos y proveedor</span><strong>${evaluation.legalDecision?.snapshot ? `Confianza ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "No disponible"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash))}</code></article><article><span>Privacidad</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment))}</code></article></div>${spendRequest ? `<div class="notice verified"><strong>Solicitud preparada</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}<div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div></details>
+    <details class="technical-details"><summary>Detalles tecnicos</summary><div class="control-grid"><article><span>Terminos y proveedor</span><strong>${evaluation.legalDecision?.snapshot ? `Confianza ${escapeHtml(evaluation.legalDecision.trustLevel)}` : "No disponible"}</strong><code>${escapeHtml(shortHash(evaluation.legalDecision?.termsHash || "No disponible"))}</code></article><article><span>Privacidad</span><strong>${escapeHtml(evaluation.privacyDecision?.privacyLevel || intent.privacyRequirement)}</strong><code>${escapeHtml(shortHash(evaluation.privacyDecision?.proofHash || evaluation.privacyDecision?.commitment || "No disponible"))}</code></article></div>${spendRequest ? `<div class="notice verified"><strong>Solicitud preparada</strong><span>${escapeHtml(spendRequest.status)}</span><code>${escapeHtml(shortHash(spendRequest.id))}</code></div>` : ""}<div class="check-list">${reasons.map((reason) => `<div><span>${evaluation.allowed ? "OK" : "!"}</span><p>${escapeHtml(reason)}</p></div>`).join("")}</div></details>
     <div class="button-row">${guardedAction({ label: "Aprobar pago de prueba", enabled: Boolean(evaluation.allowed), reason: "Bloqueado por los controles anteriores.", action: { name: "intent-action", value: "approve" } })}${intent.status === "settled" ? "" : guardedAction({ label: "Descartar", enabled: true, action: { name: "intent-action", value: "dismiss" }, kind: "secondary" })}</div>`;
 }
 

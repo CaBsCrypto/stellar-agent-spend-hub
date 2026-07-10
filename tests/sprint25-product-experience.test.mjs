@@ -33,8 +33,8 @@ test("Stellar product routes are primary and multichain remains hidden", () => {
 
 test("navigation presents Stellar agent surfaces and hides Multichain Lab", () => {
   const html = renderShell(ROUTES[0]);
-  assert.match(html, /Agent Home/);
-  assert.match(html, /Discover/);
+  assert.match(html, /Inicio/);
+  assert.match(html, /Descubrir/);
   assert.ok(html.includes("Stellar testnet | USDC"));
   assert.doesNotMatch(html, /Multichain Lab/);
 });

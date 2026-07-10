@@ -1,5 +1,6 @@
 import { pageHeader, metric, statusPill, emptyState } from "../components.mjs";
 import { escapeHtml, formatDate, shortHash, queryValue } from "../format.mjs";
+import { kindLabelEs, themeLabelEs } from "../labels.mjs";
 
 export function createPage() {
   return {
@@ -28,7 +29,7 @@ function feedbackPanel(feedback = {}) {
   const themes = Array.isArray(feedback.themes) ? feedback.themes : [];
   const clarity = dominantLabel(feedback.clarity);
   const trust = dominantLabel(feedback.trust);
-  return `<section class="pilot-learning" aria-labelledby="pilot-learning-title"><div><span class="section-label">Aprendizaje</span><h2 id="pilot-learning-title">Que dicen los primeros usuarios</h2><p>${feedback.needsMoreFeedback ? "Todavia necesitamos mas sesiones antes de tomar esto como senal fuerte." : "Ya hay suficientes sesiones para ver patrones repetidos."}</p></div><div class="learning-facts"><article><span>Claridad</span><strong>${escapeHtml(clarity)}</strong></article><article><span>Confianza</span><strong>${escapeHtml(trust)}</strong></article><article><span>Estado</span><strong>${escapeHtml(feedback.status || "pending")}</strong></article></div><div class="theme-list">${themes.length ? themes.map((item) => `<span>${escapeHtml(item.theme)} <b>${escapeHtml(item.count)}</b></span>`).join("") : `<span>Sin temas repetidos aun</span>`}</div></section>`;
+  return `<section class="pilot-learning" aria-labelledby="pilot-learning-title"><div><span class="section-label">Aprendizaje</span><h2 id="pilot-learning-title">Que dicen los primeros usuarios</h2><p>${feedback.needsMoreFeedback ? "Todavia necesitamos mas sesiones antes de tomar esto como senal fuerte." : "Ya hay suficientes sesiones para ver patrones repetidos."}</p></div><div class="learning-facts"><article><span>Claridad</span><strong>${escapeHtml(clarity)}</strong></article><article><span>Confianza</span><strong>${escapeHtml(trust)}</strong></article><article><span>Estado</span><strong>${escapeHtml(feedback.status || "pending")}</strong></article></div><div class="theme-list">${themes.length ? themes.map((item) => `<span>${escapeHtml(themeLabelEs(item.theme))} <b>${escapeHtml(item.count)}</b></span>`).join("") : `<span>Sin temas repetidos aun</span>`}</div></section>`;
 }
 
 function feedbackStatus(feedback = {}) {
@@ -43,5 +44,5 @@ function dominantLabel(counts = {}) {
 }
 
 function ledgerRow(item, highlightId = "") {
-  return `<article class="ledger-row${highlightId && item.id === highlightId ? " highlight" : ""}"><div class="ledger-state"><span></span></div><div><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.kindLabel)} | ${formatDate(item.timestamp)}</small></div><div><strong>${escapeHtml(item.amount || "-")} ${escapeHtml(item.amount ? item.asset : "")}</strong><small>${escapeHtml(item.network)}</small></div>${statusPill(item.status)}<code title="${escapeHtml(item.transactionHash || item.id)}">${escapeHtml(shortHash(item.transactionHash || item.id))}</code>${item.explorerUrl ? `<a class="text-link" href="${escapeHtml(item.explorerUrl)}" target="_blank" rel="noreferrer">Verify</a>` : ""}</article>`;
+  return `<article class="ledger-row${highlightId && item.id === highlightId ? " highlight" : ""}"><div class="ledger-state"><span></span></div><div><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(kindLabelEs(item.kindLabel))} | ${formatDate(item.timestamp)}</small></div><div><strong>${escapeHtml(item.amount || "-")} ${escapeHtml(item.amount ? item.asset : "")}</strong><small>${escapeHtml(item.network)}</small></div>${statusPill(item.status)}<code title="${escapeHtml(item.transactionHash || item.id)}">${escapeHtml(shortHash(item.transactionHash || item.id))}</code>${item.explorerUrl ? `<a class="text-link" href="${escapeHtml(item.explorerUrl)}" target="_blank" rel="noreferrer">Verificar</a>` : ""}</article>`;
 }

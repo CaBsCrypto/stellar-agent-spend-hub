@@ -35,19 +35,19 @@ export class LegalContextAdapter {
     if (declaredHash && declaredHash !== termsHash) {
       reasons.push("ATR hash no coincide con los terminos");
     } else if (declaredHash) {
-      evidence.push("ATR hash verified");
+      evidence.push("Hash de terminos verificado");
     } else {
-      evidence.push("Terms discovered without a hash");
+      evidence.push("Terminos encontrados sin hash");
     }
 
     if (computedTrustLevel < policy.minLegalTrustLevel) {
-      reasons.push(`LCP level ${computedTrustLevel} below required minimum ${policy.minLegalTrustLevel}`);
+      reasons.push(`Nivel de confianza ${computedTrustLevel} bajo el minimo requerido ${policy.minLegalTrustLevel}`);
     } else {
-      evidence.push(`LCP level ${computedTrustLevel} meets policy`);
+      evidence.push(`Nivel de confianza ${computedTrustLevel} cumple la politica`);
     }
 
     if (context.acceptanceRequired) {
-      evidence.push("Explicit acceptance required");
+      evidence.push("Se requiere aceptacion explicita");
     }
 
     return {

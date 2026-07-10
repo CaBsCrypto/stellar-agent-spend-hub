@@ -110,7 +110,7 @@ test("activity page distinguishes verified evidence from simulated receipts", ()
     ],
   });
   assert.match(html, /status-pill verified/);
-  assert.match(html, /Agent receipt \(simulated\)/);
+  assert.match(html, /Comprobante del agente \(pago de prueba\)/);
   assert.match(html, />Simulated</);
 });
 
@@ -126,7 +126,7 @@ test("activity page shows safe pilot learning aggregates", () => {
     feedback: { feedback: { status: "memory-local", count: 2, needsMoreFeedback: true, clarity: { clear: 1 }, trust: { "somewhat-clear": 2 }, themes: [{ theme: "wallet", count: 2 }] } },
   });
   assert.match(html, /Aprendizaje/);
-  assert.match(html, /wallet/);
+  assert.match(html, /Permisos/);
   assert.doesNotMatch(html, /private tester note/i);
 });
 
@@ -221,8 +221,8 @@ test("shell renders a five-tab bottom navigation for mobile", async () => {
   const html = renderShell(ROUTES[0]);
   const tabs = html.match(/<nav class="bottom-nav"[\s\S]*?<\/nav>/)?.[0] || "";
   assert.equal((tabs.match(/<a /g) || []).length, 5);
-  assert.match(tabs, />Home</);
-  assert.match(tabs, />Review</);
+  assert.match(tabs, />Inicio</);
+  assert.match(tabs, />Revisar</);
   assert.match(tabs, /aria-current="page"/);
 });
 
@@ -233,6 +233,15 @@ test("shared components stay safe and predictable", () => {
   assert.match(statusPill("settled"), /status-pill verified/);
   assert.match(errorState(new Error("<img src=x>")), /&lt;img/);
   assert.match(emptyState("Nothing", "Come back later"), /empty-state/);
+});
+
+test("client label maps translate known backend values to Spanish and fall back safely", async () => {
+  const { kindLabelEs, themeLabelEs } = await import("../src/client/labels.mjs");
+  assert.equal(kindLabelEs("mpp-charge"), "Cobro MPP oficial");
+  assert.equal(kindLabelEs("Agent receipt (simulated)"), "Comprobante del agente (pago de prueba)");
+  assert.equal(kindLabelEs("unknown-future-kind"), "unknown-future-kind");
+  assert.equal(themeLabelEs("provider"), "Proveedores");
+  assert.equal(themeLabelEs("unknown-theme"), "unknown-theme");
 });
 
 test("/api/activity marks simulated receipts distinctly", async () => {

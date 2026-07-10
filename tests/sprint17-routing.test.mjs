@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer as createProbeServer } from "node:net";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { ROUTES, normalizePath, resolveRoute } from "../src/client/routes.mjs";
@@ -137,6 +138,11 @@ test("local server supports deep links and blocks server source files", async ()
     source: "/api/:segment1/:segment2/:segment3/:segment4",
     destination: "/api/router?routePath=:segment1/:segment2/:segment3/:segment4",
   });
+  // This test asserts on the production static bundle; build it if a prior
+  // `npm run build`/`dev` has not already populated public/ (fresh clone, CI).
+  if (!existsSync(join(process.cwd(), "public", "src", "client", "app.mjs"))) {
+    execFileSync(process.execPath, ["scripts/build-static.mjs"], { cwd: process.cwd(), stdio: "ignore" });
+  }
   const port = await getFreePort();
   const statePath = join(tmpdir(), `spendhub-sprint17-${Date.now()}.json`);
   const { server } = await createSpendHubServer({ root: process.cwd(), port, statePath, env: {} });

@@ -55,7 +55,7 @@ export function actionPanel({ eyebrow, title, body, actions = "", status = "" })
 export function guardedAction({ label, enabled, reason, action, kind = "primary" }) {
   const className = kind === "danger" ? "danger-button" : kind === "secondary" ? "secondary-button" : "primary-button";
   const actionAttr = action ? `data-${escapeHtml(action.name)}="${escapeHtml(action.value)}"` : "";
-  return `<span class="guarded-action"><button class="${className}" ${actionAttr} ${enabled ? "" : "disabled"}>${escapeHtml(label)}</button>${enabled ? "" : `<small>${escapeHtml(reason || "Disabled until the safety gate is open.")}</small>`}</span>`;
+  return `<span class="guarded-action"><button class="${className}" ${actionAttr} ${enabled ? "" : "disabled"}>${escapeHtml(label)}</button>${enabled ? "" : `<small>${escapeHtml(reason || "Desactivado hasta que se abra la compuerta de seguridad.")}</small>`}</span>`;
 }
 
 export function approvalCard({ title, amount, detail, status = "Needs approval", href = "", action = "" }) {
@@ -68,10 +68,10 @@ export function evidenceRow(item = {}) {
   const status = item.verificationStatus || item.status || "pending";
   const hash = item.transactionHash || "";
   return `<article class="evidence-row">
-    <div><strong>${escapeHtml(item.label || item.providerName || "Evidence")}</strong><small>${escapeHtml(item.network || "stellar:testnet")} | ${escapeHtml(item.asset || "USDC")}</small></div>
+    <div><strong>${escapeHtml(item.label || item.providerName || "Evidencia")}</strong><small>${escapeHtml(item.network || "stellar:testnet")} | ${escapeHtml(item.asset || "USDC")}</small></div>
     <strong>${escapeHtml(item.amount || "-")} ${escapeHtml(item.amount ? item.asset || "" : "")}</strong>
     ${hash ? `<code title="${escapeHtml(hash)}">${escapeHtml(shortHash(hash))}</code>` : statusPill(status)}
-    ${item.explorerUrl ? `<a class="text-link" href="${escapeHtml(item.explorerUrl)}" target="_blank" rel="noreferrer">Verify</a>` : ""}
+    ${item.explorerUrl ? `<a class="text-link" href="${escapeHtml(item.explorerUrl)}" target="_blank" rel="noreferrer">Verificar</a>` : ""}
   </article>`;
 }
 
