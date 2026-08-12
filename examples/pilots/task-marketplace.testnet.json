@@ -1,0 +1,21 @@
+{
+  "manifestVersion": "agent-commerce-pilot-v1",
+  "pilotId": "digital-task-publication",
+  "partner": { "name": "TBD task marketplace", "type": "marketplace" },
+  "environment": "partner-sandbox-or-testnet",
+  "connector": { "kind": "api", "baseUrl": null, "sourceOfTruth": "partner" },
+  "actions": [{
+    "actionId": "publish_and_award_task",
+    "riskClass": "digital_work_agreement",
+    "requiresHumanConfirmation": true,
+    "payment": "direct_after_acceptance",
+    "fulfillment": "digital_delivery_acceptance"
+  }],
+  "wallet": { "custody": "external", "signer": "partner_or_user_wallet", "network": "to_be_confirmed" },
+  "claims": {
+    "real": ["task", "proposal", "agreement", "delivery", "acceptance"],
+    "simulated": [],
+    "blocked": ["partner_acceptance", "api_documentation", "test_environment"],
+    "planned": ["regulated_or_contract_escrow"]
+  }
+}

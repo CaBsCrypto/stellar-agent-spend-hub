@@ -1,0 +1,21 @@
+{
+  "manifestVersion": "agent-commerce-pilot-v1",
+  "pilotId": "defindex-vault-deposit-testnet",
+  "partner": { "name": "DeFindex", "type": "financial_protocol" },
+  "environment": "stellar:testnet",
+  "connector": { "kind": "api", "baseUrl": "https://api.defindex.io", "sourceOfTruth": "partner" },
+  "actions": [{
+    "actionId": "deposit_to_vault",
+    "riskClass": "financial_action",
+    "requiresHumanConfirmation": true,
+    "payment": "direct_wallet_signature",
+    "fulfillment": "verified_vault_position"
+  }],
+  "wallet": { "custody": "external", "signer": "freighter", "network": "stellar:testnet" },
+  "claims": {
+    "real": ["vault_lookup", "xdr_build", "wallet_signature", "testnet_submission"],
+    "simulated": [],
+    "blocked": ["partner_api_key", "recommended_testnet_vault"],
+    "planned": ["mainnet"]
+  }
+}

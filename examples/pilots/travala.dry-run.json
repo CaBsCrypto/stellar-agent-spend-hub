@@ -1,0 +1,21 @@
+{
+  "manifestVersion": "agent-commerce-pilot-v1",
+  "pilotId": "travala-hotel-search-dry-run",
+  "partner": { "name": "Travala", "type": "remote_mcp_provider" },
+  "environment": "production-read-dry-run",
+  "connector": { "kind": "remote_mcp", "baseUrl": "https://travel-mcp.travala.com/mcp", "sourceOfTruth": "partner" },
+  "actions": [{
+    "actionId": "search_and_prepare_hotel",
+    "riskClass": "travel_booking",
+    "requiresHumanConfirmation": true,
+    "payment": "disabled_in_demo",
+    "fulfillment": "not_applicable_before_booking"
+  }],
+  "wallet": { "custody": "external", "signer": "coinbase_agentic_wallet", "network": "base:mainnet" },
+  "claims": {
+    "real": ["hotel_search", "package_search", "prepared_booking"],
+    "simulated": [],
+    "blocked": ["public_sandbox", "approved_controlled_booking"],
+    "planned": ["paid_booking", "booking_management"]
+  }
+}

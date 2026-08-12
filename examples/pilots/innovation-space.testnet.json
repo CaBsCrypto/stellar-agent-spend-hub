@@ -1,0 +1,21 @@
+{
+  "manifestVersion": "agent-commerce-pilot-v1",
+  "pilotId": "innovation-space-day-pass",
+  "partner": { "name": "TBD innovation space", "type": "merchant" },
+  "environment": "supervised-pilot",
+  "connector": { "kind": "hosted_offer", "baseUrl": null, "sourceOfTruth": "agent_commerce" },
+  "actions": [{
+    "actionId": "reserve_day_pass",
+    "riskClass": "service_reservation",
+    "requiresHumanConfirmation": true,
+    "payment": "optional_testnet_deposit",
+    "fulfillment": "otp_check_in"
+  }],
+  "wallet": { "custody": "external", "signer": "freighter", "network": "stellar:testnet" },
+  "claims": {
+    "real": ["merchant", "offer", "availability", "reservation", "check_in"],
+    "simulated": ["economic_value"],
+    "blocked": ["partner_acceptance", "offer_terms"],
+    "planned": ["production_payment"]
+  }
+}
